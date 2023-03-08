@@ -1,0 +1,6 @@
+name: GreenFinder
+version: '${version}'
+main: greensurivors.greenfinder.GreenFinder
+api-version: 1.19
+authors: [ Feuerreiter ]
+website: greensurvivors.de
