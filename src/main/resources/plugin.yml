@@ -1,6 +1,12 @@
 name: GreenFinder
-version: '${version}'
-main: greensurivors.greenfinder.GreenFinder
+version: 0.0.1-SNAPSHOT
+main: de.greensurvivors.greenfinder.GreenFinder
 api-version: 1.19
 authors: [ Feuerreiter ]
 website: greensurvivors.de
+
+commands:
+  greenfinder:
+    aliases:
+      - gf
+    description: All green finder commands.
