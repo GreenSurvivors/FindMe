@@ -64,7 +64,7 @@ public class RemoveCmd {//todo translations
                 return List.of(GAME, STAND);
             }
             case 2 -> {
-                if (args[1].equalsIgnoreCase(STAND)){
+                if (args[1].equalsIgnoreCase(STAND) || args[1].equalsIgnoreCase(GAME)){
                     return new ArrayList<>(GameManager.inst().getGameNames());
                 }
             }

@@ -26,15 +26,23 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 			CREATE_LONG = "create",
 
 			/** **/
+			LIST = "list",
+
+			/** **/
 			SET = "set",
 
 			/** **/
-			SHOW_SHORT = "s",
 			SHOW_LONG = "show",
+
+			/** **/
+			START = "start",
 
 			/** **/
 			REMOVE_SHORT = "rem",
 			REMOVE_LONG = "remove",
+
+			/** **/
+			QUIT = "quit",
 
 			/** subcommand to Show plugin overview*/
 			PLUGIN_SHORT           = "p",
@@ -47,16 +55,12 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 			ADD = "add",
 			/** Show information about an item, used in WinterLectern and DropRecipe*/
 			INFO = "info",
-			/** list items of the same type*/
-			LIST = "list",
 			/** change period, used in DropRecipe and RestockRegions*/
 			PERIOD = "period",
 			/** remove an item, used in WinterLectern, DropRecipe, RestockRegion and piglin trade*/
 			REMOVE = "remove",
 			/** get the state of a specific value */
 			GET = "get",
-			/** change a button*/
-			BUTTON = "button",
 			/** prefixes for subcommands. used in Restock Regions and region Monsters*/
 			WORLD_PREFIX = "-w";
 
@@ -85,9 +89,12 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 		if (PermissionUtils.hasAnyPermission(cs)) {
 			if (args.length > 0) {
 				switch (args[0].toLowerCase()) {
-					case SHOW_SHORT, SHOW_LONG -> ShowCmd.handleCmd(cs, args);
-					case SET -> Set.handleCmd(cs, args);
+					case SHOW_LONG -> ShowCmd.handleCmd(cs, args);
+					case SET -> SetCmd.handleCmd(cs, args);
 					case CREATE_SHORT, CREATE_LONG -> CreateCmd.handleCmd(cs, args);
+					case LIST -> ListCmd.handleCmd(cs, args);
+					case START -> StartCmd.handleCmd(cs, args);
+					case QUIT -> QuitCmd.handleCmd(cs, args);
 					case REMOVE_SHORT, REMOVE_LONG -> RemoveCmd.handleCmd(cs, args);
 					case PLUGIN_SHORT, PLUGIN_LONG -> PluginCmd.handleCmd(cs);
 					case RELOAD_SHORT, RELOAD_LONG -> reload(cs);
@@ -116,16 +123,21 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 		}
 	}
 
-	//todo cowntdown; teleport into game and out
-	@Override //set time a game lasts; until a stand can respawn; spawnpunkt; endpunkt; Lobbypunkt;
+	@Override //set time/chance until a stand can respawn;
 	//get what game a stand belongs to
-	//join
+	//info (about) a game -> Lobby/Start/quit pos
+	//automode -> min/maxplayers; waiting time for players to join
+	//filter tap suggestions after what was already typed in
+	//todo translations
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 			if (args.length == 1) { //todo permissions
-				return Stream.of(SHOW_SHORT, SHOW_LONG,
+				return Stream.of(SHOW_LONG,
 						CREATE_SHORT, CREATE_LONG,
+						LIST,
+						START,
 						REMOVE_SHORT, REMOVE_LONG,
 						SET,
+						QUIT,
 						RELOAD_SHORT, RELOAD_LONG).filter(s -> s.startsWith(args[0].toLowerCase())).collect(Collectors.toList());
 			} else {
 				switch (args[0]){

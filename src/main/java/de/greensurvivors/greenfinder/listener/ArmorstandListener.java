@@ -24,7 +24,7 @@ public class ArmorstandListener implements Listener {
     private void onArmorStandClicked(PlayerArmorStandManipulateEvent event){
         ArmorStand armorStand = event.getRightClicked();
 
-        if (armorStand.getPersistentDataContainer().get(Game.hiddenKey, PersistentDataType.INTEGER) != null){
+        if (armorStand.getPersistentDataContainer().get(Game.HIDDEN_KEY, PersistentDataType.INTEGER) != null){
             event.setCancelled(true);
 
             Player ePlayer = event.getPlayer();
