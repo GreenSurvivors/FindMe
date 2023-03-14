@@ -5,13 +5,12 @@ import de.greensurvivors.greenfinder.GreenLogger;
 import de.greensurvivors.greenfinder.Utils;
 import de.greensurvivors.greenfinder.language.Lang;
 import org.bukkit.*;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scoreboard.*;
 import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +19,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class Game {
+public class Game implements ConfigurationSerializable {
+
     public enum GameStates {
         ACTIVE("active"),
         STARTING("starting"),
@@ -37,14 +37,14 @@ public class Game {
         }
     }
 
-    public static final NamespacedKey HIDDEN_KEY = new NamespacedKey(GreenFinder.inst(), "isHidden");
-
-    private final int STARTING_HIDDEN_PERCENT = 75;
+    private final int STARTING_HIDDEN_PERCENT;
+    private final int AVERAGE_TICKS_UNTIL_REHEAD;
+    private final int MIN_Millis_UNTIL_REHEAD;
 
     private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
     private final Objective objective;
 
-    private final HashMap<UUID, ArmorStand> hiddenStands = new HashMap<>(); //cache so we don't have to lookup everytime we need the entity.
+    private final HashMap<UUID, HiddenStand> hiddenStands = new HashMap<>(); //cache so we don't have to lookup everytime we need the entity.
     private final LinkedHashSet<ItemStack> heads = new LinkedHashSet<>();
 
     private final HashSet<Player> players = new HashSet<>();
@@ -66,36 +66,109 @@ public class Game {
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         this.name = name;
+
+        STARTING_HIDDEN_PERCENT = 75;
+        AVERAGE_TICKS_UNTIL_REHEAD = 600;
+        MIN_Millis_UNTIL_REHEAD = 10000;
+    }
+
+    private Game(int startingHiddenPercent, int averageTicksUntilRehead, int minMillisUntilRehead,
+                 @NotNull HashMap<UUID, HiddenStand> hiddenStands, @NotNull LinkedHashSet<ItemStack> heads,
+                 @NotNull String name,
+                 boolean allowLateJoin,
+                 @NotNull Location lobbyLoc, @NotNull Location startLoc, @NotNull Location quitLoc,
+                 long gameTimeLength){
+
+        this.STARTING_HIDDEN_PERCENT = startingHiddenPercent;
+        this.AVERAGE_TICKS_UNTIL_REHEAD = averageTicksUntilRehead;
+        this.MIN_Millis_UNTIL_REHEAD = minMillisUntilRehead;
+
+        this.hiddenStands.putAll(hiddenStands);
+        this.heads.addAll(heads);
+
+        this.name = name;
+
+        this.allowLateJoin = allowLateJoin;
+
+        this.lobbyLoc = lobbyLoc;
+        this.startLoc = startLoc;
+        this.quitLoc = quitLoc;
+
+        this.gameTimeLength = gameTimeLength;
+
+        this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, Lang.build(name));
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+    }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("starting_hidden_percent", STARTING_HIDDEN_PERCENT);
+        result.put("average_ticks_until_rehead", AVERAGE_TICKS_UNTIL_REHEAD);
+        result.put("min_milli_rehead_cooldown", MIN_Millis_UNTIL_REHEAD);
+        result.put("uuids", hiddenStands.keySet().stream().map(UUID::toString));
+        result.put("heads", heads.stream().map(ItemStack::serialize));
+        result.put("name", name);
+        result.put("allowLateJoin", allowLateJoin);
+        result.put("lobbyloc", lobbyLoc.serialize());
+        result.put("startloc", startLoc.serialize());
+        result.put("quitloc", quitLoc.serialize());
+        result.put("game_time_length", gameTimeLength);
+
+        return result;
+    }
+
+    public static Game deserialize(@NotNull Map<String, Object> data) {
+        Object temp;
+
+        temp = data.get("starting_hidden_percent");
+        int starting_hidden_percent;
+        if (temp instanceof Integer a){
+            starting_hidden_percent = a;
+        } else if (temp instanceof String b && Utils.isInt(b)){
+            starting_hidden_percent = Integer.parseInt(b);
+        } else {
+            GreenLogger.log(Level.WARNING, "couldn't deserialize starting_hidden_percent: " + temp);
+            return null;
+        }
+
+        temp = data.get("min_milli_rehead_cooldown");
+        int min_milli_rehead_cooldown;
+        if (temp instanceof Integer a){
+            min_milli_rehead_cooldown = a;
+        } else if (temp instanceof String b && Utils.isInt(b)){
+            min_milli_rehead_cooldown = Integer.parseInt(b);
+        } else {
+            GreenLogger.log(Level.WARNING, "couldn't deserialize min_milli_rehead_cooldown: " + temp);
+            return null;
+        }
+
+        temp = data.get("average_ticks_until_rehead");
+        int average_ticks_until_rehead;
+        if (temp instanceof Integer a){
+            average_ticks_until_rehead = a;
+        } else if (temp instanceof String b && Utils.isInt(b)){
+            average_ticks_until_rehead = Integer.parseInt(b);
+        } else {
+            GreenLogger.log(Level.WARNING, "couldn't deserialize average_ticks_until_rehead: " + temp);
+            return null;
+        }
+
+        return Game(starting_hidden_percent, average_ticks_until_rehead, min_milli_rehead_cooldown, );
+
     }
 
     public void addHiddenStand(Location location){
-        //get uuid and set all necessary properties of a freshly spawned armor stand
-        //the number there comes purely from testing with a small armor stand. Maybe one day a smart guy can add a fancy calculation why it is roughly this number.
-        //in other news: the settings are set with a lambda function, so no armor-stand should ever flash for a moment.
-        ArmorStand hiddenStand = location.getWorld().spawn(location.clone().subtract(0, 0.719, 0), ArmorStand.class, newArmorStand -> {
-            newArmorStand.setVisible(false);
-            newArmorStand.setSmall(true);
-            newArmorStand.setDisabledSlots(EquipmentSlot.CHEST, EquipmentSlot.HAND, EquipmentSlot.OFF_HAND, EquipmentSlot.LEGS, EquipmentSlot.FEET);
-            newArmorStand.setCanMove(false);
-            newArmorStand.setCanTick(false);
-            newArmorStand.setCustomNameVisible(false);
+        HiddenStand hiddenStand = new HiddenStand(location);
+        hiddenStands.put(hiddenStand.getUUID(), hiddenStand);
 
-            newArmorStand.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.INTEGER, 1);
-        });
-
-        UUID uuid = hiddenStand.getUniqueId();
-        Entity entity = Bukkit.getEntity(uuid);
-
-        if (entity instanceof ArmorStand armorStand){
-            hiddenStands.put(uuid, armorStand);
-        }
     }
 
     public void showAroundLocation(Location location, Integer range){
         World world = location.getWorld();
 
-        for (ArmorStand armorStand : hiddenStands.values()){
-            Location standLoc = armorStand.getLocation();
+        for (HiddenStand hiddenStand : hiddenStands.values()){
+            Location standLoc = hiddenStand.getArmorStand().getLocation();
 
             if (world != standLoc.getWorld())
                 continue;
@@ -103,10 +176,10 @@ public class Game {
             if (NumberConversions.square(range) >= (NumberConversions.square(location.getX() - standLoc.getX()) +
                     NumberConversions.square(location.getY() - standLoc.getY()) +
                     NumberConversions.square(location.getZ() - standLoc.getZ()))){
-                armorStand.setGlowing(true);
+                hiddenStand.getArmorStand().setGlowing(true);
 
                 Bukkit.getScheduler().runTaskLater(GreenFinder.inst(), () ->{
-                    armorStand.setGlowing(false);
+                    hiddenStand.getArmorStand().setGlowing(false);
                 }, 200);
             }
         }
@@ -219,6 +292,19 @@ public class Game {
             }
         }
 
+        Random random = new Random();
+        ItemStack[] headArray = heads.toArray(new ItemStack[0]);
+        final int max = headArray.length -1;
+
+        for (HiddenStand hiddenStand : hiddenStands.values()){
+            if (!hiddenStand.getArmorStand().getEquipment().getHelmet().getType().isItem() &&
+                    hiddenStand.isCooldownOver(MIN_Millis_UNTIL_REHEAD) &&
+                    random.nextInt(AVERAGE_TICKS_UNTIL_REHEAD) == 1){
+                hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
+                hiddenStand.setCooldownNow();
+            }
+        }
+
         if (remainingGameTime >= 0){
             Bukkit.getScheduler().runTaskLater(GreenFinder.inst(), this::GameTimer, 1);
         }
@@ -230,12 +316,14 @@ public class Game {
         ItemStack[] headArray = heads.toArray(new ItemStack[0]);
         final int max = headArray.length -1;
 
-        for (ArmorStand stand : hiddenStands.values()){
+        for (HiddenStand hiddenStand : hiddenStands.values()){
             if (random.nextInt(100) <= STARTING_HIDDEN_PERCENT){
-                stand.setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
+                hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
             } else {
-                stand.setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+                hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
             }
+
+            hiddenStand.setCooldownNow();
         }
 
         for (Player player : players){
@@ -259,15 +347,15 @@ public class Game {
     }
 
     public void findStand(UUID uuid){
-        ArmorStand hiddenStand = hiddenStands.get(uuid);
+        HiddenStand hiddenStand = hiddenStands.get(uuid);
 
         if (hiddenStand == null){
             return;
         }
 
         //remove head & play sound
-        hiddenStand.setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
-        hiddenStand.getLocation().getWorld().playSound(hiddenStand, Sound.ENTITY_ITEM_PICKUP,0.9f, 0.9f);
+        hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+        hiddenStand.getArmorStand().getLocation().getWorld().playSound(hiddenStand.getArmorStand(), Sound.ENTITY_ITEM_PICKUP,0.9f, 0.9f);
     }
 
     public GameStates getGameState (){
