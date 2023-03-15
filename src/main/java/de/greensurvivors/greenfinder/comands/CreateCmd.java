@@ -25,13 +25,15 @@ public class CreateCmd {
             switch (args[1]){
                 //gf c game <name>
                 case GAME -> {
-                    if (GameManager.inst().addGame(args[2])){
-                        //success
-                        cs.sendMessage(Lang.build("success"));
-                    } else {
-                        //unsuccessful
-                        cs.sendMessage(Lang.build("game already exits"));
-                    }
+                    Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
+                        if (GameManager.inst().addGame(args[2])){
+                            //success
+                            cs.sendMessage(Lang.build("success"));
+                        } else {
+                            //unsuccessful
+                            cs.sendMessage(Lang.build("game already exits"));
+                        }
+                    });
                 }
                 //gf c stand <name>
                 case STAND -> {

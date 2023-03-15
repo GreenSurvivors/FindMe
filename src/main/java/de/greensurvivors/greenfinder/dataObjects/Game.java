@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.*;
 import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -83,7 +84,7 @@ public class Game implements ConfigurationSerializable {
                  @NotNull HashMap<UUID, HiddenStand> hiddenStands, @NotNull LinkedHashSet<ItemStack> heads,
                  @NotNull String name,
                  boolean allowLateJoin,
-                 @NotNull Location lobbyLoc, @NotNull Location startLoc, @NotNull Location quitLoc,
+                 @Nullable Location lobbyLoc, @Nullable Location startLoc, @Nullable Location quitLoc,
                  long gameTimeLength){
 
         this.STARTING_HIDDEN_PERCENT = startingHiddenPercent;
@@ -113,13 +114,16 @@ public class Game implements ConfigurationSerializable {
         result.put("starting_hidden_percent", STARTING_HIDDEN_PERCENT);
         result.put("average_ticks_until_rehead", AVERAGE_TICKS_UNTIL_REHEAD);
         result.put("min_milli_rehead_cooldown", MIN_Millis_UNTIL_REHEAD);
-        result.put("uuids", hiddenStands.keySet().stream().map(UUID::toString));
-        result.put("heads", heads.stream().map(ItemStack::serialize));
+        result.put("uuids", hiddenStands.keySet().stream().map(UUID::toString).collect(Collectors.toList()));
+        result.put("heads", heads.stream().map(ItemStack::serialize).collect(Collectors.toList()));
         result.put("name", name);
         result.put("allowLateJoin", allowLateJoin);
-        result.put("lobbyloc", lobbyLoc.serialize());
-        result.put("startloc", startLoc.serialize());
-        result.put("quitloc", quitLoc.serialize());
+        if (lobbyLoc != null)
+            result.put("lobbyloc", lobbyLoc.serialize());
+        if (startLoc != null)
+            result.put("startloc", startLoc.serialize());
+        if (quitLoc != null)
+            result.put("quitloc", quitLoc.serialize());
         result.put("game_time_length", gameTimeLength);
 
         return result;
@@ -242,7 +246,7 @@ public class Game implements ConfigurationSerializable {
         }
 
         temp = data.get("lobbyloc");
-        Location lobbyLoc;
+        Location lobbyLoc = null;
         if (temp instanceof Map<?, ?> map){
             Map<String, Object> stringObjectMap = new HashMap<>();
 
@@ -255,12 +259,11 @@ public class Game implements ConfigurationSerializable {
             }
             lobbyLoc = Location.deserialize(stringObjectMap);
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize lobby location: " + temp);
-            return null;
+            GreenLogger.log(Level.WARNING, "couldn't deserialize lobby location: " + temp);
         }
 
         temp = data.get("startloc");
-        Location startLoc;
+        Location startLoc = null;
         if (temp instanceof Map<?, ?> map2){
             Map<String, Object> stringObjectMap = new HashMap<>();
 
@@ -273,12 +276,11 @@ public class Game implements ConfigurationSerializable {
             }
             startLoc = Location.deserialize(stringObjectMap);
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize start location: " + temp);
-            return null;
+            GreenLogger.log(Level.WARNING, "couldn't deserialize start location: " + temp);
         }
 
         temp = data.get("quitloc");
-        Location quitLoc;
+        Location quitLoc = null;
         if (temp instanceof Map<?, ?> map3){
             Map<String, Object> stringObjectMap = new HashMap<>();
 
@@ -291,8 +293,7 @@ public class Game implements ConfigurationSerializable {
             }
             quitLoc = Location.deserialize(stringObjectMap);
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize quit location: " + temp);
-            return null;
+            GreenLogger.log(Level.WARNING, "couldn't deserialize quit location: " + temp);
         }
 
         temp = data.get("game_time_length");
@@ -532,8 +533,6 @@ public class Game implements ConfigurationSerializable {
     }
 
     protected void end(){
-        gameState = GameStates.ENDED;
-
         for (Player player : players){
             scoreboard.resetScores(player);
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
@@ -547,11 +546,13 @@ public class Game implements ConfigurationSerializable {
             }
         }
 
-        if (quitLoc == null){
+        if (gameState != GameStates.ENDED && quitLoc == null){
             GreenLogger.log(Level.WARNING, "No quitting postion was given for finder game \"" + name + "\". Couldn't teleport anybody.");
         }
 
         players.clear();
+
+        gameState = GameStates.ENDED;
     }
     public @NotNull String getName() {
         return name;

@@ -47,7 +47,7 @@ public class GameManager {
      * @return true if the new game was created, false if a game by this game already exits
      */
     public boolean addGame(@NotNull String name){
-        if (games.get(name) == null){
+        if (games.get(name) != null){
             return false;
         }
 
