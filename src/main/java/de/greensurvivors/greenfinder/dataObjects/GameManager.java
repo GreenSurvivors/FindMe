@@ -1,11 +1,14 @@
 package de.greensurvivors.greenfinder.dataObjects;
 
+import de.greensurvivors.greenfinder.GreenLogger;
+import de.greensurvivors.greenfinder.config.MainConfig;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class GameManager {
@@ -27,6 +30,18 @@ public class GameManager {
     }
 
     /**
+     * Please note, that the proper way to load all games from config is to call clearAll() first.
+     * @param game
+     */
+    public void addLoadedGame(Game game){
+        if (games.get(game.getName()) == null){
+            GreenLogger.log(Level.WARNING, "loaded a already existing game, I will overwrite the old one.");
+        }
+
+        games.put(game.getName(), game);
+    }
+
+    /**
      *
      * @param name
      * @return true if the new game was created, false if a game by this game already exits
@@ -44,6 +59,8 @@ public class GameManager {
         Game game = getGame(name);
         if (game != null){
             game.end();
+
+            MainConfig.inst().removeGame(game.getName());
 
             return games.remove(name) != null;
         } else {
@@ -63,26 +80,9 @@ public class GameManager {
         return games.keySet();
     }
 
-    public void playerJoinGame(@NotNull Player player, @NotNull String nameofGame){
-        Game game = getGame(nameofGame);
-
-        if (game != null){
-            playerJoinGame(player, game);
-        }
-    }
-
     public void playerJoinGame(@NotNull Player player, @NotNull Game game){
         game.playerJoin(player);
         playersInGames.put(player, game);
-
-    }
-
-    public void playerQuitGame(@NotNull Player player, @NotNull String nameofGame){
-        Game game = getGame(nameofGame);
-
-        if (game != null){
-            playerQuitGame(player, game);
-        }
 
     }
 

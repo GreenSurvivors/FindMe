@@ -2,8 +2,6 @@ package de.greensurvivors.greenfinder.comands;
 
 import de.greensurvivors.greenfinder.GreenFinder;
 import de.greensurvivors.greenfinder.PermissionUtils;
-import de.greensurvivors.greenfinder.config.MainConfig;
-import de.greensurvivors.greenfinder.language.Lang;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -97,7 +95,7 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 					case QUIT -> QuitCmd.handleCmd(cs, args);
 					case REMOVE_SHORT, REMOVE_LONG -> RemoveCmd.handleCmd(cs, args);
 					case PLUGIN_SHORT, PLUGIN_LONG -> PluginCmd.handleCmd(cs);
-					case RELOAD_SHORT, RELOAD_LONG -> reload(cs);
+					case RELOAD_SHORT, RELOAD_LONG -> ReloadCmd.handleCmd(cs, args);
 					default -> HelpCmd.handleCmd(cs);
 				}
 			} else {
@@ -110,25 +108,13 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 		}
 	}
 
-	/**
-	 * Handle reload command
-	 * @param cs CommandSender
-	 */
-	private void reload(CommandSender cs) {
-		if (PermissionUtils.hasPermission(cs, PermissionUtils.WINTER_ADMIN, PermissionUtils.WINTER_RELOAD)) {
-			MainConfig.inst().reloadMain();
-			cs.sendMessage(Lang.build(Lang.RELOAD.get()));
-		} else {
-			cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
-		}
-	}
-
 	@Override //set time/chance until a stand can respawn;
 	//get what game a stand belongs to
 	//info (about) a game -> Lobby/Start/quit pos
 	//automode -> min/maxplayers; waiting time for players to join
 	//filter tap suggestions after what was already typed in
 	//todo translations
+	//permissions
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 			if (args.length == 1) { //todo permissions
 				return Stream.of(SHOW_LONG,

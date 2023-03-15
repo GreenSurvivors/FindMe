@@ -47,7 +47,7 @@ public class SignListener implements Listener {
                         if (!game.isAllowLateJoin() && game.getGameState().equals(Game.GameStates.ACTIVE)){
                             ePlayer.sendMessage("this game is already active.");
                         } else {
-                            game.playerJoin(ePlayer);
+                            GameManager.inst().playerJoinGame(ePlayer, game);
                         }
                         break;
                     }

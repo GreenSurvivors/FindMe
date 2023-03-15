@@ -2,6 +2,8 @@ package de.greensurvivors.greenfinder.config;
 
 import de.greensurvivors.greenfinder.GreenFinder;
 import de.greensurvivors.greenfinder.GreenLogger;
+import de.greensurvivors.greenfinder.dataObjects.Game;
+import de.greensurvivors.greenfinder.dataObjects.GameManager;
 import de.greensurvivors.greenfinder.language.Lang;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -10,7 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 
 public class MainConfig {
@@ -22,6 +23,24 @@ public class MainConfig {
             instance = new MainConfig();
         }
         return instance;
+    }
+
+    /**
+     *
+     * @param name
+     */
+    public void removeGame(String name) {
+        GameConfig gameConfig = new GameConfig(name);
+        gameConfig.removeCfg();
+    }
+
+    public void saveGame(Game game) {
+        GameConfig gameConfig = new GameConfig(game.getName());
+        FileConfiguration fcfg = gameConfig.getCfg();
+
+        fcfg.set("game", game.serialize());
+
+        gameConfig.saveCfg();
     }
 
     /**
@@ -54,32 +73,44 @@ public class MainConfig {
     }
 
     public void reloadMain() {
-        GreenFinder.inst().reloadConfig();
-        saveMain();
-        loadMainSave();
-
         loadLanguage();
+
+        loadGamesSave();
     }
 
-    private void saveMain() {
-        FileConfiguration cfg = GreenFinder.inst().getConfig();
+    private void loadAllGames(){
+        File gamesMotherFolder = new File(GreenFinder.inst().getDataFolder(), GameConfig.FOLDER);
+        File[] gameFiles = gamesMotherFolder.listFiles();
 
-        cfg.options().setHeader(List.of(GreenFinder.inst().getName() + " " + GreenFinder.inst().getDescription().getVersion()));
-        cfg.options().copyDefaults(true);
-        cfg.options().parseComments(true);
-        GreenFinder.inst().saveConfig();
-    }
+        if (gameFiles != null){
+            for (File gameFile : gameFiles){
+                if (gameFile.isFile()){
+                    GameConfig gameConfig = new GameConfig(gameFile.getName());
+                    FileConfiguration fcfg = gameConfig.getCfg();
 
-    private void loadMain() {
-        FileConfiguration cfg = GreenFinder.inst().getConfig();
+                    Game game = fcfg.getSerializable("game", Game.class);
+                    if (game != null){
+                        GameManager.inst().addLoadedGame(game);
+                    } else {
+                        GreenLogger.log(Level.WARNING, "could not deserialize game in file " + gameFile.getName());
+                    }
+                } else {
+                    GreenLogger.log(Level.WARNING, gameFile + " is not a file.");
+                }
+            }
+        } else {
+            GreenLogger.log(Level.INFO, "No games to load.");
+        }
     }
 
     /**
      * Load region restock and clears cached ones.
      */
-    public void loadMainSave() {
+    public void loadGamesSave() {
         Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
-            Bukkit.getScheduler().runTaskAsynchronously(GreenFinder.inst(), this::loadMain);
+            // clear cache
+            GameManager.inst().clearAll();
+            Bukkit.getScheduler().runTaskAsynchronously(GreenFinder.inst(), this::loadAllGames);
         });
     }
 }

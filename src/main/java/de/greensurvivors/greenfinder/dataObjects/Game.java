@@ -3,6 +3,7 @@ package de.greensurvivors.greenfinder.dataObjects;
 import de.greensurvivors.greenfinder.GreenFinder;
 import de.greensurvivors.greenfinder.GreenLogger;
 import de.greensurvivors.greenfinder.Utils;
+import de.greensurvivors.greenfinder.config.MainConfig;
 import de.greensurvivors.greenfinder.language.Lang;
 import org.apache.commons.lang3.BooleanUtils;
 import org.bukkit.*;
@@ -74,6 +75,8 @@ public class Game implements ConfigurationSerializable {
         STARTING_HIDDEN_PERCENT = 75;
         AVERAGE_TICKS_UNTIL_REHEAD = 600;
         MIN_Millis_UNTIL_REHEAD = 10000;
+
+        MainConfig.inst().saveGame(this);
     }
 
     private Game(int startingHiddenPercent, int averageTicksUntilRehead, int minMillisUntilRehead,
@@ -320,6 +323,7 @@ public class Game implements ConfigurationSerializable {
         HiddenStand hiddenStand = new HiddenStand(location);
         hiddenStands.put(hiddenStand.getUUID(), hiddenStand);
 
+        MainConfig.inst().saveGame(this);
     }
 
     public void showAroundLocation(Location location, Integer range){
@@ -363,6 +367,8 @@ public class Game implements ConfigurationSerializable {
 
     public void removeHiddenStand(UUID uuid){
         hiddenStands.remove(uuid);
+
+        MainConfig.inst().saveGame(this);
     }
 
     protected void clear(){
@@ -371,7 +377,7 @@ public class Game implements ConfigurationSerializable {
         hiddenStands.clear();
     }
 
-    public void playerJoin(Player player){
+    protected void playerJoin(Player player){
         players.add(player);
         player.sendMessage("welcome in game finders. use /gf quit to exit the game.");
         player.sendMessage("objective message");
@@ -401,7 +407,7 @@ public class Game implements ConfigurationSerializable {
         }
     }
 
-    public void playerQuit(Player player){
+    protected void playerQuit(Player player){
         players.remove(player);
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
@@ -559,6 +565,7 @@ public class Game implements ConfigurationSerializable {
         this.heads.clear();
         this.heads.addAll(heads);
 
+        MainConfig.inst().saveGame(this);
     }
 
     public boolean isAllowLateJoin() {
@@ -567,6 +574,8 @@ public class Game implements ConfigurationSerializable {
 
     public void setAllowLateJoin(boolean allowLateJoin) {
         this.allowLateJoin = allowLateJoin;
+
+        MainConfig.inst().saveGame(this);
     }
 
     public Location getLobbyLoc() {
@@ -575,6 +584,8 @@ public class Game implements ConfigurationSerializable {
 
     public void setLobbyLoc(Location lobbyLoc) {
         this.lobbyLoc = lobbyLoc;
+
+        MainConfig.inst().saveGame(this);
     }
 
     public Location getStartLoc() {
@@ -583,6 +594,8 @@ public class Game implements ConfigurationSerializable {
 
     public void setStartLoc(Location startLoc) {
         this.startLoc = startLoc;
+
+        MainConfig.inst().saveGame(this);
     }
 
     public Location getQuitLoc() {
@@ -591,6 +604,8 @@ public class Game implements ConfigurationSerializable {
 
     public void setQuitLoc(Location quitLoc) {
         this.quitLoc = quitLoc;
+
+        MainConfig.inst().saveGame(this);
     }
 
     public long getGameTimeLength() {
@@ -599,6 +614,8 @@ public class Game implements ConfigurationSerializable {
 
     public void setGameTimeLength(long gameTimeLength){
         this.gameTimeLength = gameTimeLength;
+
+        MainConfig.inst().saveGame(this);
     }
 
     public long getRemainingGameTime(){

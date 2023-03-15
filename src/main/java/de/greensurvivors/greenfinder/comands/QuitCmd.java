@@ -16,7 +16,7 @@ public class QuitCmd { //todo quit another player
             if (game == null){
                 cs.sendMessage("you aren't in a game.");
             } else {
-                game.playerQuit(player);
+                GameManager.inst().playerQuitGame(player, game);
             }
         } else {
             cs.sendMessage(Lang.NO_PLAYER.get());
