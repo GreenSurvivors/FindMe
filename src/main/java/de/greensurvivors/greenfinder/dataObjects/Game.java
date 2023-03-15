@@ -4,9 +4,11 @@ import de.greensurvivors.greenfinder.GreenFinder;
 import de.greensurvivors.greenfinder.GreenLogger;
 import de.greensurvivors.greenfinder.Utils;
 import de.greensurvivors.greenfinder.language.Lang;
+import org.apache.commons.lang3.BooleanUtils;
 import org.bukkit.*;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -17,9 +19,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Game implements ConfigurationSerializable {
+    private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\z");
 
     public enum GameStates {
         ACTIVE("active"),
@@ -123,38 +127,192 @@ public class Game implements ConfigurationSerializable {
 
         temp = data.get("starting_hidden_percent");
         int starting_hidden_percent;
-        if (temp instanceof Integer a){
-            starting_hidden_percent = a;
+        if (temp instanceof Integer tempInt){
+            starting_hidden_percent = tempInt;
         } else if (temp instanceof String b && Utils.isInt(b)){
             starting_hidden_percent = Integer.parseInt(b);
         } else {
-            GreenLogger.log(Level.WARNING, "couldn't deserialize starting_hidden_percent: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp);
             return null;
         }
 
         temp = data.get("min_milli_rehead_cooldown");
         int min_milli_rehead_cooldown;
-        if (temp instanceof Integer a){
-            min_milli_rehead_cooldown = a;
+        if (temp instanceof Integer tempInt){
+            min_milli_rehead_cooldown = tempInt;
         } else if (temp instanceof String b && Utils.isInt(b)){
             min_milli_rehead_cooldown = Integer.parseInt(b);
         } else {
-            GreenLogger.log(Level.WARNING, "couldn't deserialize min_milli_rehead_cooldown: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize min_milli_rehead_cooldown: " + temp);
             return null;
         }
 
         temp = data.get("average_ticks_until_rehead");
         int average_ticks_until_rehead;
-        if (temp instanceof Integer a){
-            average_ticks_until_rehead = a;
+        if (temp instanceof Integer tempInt){
+            average_ticks_until_rehead = tempInt;
         } else if (temp instanceof String b && Utils.isInt(b)){
             average_ticks_until_rehead = Integer.parseInt(b);
         } else {
-            GreenLogger.log(Level.WARNING, "couldn't deserialize average_ticks_until_rehead: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize average_ticks_until_rehead: " + temp);
             return null;
         }
 
-        return Game(starting_hidden_percent, average_ticks_until_rehead, min_milli_rehead_cooldown, );
+        temp = data.get("uuids");
+        HashMap<UUID, HiddenStand> hiddenStands = new HashMap<>();
+        if (temp instanceof List<?> objList){
+            for (Object obj: objList){
+                if (obj instanceof String str){
+                    if(UUID_PATTERN.matcher(str).find()){
+                        UUID uuid = UUID.fromString(str);
+
+                        Entity entity = Bukkit.getEntity(uuid);
+                        if (entity != null){
+                            if (entity instanceof ArmorStand armorStand){
+                                hiddenStands.put(uuid, new HiddenStand(armorStand));
+                            } else {
+                                GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + entity + ", skipping. Reason: not a armor stand.");
+                            }
+                        } else {
+                            GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + uuid + ", skipping. Reason: not a known entity.");
+                        }
+                    } else {
+                        GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + str + ", skipping. Reason: not a valid uuid.");
+                    }
+                } else {
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + obj + ", skipping. Reason: not a String.");
+                }
+            }
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize uuid list: " + temp);
+            return null;
+        }
+
+        temp = data.get("heads");
+        LinkedHashSet<ItemStack> heads = new LinkedHashSet<ItemStack>();
+        if (temp instanceof List<?> objList2){
+            for (Object obj: objList2){
+                if (obj instanceof ItemStack itemStack) {
+                    heads.add(itemStack);
+                } else if (obj instanceof Map<?,?> map){
+                    Map<String, Object> itemStackMap = new HashMap<>();
+                    for (Object obj2: map.keySet()){
+                        if (obj2 instanceof String str){
+                            itemStackMap.put(str, map.get(obj2));
+                        } else {
+                            GreenLogger.log(Level.WARNING, "couldn't deserialize head item property: " + obj2 + ", skipping. Reason: not a string.");
+                        }
+                    }
+                    heads.add(ItemStack.deserialize(itemStackMap));
+                } else {
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize head item: " + obj + ", skipping. Reason: not a item stack nor map.");
+                }
+            }
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize head list: " + temp);
+            return null;
+        }
+
+        temp = data.get("name");
+        String name;
+        if (temp instanceof String tempName){
+            name = tempName;
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize name: " + ". Reason: is not a string.");
+            return null;
+        }
+
+        temp = data.get("allowLateJoin");
+        Boolean allowLateJoin;
+        if (temp instanceof Boolean tempBool){
+            allowLateJoin = tempBool;
+        } else if (temp instanceof String str){
+            allowLateJoin = BooleanUtils.toBooleanObject(str);
+
+            if (allowLateJoin == null){
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize allowLateJoin: " + str + ". Reason: string is not a bool.");
+                return null;
+            }
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize allowLateJoin bool: " + temp);
+            return null;
+        }
+
+        temp = data.get("lobbyloc");
+        Location lobbyLoc;
+        if (temp instanceof Map<?, ?> map){
+            Map<String, Object> stringObjectMap = new HashMap<>();
+
+            for (Object obj: map.keySet()){
+                if (obj instanceof String str){
+                    stringObjectMap.put(str, map.get(obj));
+                } else {
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize lobby location property: " + obj + ", skipping. Reason: not a string.");
+                }
+            }
+            lobbyLoc = Location.deserialize(stringObjectMap);
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize lobby location: " + temp);
+            return null;
+        }
+
+        temp = data.get("startloc");
+        Location startLoc;
+        if (temp instanceof Map<?, ?> map2){
+            Map<String, Object> stringObjectMap = new HashMap<>();
+
+            for (Object obj: map2.keySet()){
+                if (obj instanceof String str){
+                    stringObjectMap.put(str, map2.get(obj));
+                } else {
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize start location property: " + obj + ", skipping. Reason: not a string.");
+                }
+            }
+            startLoc = Location.deserialize(stringObjectMap);
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize start location: " + temp);
+            return null;
+        }
+
+        temp = data.get("quitloc");
+        Location quitLoc;
+        if (temp instanceof Map<?, ?> map3){
+            Map<String, Object> stringObjectMap = new HashMap<>();
+
+            for (Object obj: map3.keySet()){
+                if (obj instanceof String str){
+                    stringObjectMap.put(str, map3.get(obj));
+                } else {
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize quit property: " + obj + ", skipping. Reason: not a string.");
+                }
+            }
+            quitLoc = Location.deserialize(stringObjectMap);
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize quit location: " + temp);
+            return null;
+        }
+
+        temp = data.get("game_time_length");
+        long game_time_length;
+        if (temp instanceof Long tempLong){
+            game_time_length = tempLong;
+        } else if(temp instanceof String str){
+            if (Utils.islong(str)){
+                game_time_length = Long.parseLong(str);
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+
+        return new Game(starting_hidden_percent,
+                average_ticks_until_rehead, min_milli_rehead_cooldown,
+                hiddenStands, heads,
+                name,
+                allowLateJoin,
+                lobbyLoc, startLoc, quitLoc,
+                game_time_length);
 
     }
 
