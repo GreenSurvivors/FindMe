@@ -9,10 +9,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FinderCommands implements CommandExecutor, TabCompleter {
 
@@ -55,8 +55,6 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 			INFO = "info",
 			/** change period, used in DropRecipe and RestockRegions*/
 			PERIOD = "period",
-			/** remove an item, used in WinterLectern, DropRecipe, RestockRegion and piglin trade*/
-			REMOVE = "remove",
 			/** get the state of a specific value */
 			GET = "get",
 			/** prefixes for subcommands. used in Restock Regions and region Monsters*/
@@ -108,25 +106,46 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 		}
 	}
 
-	@Override //set time/chance until a stand can respawn;
+	@Override //todo set time/chance until a stand can respawn;
 	//get what game a stand belongs to
 	//info (about) a game -> Lobby/Start/quit pos
 	//automode -> min/maxplayers; waiting time for players to join
-	//filter tap suggestions after what was already typed in
 	//todo translations
 	//join cmd
-	//game force end cmd
-	//language
+	//todo game force end cmd
+	//todo documentation
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 			if (args.length == 1) { //todo permissions
-				return Stream.of(SHOW_LONG,
-						CREATE_SHORT, CREATE_LONG,
-						LIST,
-						START,
-						REMOVE_SHORT, REMOVE_LONG,
-						SET,
-						QUIT,
-						RELOAD_SHORT, RELOAD_LONG).filter(s -> s.startsWith(args[0].toLowerCase())).collect(Collectors.toList());
+				List<String> result = new ArrayList<>();
+
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SHOW)){
+					result.add(SHOW_LONG);
+				}
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_STAND, PermissionUtils.FINDER_CREATE_SIGN, PermissionUtils.FINDER_CREATE_GAME)){
+					result.add(CREATE_SHORT);
+					result.add(CREATE_LONG);
+				}
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_LIST)){
+					result.add(LIST);
+				}
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_START)){
+					result.add(START);
+				}
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_STAND, PermissionUtils.FINDER_REMOVE_GAME)){
+					result.add(REMOVE_LONG);
+					result.add(REMOVE_SHORT);
+				}
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SET, PermissionUtils.FINDER_SET_GAMELENGTH, PermissionUtils.FINDER_SET_HEADS, PermissionUtils.FINDER_SET_LATEJOIN, PermissionUtils.FINDER_SET_LOCATIONS)){
+					result.add(SET);
+				}
+				//this has no permission check, so a player can always quit.
+				result.add(QUIT);
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_RELOAD)){
+					result.add(RELOAD_LONG);
+					result.add(RELOAD_SHORT);
+				}
+
+				return result.stream().filter(s -> args[0].toLowerCase().startsWith(s)).collect(Collectors.toList());
 			} else {
 				switch (args[0]){
 					case CREATE_SHORT, CREATE_LONG -> {

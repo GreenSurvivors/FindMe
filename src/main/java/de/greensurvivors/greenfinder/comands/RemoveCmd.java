@@ -11,6 +11,7 @@ import org.bukkit.entity.LivingEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RemoveCmd {//todo translations
     private static final String
@@ -69,7 +70,7 @@ public class RemoveCmd {//todo translations
 
     public static java.util.List<String> handleTap(CommandSender cs, String[] args) {
         switch (args.length){
-            case 1 -> {
+            case 2 -> {
                 List<String> result = new ArrayList<>();
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_GAME)){
                     result.add(GAME);
@@ -77,12 +78,12 @@ public class RemoveCmd {//todo translations
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_STAND)){
                     result.add(STAND);
                 }
-                return result;
+                return result.stream().filter(s -> args[1].toLowerCase().startsWith(s)).collect(Collectors.toList());
             }
-            case 2 -> {
+            case 3 -> {
                 if (args[1].equalsIgnoreCase(STAND) || args[1].equalsIgnoreCase(GAME)){
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_STAND, PermissionUtils.FINDER_REMOVE_GAME)){
-                        return new ArrayList<>(GameManager.inst().getGameNames());
+                        return GameManager.inst().getGameNames().stream().filter(s -> args[2].toLowerCase().startsWith(s)).collect(Collectors.toList());
                     }
                 }
             }

@@ -14,6 +14,7 @@ import org.bukkit.entity.LivingEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CreateCmd {
     private static final String
@@ -118,12 +119,12 @@ public class CreateCmd {
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_STAND)){
                     result.add(STAND);
                 }
-                return result;
+                return result.stream().filter(s -> args[1].toLowerCase().startsWith(s)).collect(Collectors.toList());
             }
             case 3 -> {
                 if (args[1].equalsIgnoreCase(STAND) || args[1].equalsIgnoreCase(SIGN)){
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_SIGN, PermissionUtils.FINDER_CREATE_STAND)){
-                        return new ArrayList<>(GameManager.inst().getGameNames());
+                        return GameManager.inst().getGameNames().stream().filter(s -> args[2].toLowerCase().startsWith(s)).collect(Collectors.toList());
                     }
                 }
             }

@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 public class QuitCmd { //todo quit another player
-    public static void handleCmd(CommandSender cs, String[] args) {
+    public static void handleCmd(CommandSender cs, String[] args) { //this has no permission check, so a player can always quit.
         if (cs instanceof Player player) {
             Game game = GameManager.inst().getGameOfPlayer(player);
 
