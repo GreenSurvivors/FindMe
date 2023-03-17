@@ -34,7 +34,7 @@ public class GameManager {
      * @param game
      */
     public void addLoadedGame(Game game){
-        if (games.get(game.getName()) == null){
+        if (games.get(game.getName()) != null){
             GreenLogger.log(Level.WARNING, "loaded a already existing game, I will overwrite the old one.");
         }
 

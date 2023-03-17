@@ -304,9 +304,13 @@ public class Game implements ConfigurationSerializable {
             if (Utils.islong(str)){
                 game_time_length = Long.parseLong(str);
             } else {
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + str + " not a long! (1)");
                 return null;
             }
+        } else if (temp instanceof Integer tempLong){
+            game_time_length = tempLong;
         } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + temp + " not a long! (2)");
             return null;
         }
 

@@ -5,7 +5,9 @@ import de.greensurvivors.greenfinder.GreenLogger;
 import de.greensurvivors.greenfinder.dataObjects.Game;
 import de.greensurvivors.greenfinder.dataObjects.GameManager;
 import de.greensurvivors.greenfinder.language.Lang;
+import org.apache.commons.io.FilenameUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -85,14 +87,20 @@ public class MainConfig {
         if (gameFiles != null){
             for (File gameFile : gameFiles){
                 if (gameFile.isFile()){
-                    GameConfig gameConfig = new GameConfig(gameFile.getName());
+                    GameConfig gameConfig = new GameConfig(FilenameUtils.removeExtension(gameFile.getName()));
                     FileConfiguration fcfg = gameConfig.getCfg();
 
-                    Game game = fcfg.getSerializable("game", Game.class);
-                    if (game != null){
-                        GameManager.inst().addLoadedGame(game);
+                    MemorySection memorySection = ((MemorySection)fcfg.get("game"));
+                    if (memorySection != null){
+                        Game game = Game.deserialize(memorySection.getValues(false));
+
+                        if (game != null){
+                            GameManager.inst().addLoadedGame(game);
+                        } else {
+                            GreenLogger.log(Level.WARNING, "could not deserialize game in file " + gameFile.getName());
+                        }
                     } else {
-                        GreenLogger.log(Level.WARNING, "could not deserialize game in file " + gameFile.getName());
+                        GreenLogger.log(Level.INFO, "no valid game data found in " + gameFile.getName() + ".");
                     }
                 } else {
                     GreenLogger.log(Level.WARNING, gameFile + " is not a file.");
@@ -110,7 +118,7 @@ public class MainConfig {
         Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
             // clear cache
             GameManager.inst().clearAll();
-            Bukkit.getScheduler().runTaskAsynchronously(GreenFinder.inst(), this::loadAllGames);
+            loadAllGames();
         });
     }
 }
