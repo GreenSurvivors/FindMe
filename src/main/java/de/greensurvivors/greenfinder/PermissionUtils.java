@@ -19,6 +19,7 @@ public enum PermissionUtils {
 	FINDER_SET_LOCATIONS("greenfinder.set.locations"),
 
 	FINDER_START("greenfinder.start"),
+	FINDER_END("greenfinder.end"),
 
 	FINDER_SHOW("greenfinder.show"),
 

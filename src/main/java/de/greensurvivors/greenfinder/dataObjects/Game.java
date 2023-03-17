@@ -536,7 +536,7 @@ public class Game implements ConfigurationSerializable {
         score.setScore(score.getScore() + increment);
     }
 
-    protected void end(){
+    public void end(){
         for (Player player : players){
             scoreboard.resetScores(player);
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());

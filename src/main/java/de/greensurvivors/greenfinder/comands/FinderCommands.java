@@ -108,14 +108,13 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 
 	@Override //todo set time/chance until a stand can respawn;
 	//get what game a stand belongs to
-	//info (about) a game -> Lobby/Start/quit pos
+	//info (about) a game -> Lobby/Start/quit pos; state; etc
 	//automode -> min/maxplayers; waiting time for players to join
 	//todo translations
 	//join cmd
-	//todo game force end cmd
 	//todo documentation
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
-			if (args.length == 1) { //todo permissions
+			if (args.length == 1) {
 				List<String> result = new ArrayList<>();
 
 				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SHOW)){
