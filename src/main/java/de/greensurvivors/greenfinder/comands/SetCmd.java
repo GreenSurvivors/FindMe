@@ -1,5 +1,6 @@
 package de.greensurvivors.greenfinder.comands;
 
+import de.greensurvivors.greenfinder.PermissionUtils;
 import de.greensurvivors.greenfinder.dataObjects.Game;
 import de.greensurvivors.greenfinder.dataObjects.GameManager;
 import de.greensurvivors.greenfinder.dataObjects.TimeHelper;
@@ -25,100 +26,124 @@ public class SetCmd {
         if (args.length >= 3){
             switch (args[1]){
                 case HEADS -> {
-                    if (cs instanceof Player player) {
-                        if (GameManager.inst().getGame(args[2]) == null){
-                            cs.sendMessage("no game");
-                            return;
-                        }
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SET, PermissionUtils.FINDER_SET_HEADS)){
+                        if (cs instanceof Player player) {
+                            if (GameManager.inst().getGame(args[2]) == null){
+                                cs.sendMessage("no game");
+                                return;
+                            }
 
-                        InventoryListener.inst().OpenInventory(args[2], player);
+                            InventoryListener.inst().OpenInventory(args[2], player);
+                        } else {
+                            cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
+                        }
                     } else {
-                        cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 case GAME_LENGTH -> {
-                    if (args.length >= 4){
-                        Game game = GameManager.inst().getGame(args[2]);
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SET, PermissionUtils.FINDER_SET_GAMELENGTH)){
+                        if (args.length >= 4){
+                            Game game = GameManager.inst().getGame(args[2]);
 
-                        if (game == null){
-                            cs.sendMessage("no game");
-                            return;
-                        } else {
-                            long ticks = 0;
-                            for (int i = 3; i < args.length; i++){
-                                ticks += (new TimeHelper(args[i])).getTicks();
+                            if (game == null){
+                                cs.sendMessage("no game");
+                                return;
+                            } else {
+                                long ticks = 0;
+                                for (int i = 3; i < args.length; i++){
+                                    ticks += (new TimeHelper(args[i])).getTicks();
+                                }
+
+                                game.setGameTimeLength(ticks);
+                                cs.sendMessage("successfully set to" + ticks + "ticks");
                             }
-
-                            game.setGameTimeLength(ticks);
-                            cs.sendMessage("successfully set to" + ticks + "ticks");
+                        } else {
+                            cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
                         }
                     } else {
-                        cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 case LATE_JOIN_SHORT, LATE_JOIN_LONG -> {
-                    if (args.length >= 4){
-                        Game game = GameManager.inst().getGame(args[2]);
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SET, PermissionUtils.FINDER_SET_LATEJOIN)){
+                        if (args.length >= 4){
+                            Game game = GameManager.inst().getGame(args[2]);
 
-                        if (game == null){
-                            cs.sendMessage("no game");
-                        } else {
-                            Boolean lateJoinAllowed = BooleanUtils.toBooleanObject(args[3]);
-                            if (lateJoinAllowed != null){
-                                game.setAllowLateJoin(lateJoinAllowed);
-
-                                cs.sendMessage("set successful");
+                            if (game == null){
+                                cs.sendMessage("no game");
                             } else {
-                             cs.sendMessage(Lang.build(Lang.NO_BOOL.get().replace(Lang.VALUE, args[3])));
+                                Boolean lateJoinAllowed = BooleanUtils.toBooleanObject(args[3]);
+                                if (lateJoinAllowed != null){
+                                    game.setAllowLateJoin(lateJoinAllowed);
+
+                                    cs.sendMessage("set successful");
+                                } else {
+                                 cs.sendMessage(Lang.build(Lang.NO_BOOL.get().replace(Lang.VALUE, args[3])));
+                                }
                             }
+                        } else {
+                            cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
                         }
                     } else {
-                        cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 case STARTPOINT_SHORT, STARTPOINT_LONG -> {
-                    if (cs instanceof LivingEntity livingEntity) {
-                        Game game = GameManager.inst().getGame(args[2]);
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SET, PermissionUtils.FINDER_SET_LOCATIONS)){
+                        if (cs instanceof LivingEntity livingEntity) {
+                            Game game = GameManager.inst().getGame(args[2]);
 
-                        if (game == null){
-                            cs.sendMessage("no game");
-                            return;
+                            if (game == null){
+                                cs.sendMessage("no game");
+                                return;
+                            }
+
+                            game.setStartLoc(livingEntity.getLocation());
+                            cs.sendMessage("set starting position successfully");
+                        } else {
+                            cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
-
-                        game.setStartLoc(livingEntity.getLocation());
-                        cs.sendMessage("set starting position successfully");
                     } else {
-                        cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 case LOBBY -> {
-                    if (cs instanceof LivingEntity livingEntity) {
-                        Game game = GameManager.inst().getGame(args[2]);
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SET, PermissionUtils.FINDER_SET_LOCATIONS)){
+                        if (cs instanceof LivingEntity livingEntity) {
+                            Game game = GameManager.inst().getGame(args[2]);
 
-                        if (game == null){
-                            cs.sendMessage("no game");
-                            return;
+                            if (game == null){
+                                cs.sendMessage("no game");
+                                return;
+                            }
+
+                            game.setLobbyLoc (livingEntity.getLocation());
+                            cs.sendMessage("set lobby position successfully");
+                        } else {
+                            cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
-
-                        game.setLobbyLoc (livingEntity.getLocation());
-                        cs.sendMessage("set lobby position successfully");
                     } else {
-                        cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 case ENDPOINT_SHORT, ENDPOINT_LONG, ENDPOINT_ALT -> {
-                    if (cs instanceof LivingEntity livingEntity) {
-                        Game game = GameManager.inst().getGame(args[2]);
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SET, PermissionUtils.FINDER_SET_LOCATIONS)){
+                        if (cs instanceof LivingEntity livingEntity) {
+                            Game game = GameManager.inst().getGame(args[2]);
 
-                        if (game == null){
-                            cs.sendMessage("no game");
-                            return;
+                            if (game == null){
+                                cs.sendMessage("no game");
+                                return;
+                            }
+
+                            game.setQuitLoc(livingEntity.getLocation());
+                            cs.sendMessage("set quit position successfully");
+                        } else {
+                            cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
-
-                        game.setQuitLoc(livingEntity.getLocation());
-                        cs.sendMessage("set quit position successfully");
                     } else {
-                        cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 default -> cs.sendMessage(Lang.build(Lang.UNKNOWN_ARGUMENT.get()));

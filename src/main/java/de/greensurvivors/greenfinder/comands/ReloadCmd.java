@@ -12,7 +12,7 @@ public class ReloadCmd {
      * @param cs CommandSender
      */
     public static void handleCmd(CommandSender cs, String[] args) {
-        if (PermissionUtils.hasPermission(cs, PermissionUtils.WINTER_ADMIN, PermissionUtils.WINTER_RELOAD)) {
+        if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_RELOAD)) {
             MainConfig.inst().reloadMain();
             cs.sendMessage(Lang.build(Lang.RELOAD.get()));
         } else {

@@ -17,7 +17,7 @@ public class PluginCmd {
 	 * @param cs CommandSender
 	 */
 	public static void handleCmd(CommandSender cs) {
-		if (PermissionUtils.hasPermission(cs, PermissionUtils.WINTER_ADMIN, PermissionUtils.WINTER_PLUGIN)) {
+		if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_PLUGIN)) {
 			// collect all messages to send at once
 			List<Component> components = new ArrayList<>();
 			// header

@@ -1,5 +1,6 @@
 package de.greensurvivors.greenfinder.listener;
 
+import de.greensurvivors.greenfinder.PermissionUtils;
 import de.greensurvivors.greenfinder.dataObjects.Game;
 import de.greensurvivors.greenfinder.dataObjects.GameManager;
 import de.greensurvivors.greenfinder.language.Lang;
@@ -38,23 +39,30 @@ public class SignListener implements Listener {
             if (block.getState() instanceof Sign sign){
                 boolean foundGame = false;
 
-                for (String gameName : GameManager.inst().getGameNames()){
-                    if (gameName.equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(1)))){
-                        foundGame = true;
+                if ("[join gf]".equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(1)))){
+                    for (String gameName : GameManager.inst().getGameNames()){
+                        if (gameName.equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(2)))){
+                            foundGame = true;
 
-                        Game game = GameManager.inst().getGame(gameName);
+                            if (PermissionUtils.hasPermission(ePlayer, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_PLAYER)){
+                                Game game = GameManager.inst().getGame(gameName);
 
-                        if (!game.isAllowLateJoin() && game.getGameState().equals(Game.GameStates.ACTIVE)){
-                            ePlayer.sendMessage("this game is already active.");
-                        } else {
-                            GameManager.inst().playerJoinGame(ePlayer, game);
+                                if (!game.isAllowLateJoin() && game.getGameState().equals(Game.GameStates.ACTIVE)){
+                                    ePlayer.sendMessage("this game is already active.");
+                                } else {
+                                    GameManager.inst().playerJoinGame(ePlayer, game);
+                                }
+
+                            } else {
+                                ePlayer.sendMessage(Lang.build(Lang.NO_PERMISSION_SOMETHING.get()));
+                            }
+                            break;
                         }
-                        break;
                     }
-                }
 
-                if (!foundGame){
-                    ePlayer.sendMessage(Lang.build("Game not found."));
+                    if (!foundGame){
+                        ePlayer.sendMessage(Lang.build("Game not found."));
+                    }
                 }
             }
         }

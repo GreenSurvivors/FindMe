@@ -3,11 +3,32 @@ package de.greensurvivors.greenfinder;
 import org.bukkit.command.CommandSender;
 
 public enum PermissionUtils {
+	FINDER_REMOVE ("greenfinder.remove"),
+	FINDER_REMOVE_GAME ("greenfinder.remove.game"),
+	FINDER_REMOVE_STAND ("greenfinder.remove.stand"),
 
-	WINTER_ADMIN	("winterworker.admin"),
+	FINDER_CREATE ("greenfinder.create"),
+	FINDER_CREATE_GAME ("greenfinder.create.game"),
+	FINDER_CREATE_STAND ("greenfinder.create.stand"),
+	FINDER_CREATE_SIGN ("greenfinder.create.sign"),
 
-	WINTER_PLUGIN	("winterworker.plugin"),
-	WINTER_RELOAD	("winterworker.reload");
+	FINDER_SET("greenfinder.set"),
+	FINDER_SET_HEADS("greenfinder.set.heads"),
+	FINDER_SET_GAMELENGTH("greenfinder.set.gamelength"),
+	FINDER_SET_LATEJOIN("greenfinder.set.latejoin"),
+	FINDER_SET_LOCATIONS("greenfinder.set.locations"),
+
+	FINDER_START("greenfinder.start"),
+
+	FINDER_SHOW("greenfinder.show"),
+
+	FINDER_LIST ("greenfinder.list"),
+
+	FINDER_ADMIN("greenfinder.admin"),
+	FINDER_PLAYER("greenfinder.player"),
+
+	FINDER_PLUGIN("greenfinder.plugin"),
+	FINDER_RELOAD("greenfinder.reload");
 
 	private final String value;
 

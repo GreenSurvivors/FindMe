@@ -1,6 +1,7 @@
 package de.greensurvivors.greenfinder.comands;
 
 import de.greensurvivors.greenfinder.GreenFinder;
+import de.greensurvivors.greenfinder.PermissionUtils;
 import de.greensurvivors.greenfinder.dataObjects.Game;
 import de.greensurvivors.greenfinder.dataObjects.GameManager;
 import de.greensurvivors.greenfinder.language.Lang;
@@ -21,38 +22,46 @@ public class RemoveCmd {//todo translations
             switch (args[1]){
                 //gf c game <name>
                 case GAME -> {
-                    if (GameManager.inst().removeGame(args[2])){
-                        //success
-                        cs.sendMessage(Lang.build("success"));
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_GAME)){
+                        if (GameManager.inst().removeGame(args[2])){
+                            //success
+                            cs.sendMessage(Lang.build("success"));
+                        } else {
+                            //unsuccessful
+                            cs.sendMessage(Lang.build("game does not exits"));
+                        }
                     } else {
-                        //unsuccessful
-                        cs.sendMessage(Lang.build("game does not exits"));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 //gf c stand <name>
                 case STAND -> {
-                    if (cs instanceof LivingEntity livingEntity){
-                        Game game = GameManager.inst().getGame(args[2]);
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_STAND)){
+                        if (cs instanceof LivingEntity livingEntity){
+                            Game game = GameManager.inst().getGame(args[2]);
 
-                        if (game != null){
-                            //summon the entity in sync
-                            Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
-                                game.removeHiddenStand(game.getNearestStand(livingEntity.getLocation()).getUniqueId());
-                            });
+                            if (game != null){
+                                //summon the entity in sync
+                                Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
+                                    game.removeHiddenStand(game.getNearestStand(livingEntity.getLocation()).getUniqueId());
+                                });
 
-                            cs.sendMessage(Lang.build("removed stand."));
+                                cs.sendMessage(Lang.build("removed stand."));
+                            } else {
+                                //no game by this name exits
+                                cs.sendMessage(Lang.build("Unknown game"));
+                            }
                         } else {
-                            //no game by this name exits
-                            cs.sendMessage(Lang.build("Unknown game"));
+                            //no location of cs
+                            cs.sendMessage(Lang.build("No entity"));
                         }
                     } else {
-                        //no location of cs
-                        cs.sendMessage(Lang.build("No entity"));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 default -> {
                     //didn't understand what should get created
-                    cs.sendMessage(Lang.build("try /help"));
+                    cs.sendMessage(Lang.build("try /gf help"));
                 }
             }
         }
@@ -61,11 +70,20 @@ public class RemoveCmd {//todo translations
     public static java.util.List<String> handleTap(CommandSender cs, String[] args) {
         switch (args.length){
             case 1 -> {
-                return List.of(GAME, STAND);
+                List<String> result = new ArrayList<>();
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_GAME)){
+                    result.add(GAME);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_STAND)){
+                    result.add(STAND);
+                }
+                return result;
             }
             case 2 -> {
                 if (args[1].equalsIgnoreCase(STAND) || args[1].equalsIgnoreCase(GAME)){
-                    return new ArrayList<>(GameManager.inst().getGameNames());
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_REMOVE, PermissionUtils.FINDER_REMOVE_STAND, PermissionUtils.FINDER_REMOVE_GAME)){
+                        return new ArrayList<>(GameManager.inst().getGameNames());
+                    }
                 }
             }
         }

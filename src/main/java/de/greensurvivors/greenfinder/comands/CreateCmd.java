@@ -1,6 +1,7 @@
 package de.greensurvivors.greenfinder.comands;
 
 import de.greensurvivors.greenfinder.GreenFinder;
+import de.greensurvivors.greenfinder.PermissionUtils;
 import de.greensurvivors.greenfinder.dataObjects.Game;
 import de.greensurvivors.greenfinder.dataObjects.GameManager;
 import de.greensurvivors.greenfinder.language.Lang;
@@ -25,68 +26,80 @@ public class CreateCmd {
             switch (args[1]){
                 //gf c game <name>
                 case GAME -> {
-                    Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
-                        if (GameManager.inst().addGame(args[2])){
-                            //success
-                            cs.sendMessage(Lang.build("success"));
-                        } else {
-                            //unsuccessful
-                            cs.sendMessage(Lang.build("game already exits"));
-                        }
-                    });
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_GAME)){
+                        Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
+                            if (GameManager.inst().addGame(args[2])){
+                                //success
+                                cs.sendMessage(Lang.build("success"));
+                            } else {
+                                //unsuccessful
+                                cs.sendMessage(Lang.build("game already exits"));
+                            }
+                        });
+                    } else {
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
+                    }
                 }
                 //gf c stand <name>
                 case STAND -> {
-                    if (cs instanceof LivingEntity livingEntity){
-                        Game game = GameManager.inst().getGame(args[2]);
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_STAND)){
+                        if (cs instanceof LivingEntity livingEntity){
+                            Game game = GameManager.inst().getGame(args[2]);
 
-                        if (game != null){
-                            //summon the entity in sync
-                            Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
-                            game.addHiddenStand(livingEntity.getLocation());
-                            });
+                            if (game != null){
+                                //summon the entity in sync
+                                Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
+                                game.addHiddenStand(livingEntity.getLocation());
+                                });
 
-                            cs.sendMessage(Lang.build("created new stand."));
+                                cs.sendMessage(Lang.build("created new stand."));
+                            } else {
+                                //no game by this name exits
+                                cs.sendMessage(Lang.build("Unknown game"));
+                            }
                         } else {
-                            //no game by this name exits
-                            cs.sendMessage(Lang.build("Unknown game"));
+                            //no location of cs
+                            cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
                     } else {
-                        //no location of cs
-                        cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 case SIGN -> {
-                    if (cs instanceof LivingEntity livingEntity){
-                        Game game = GameManager.inst().getGame(args[2]);
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_STAND)){
+                        if (cs instanceof LivingEntity livingEntity){
+                            Game game = GameManager.inst().getGame(args[2]);
 
-                        if (game != null){
-                            //set the sign text in sync
-                            Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
-                                Sign sign = getSignLookingAt(livingEntity);
+                            if (game != null){
+                                //set the sign text in sync
+                                Bukkit.getScheduler().runTask(GreenFinder.inst(), () -> {
+                                    Sign sign = getSignLookingAt(livingEntity);
 
-                                if (sign != null){
-                                    sign.line(1, Lang.build("[join]"));
-                                    sign.line(2, Lang.build(game.getName()));
+                                    if (sign != null){
+                                        sign.line(1, Lang.build("[join gf]"));
+                                        sign.line(2, Lang.build(game.getName()));
 
-                                } else {
-                                    cs.sendMessage(Lang.build("Lang.NO_SIGN.get()"));
-                                }
-                            });
+                                    } else {
+                                        cs.sendMessage(Lang.build("Lang.NO_SIGN.get()"));
+                                    }
+                                });
 
-                            cs.sendMessage(Lang.build("created new sign."));
+                                cs.sendMessage(Lang.build("created new sign."));
+                            } else {
+                                //no game by this name exits
+                                cs.sendMessage(Lang.build("Unknown game"));
+                            }
                         } else {
-                            //no game by this name exits
-                            cs.sendMessage(Lang.build("Unknown game"));
+                            //no location of cs
+                            cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
                     } else {
-                        //no location of cs
-                        cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
                 default -> {
                     //didn't understand what should get created
-                    cs.sendMessage(Lang.build("try /help"));
+                    cs.sendMessage(Lang.build("try /gf help"));
                 }
             }
         }
@@ -94,12 +107,24 @@ public class CreateCmd {
 
     public static List<String> handleTap(CommandSender cs, String[] args) {
         switch (args.length){
-            case 1 -> {
-                return List.of(GAME, STAND, SIGN);
-            }
             case 2 -> {
+                List<String> result = new ArrayList<>();
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_GAME)){
+                    result.add(GAME);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_SIGN)){
+                    result.add(SIGN);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_STAND)){
+                    result.add(STAND);
+                }
+                return result;
+            }
+            case 3 -> {
                 if (args[1].equalsIgnoreCase(STAND) || args[1].equalsIgnoreCase(SIGN)){
-                    return new ArrayList<>(GameManager.inst().getGameNames());
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_CREATE, PermissionUtils.FINDER_CREATE_SIGN, PermissionUtils.FINDER_CREATE_STAND)){
+                        return new ArrayList<>(GameManager.inst().getGameNames());
+                    }
                 }
             }
         }

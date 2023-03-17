@@ -1,6 +1,7 @@
 package de.greensurvivors.greenfinder.comands;
 
 import de.greensurvivors.greenfinder.GreenFinder;
+import de.greensurvivors.greenfinder.PermissionUtils;
 import de.greensurvivors.greenfinder.dataObjects.Game;
 import de.greensurvivors.greenfinder.dataObjects.GameManager;
 import de.greensurvivors.greenfinder.language.Lang;
@@ -12,21 +13,27 @@ import java.util.List;
 
 public class ShowCmd { //todo optional range parameter
     public static void handleCmd(CommandSender cs, String[] args) {
-        if (cs instanceof LivingEntity livingEntity){
-            if (args.length >= 3){
-                Game game = GameManager.inst().getGame(args[2]);
+        if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_SHOW)){
+            if (cs instanceof LivingEntity livingEntity){
+                if (args.length >= 3){
+                    Game game = GameManager.inst().getGame(args[2]);
 
-                if (game != null){
-                    //get the entity glowing in sync
-                    Bukkit.getScheduler().runTask(GreenFinder.inst(), () ->
-                            game.showAroundLocation(livingEntity.getLocation(), 20));
+                    if (game != null){
+                        //get the entity glowing in sync
+                        Bukkit.getScheduler().runTask(GreenFinder.inst(), () ->
+                                game.showAroundLocation(livingEntity.getLocation(), 20));
+                    } else {
+                        cs.sendMessage(Lang.build("Unknown game."));
+
+                    }
                 } else {
-                    cs.sendMessage(Lang.build("Unknown game."));
-
+                    cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
                 }
             } else {
-                cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
+                cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
             }
+        } else {
+            cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
         }
     }
 

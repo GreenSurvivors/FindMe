@@ -114,7 +114,9 @@ public class FinderCommands implements CommandExecutor, TabCompleter {
 	//automode -> min/maxplayers; waiting time for players to join
 	//filter tap suggestions after what was already typed in
 	//todo translations
-	//permissions
+	//join cmd
+	//game force end cmd
+	//language
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 			if (args.length == 1) { //todo permissions
 				return Stream.of(SHOW_LONG,

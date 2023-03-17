@@ -19,7 +19,7 @@ public class HelpCmd {
 		if (hasAnyPermission(cs)) {
 			cs.sendMessage(Lang.build(Lang.HELP_HEADER.get()));
 			// wiki
-			if (hasPermission(cs, PermissionUtils.WINTER_ADMIN))
+			if (hasPermission(cs, PermissionUtils.FINDER_ADMIN))
 				cs.sendMessage(Lang.build(Lang.HELP_WIKI.get(), null, null, null, "https://bookstack.greensurvivors.de/books/plugins/page/paper-winterworker"));
 		} else {
 			cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));

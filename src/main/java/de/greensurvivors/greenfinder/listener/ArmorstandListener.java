@@ -1,8 +1,10 @@
 package de.greensurvivors.greenfinder.listener;
 
+import de.greensurvivors.greenfinder.PermissionUtils;
 import de.greensurvivors.greenfinder.dataObjects.Game;
 import de.greensurvivors.greenfinder.dataObjects.GameManager;
 import de.greensurvivors.greenfinder.dataObjects.HiddenStand;
+import de.greensurvivors.greenfinder.language.Lang;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,10 +31,14 @@ public class ArmorstandListener implements Listener {
             event.setCancelled(true);
 
             Player ePlayer = event.getPlayer();
-            Game game = GameManager.inst().getGameOfPlayer(ePlayer);
+            if (PermissionUtils.hasPermission(ePlayer, PermissionUtils.FINDER_ADMIN, PermissionUtils.FINDER_PLAYER)){
+                Game game = GameManager.inst().getGameOfPlayer(ePlayer);
 
-            if (game != null && game.getGameState() == Game.GameStates.ACTIVE) {
-                game.findStand(armorStand.getUniqueId());
+                if (game != null && game.getGameState() == Game.GameStates.ACTIVE) {
+                    game.findStand(armorStand.getUniqueId());
+                }
+            } else {
+                ePlayer.sendMessage(Lang.build(Lang.NO_PERMISSION_SOMETHING.get()));
             }
         }
     }
