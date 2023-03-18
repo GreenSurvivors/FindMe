@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RemoveCmd {//todo translations
+public class RemoveCmd {
     private static final String
             GAME = "game",
             STAND = "stand";

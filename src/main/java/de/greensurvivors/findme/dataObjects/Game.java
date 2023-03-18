@@ -43,10 +43,6 @@ public class Game implements ConfigurationSerializable {
         }
     }
 
-    private final int STARTING_HIDDEN_PERCENT;
-    private final int AVERAGE_TICKS_UNTIL_REHEAD;
-    private final int MIN_Millis_UNTIL_REHEAD;
-
     private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
     private final Objective objective;
 
@@ -62,6 +58,10 @@ public class Game implements ConfigurationSerializable {
     private Location lobbyLoc;
     private Location startLoc;
     private Location quitLoc;
+
+    private int startingHiddenPercent = 75;
+    private long averageTicksUntilRehead = 600;
+    private long minMillisUntilRehead = 10000;
 
     private long gameTimeLength = 5*60*20;
     private byte remainingCountdownSeconds = 0;
@@ -86,10 +86,6 @@ public class Game implements ConfigurationSerializable {
 
         this.name = name;
 
-        STARTING_HIDDEN_PERCENT = 75;
-        AVERAGE_TICKS_UNTIL_REHEAD = 600;
-        MIN_Millis_UNTIL_REHEAD = 10000;
-
         MainConfig.inst().saveGame(this);
     }
 
@@ -99,10 +95,6 @@ public class Game implements ConfigurationSerializable {
                  boolean allowLateJoin,
                  @Nullable Location lobbyLoc, @Nullable Location startLoc, @Nullable Location quitLoc,
                  long gameTimeLength){
-
-        this.STARTING_HIDDEN_PERCENT = startingHiddenPercent;
-        this.AVERAGE_TICKS_UNTIL_REHEAD = averageTicksUntilRehead;
-        this.MIN_Millis_UNTIL_REHEAD = minMillisUntilRehead;
 
         this.hiddenStands.putAll(hiddenStands);
         this.heads.addAll(heads);
@@ -115,6 +107,10 @@ public class Game implements ConfigurationSerializable {
         this.startLoc = startLoc;
         this.quitLoc = quitLoc;
 
+        this.startingHiddenPercent = startingHiddenPercent;
+        this.averageTicksUntilRehead = averageTicksUntilRehead;
+        this.minMillisUntilRehead = minMillisUntilRehead;
+
         this.gameTimeLength = gameTimeLength;
 
         this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, Lang.build(name));
@@ -124,9 +120,9 @@ public class Game implements ConfigurationSerializable {
     @Override
     public @NotNull Map<String, Object> serialize() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put(STARTING_HIDDEN_PERCENT_KEY, STARTING_HIDDEN_PERCENT);
-        result.put(AVERAGE_TICKS_UNTIL_REHEAD_KEY, AVERAGE_TICKS_UNTIL_REHEAD);
-        result.put(MIN_Millis_UNTIL_REHEAD_KEY, MIN_Millis_UNTIL_REHEAD);
+        result.put(STARTING_HIDDEN_PERCENT_KEY, startingHiddenPercent);
+        result.put(AVERAGE_TICKS_UNTIL_REHEAD_KEY, averageTicksUntilRehead);
+        result.put(MIN_Millis_UNTIL_REHEAD_KEY, minMillisUntilRehead);
         result.put(HIDDEN_STAND_UUIDS_KEY, hiddenStands.keySet().stream().map(UUID::toString).collect(Collectors.toList()));
         result.put(HEADS_KEY, heads.stream().map(ItemStack::serialize).collect(Collectors.toList()));
         result.put(NAME_KEY, name);
@@ -480,8 +476,8 @@ public class Game implements ConfigurationSerializable {
 
         for (HiddenStand hiddenStand : hiddenStands.values()){
             if (!hiddenStand.getArmorStand().getEquipment().getHelmet().getType().isItem() &&
-                    hiddenStand.isCooldownOver(MIN_Millis_UNTIL_REHEAD) &&
-                    random.nextInt(AVERAGE_TICKS_UNTIL_REHEAD) == 1){
+                    hiddenStand.isCooldownOver(minMillisUntilRehead) &&
+                    random.nextLong(averageTicksUntilRehead) == 1){
                 hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
                 hiddenStand.setCooldownNow();
             }
@@ -499,7 +495,7 @@ public class Game implements ConfigurationSerializable {
         final int max = headArray.length -1;
 
         for (HiddenStand hiddenStand : hiddenStands.values()){
-            if (random.nextInt(100) <= STARTING_HIDDEN_PERCENT){
+            if (random.nextInt(100) <= startingHiddenPercent){
                 hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
             } else {
                 hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
@@ -634,6 +630,30 @@ public class Game implements ConfigurationSerializable {
         this.gameTimeLength = gameTimeLength;
 
         MainConfig.inst().saveGame(this);
+    }
+
+    public void setAverageTicksUntilRehead(long ticks) {
+        this.averageTicksUntilRehead = ticks;
+    }
+
+    public long getAverageTicksUntilRehead(){
+        return this.averageTicksUntilRehead;
+    }
+
+    public void setStartingHiddenPercent(Double percent) {
+        this.startingHiddenPercent = (int)Math.round(percent * 100);
+    }
+
+    public double getStartingHiddenPercent(){
+        return this.startingHiddenPercent / 100.0d;
+    }
+
+    public void setReheadCooldown(long millis){
+        this.minMillisUntilRehead = millis;
+    }
+
+    public long getReheadCooldown(){
+        return this.minMillisUntilRehead;
     }
 
     public long getRemainingGameTime(){

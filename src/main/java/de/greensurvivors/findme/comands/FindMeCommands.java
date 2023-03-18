@@ -110,11 +110,10 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 		}
 	}
 
-	@Override //todo set time/chance until a stand can respawn;
+	@Override
 	//get what game a stand belongs to
 	//info (about) a game -> Lobby/Start/quit pos; state; etc
 	//automode -> min/maxplayers; waiting time for players to join
-	//join cmd
 	//todo documentation
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 			if (args.length == 1) {
