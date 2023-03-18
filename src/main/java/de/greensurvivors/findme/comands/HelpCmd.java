@@ -20,7 +20,7 @@ public class HelpCmd {
 			cs.sendMessage(Lang.build(Lang.HELP_HEADER.get()));
 			// wiki
 			if (hasPermission(cs, PermissionUtils.FINDME_ADMIN))
-				cs.sendMessage(Lang.build(Lang.HELP_WIKI.get(), null, null, null, "https://bookstack.greensurvivors.de/books/plugins/page/paper-winterworker"));
+				cs.sendMessage(Lang.build(Lang.HELP_WIKI.get(), null, null, null, "https://bookstack.greensurvivors.de/books/plugins/page/paper-findme"));
 		} else {
 			cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
 		}

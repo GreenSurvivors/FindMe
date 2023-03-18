@@ -20,6 +20,8 @@ public class MainConfig {
 
     private static MainConfig instance;
 
+    private final static String GAME_KEY = "game";
+
     public static MainConfig inst() {
         if (instance == null) {
             instance = new MainConfig();
@@ -40,7 +42,7 @@ public class MainConfig {
         GameConfig gameConfig = new GameConfig(game.getName());
         FileConfiguration fcfg = gameConfig.getCfg();
 
-        fcfg.set("game", game.serialize());
+        fcfg.set(GAME_KEY, game.serialize());
 
         gameConfig.saveCfg();
     }
@@ -90,7 +92,7 @@ public class MainConfig {
                     GameConfig gameConfig = new GameConfig(FilenameUtils.removeExtension(gameFile.getName()));
                     FileConfiguration fcfg = gameConfig.getCfg();
 
-                    MemorySection memorySection = ((MemorySection)fcfg.get("game"));
+                    MemorySection memorySection = ((MemorySection)fcfg.get(GAME_KEY));
                     if (memorySection != null){
                         Game game = Game.deserialize(memorySection.getValues(false));
 

@@ -26,10 +26,10 @@ public class RemoveCmd {//todo translations
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_GAME)){
                         if (GameManager.inst().removeGame(args[2])){
                             //success
-                            cs.sendMessage(Lang.build("success"));
+                            cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, GAME)));
                         } else {
                             //unsuccessful
-                            cs.sendMessage(Lang.build("game does not exits"));
+                            cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                         }
                     } else {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
@@ -47,14 +47,14 @@ public class RemoveCmd {//todo translations
                                     game.removeHiddenStand(game.getNearestStand(livingEntity.getLocation()).getUniqueId());
                                 });
 
-                                cs.sendMessage(Lang.build("removed stand."));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, STAND)));
                             } else {
                                 //no game by this name exits
-                                cs.sendMessage(Lang.build("Unknown game"));
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
                         } else {
                             //no location of cs
-                            cs.sendMessage(Lang.build("No entity"));
+                            cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
                     } else {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
@@ -62,7 +62,7 @@ public class RemoveCmd {//todo translations
                 }
                 default -> {
                     //didn't understand what should get created
-                    cs.sendMessage(Lang.build("try /fm help"));
+                    cs.sendMessage(Lang.build(Lang.UNKNOWN_ARGUMENT.get().replace(Lang.VALUE, args[1])));
                 }
             }
         }

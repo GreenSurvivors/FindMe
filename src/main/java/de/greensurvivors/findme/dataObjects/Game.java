@@ -67,6 +67,19 @@ public class Game implements ConfigurationSerializable {
     private byte remainingCountdownSeconds = 0;
     private long remainingGameTime = 0;
 
+    /**(de)serialisation keys **/
+    private final static String STARTING_HIDDEN_PERCENT_KEY = "starting_hidden_percent";
+    private final static String AVERAGE_TICKS_UNTIL_REHEAD_KEY = "average_ticks_until_rehead";
+    private final static String MIN_Millis_UNTIL_REHEAD_KEY = "min_milli_rehead_cooldown";
+    private final static String HEADS_KEY = "heads";
+    private final static String HIDDEN_STAND_UUIDS_KEY = "uuids";
+    private final static String NAME_KEY = "name";
+    private final static String ALLOW_LATE_JOIN_KEY = "allowLateJoin";
+    private final static String LOBBY_LOC_KEY = "lobbyloc";
+    private final static String START_LOC_KEY = "startloc";
+    private final static String QUIT_LOC_KEY = "quitloc";
+    private final static String GAME_TIME_LENGTH_KEY = "game_time_length";
+
     public Game(String name){
         this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, Lang.build(name));
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -111,20 +124,20 @@ public class Game implements ConfigurationSerializable {
     @Override
     public @NotNull Map<String, Object> serialize() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("starting_hidden_percent", STARTING_HIDDEN_PERCENT);
-        result.put("average_ticks_until_rehead", AVERAGE_TICKS_UNTIL_REHEAD);
-        result.put("min_milli_rehead_cooldown", MIN_Millis_UNTIL_REHEAD);
-        result.put("uuids", hiddenStands.keySet().stream().map(UUID::toString).collect(Collectors.toList()));
-        result.put("heads", heads.stream().map(ItemStack::serialize).collect(Collectors.toList()));
-        result.put("name", name);
-        result.put("allowLateJoin", allowLateJoin);
+        result.put(STARTING_HIDDEN_PERCENT_KEY, STARTING_HIDDEN_PERCENT);
+        result.put(AVERAGE_TICKS_UNTIL_REHEAD_KEY, AVERAGE_TICKS_UNTIL_REHEAD);
+        result.put(MIN_Millis_UNTIL_REHEAD_KEY, MIN_Millis_UNTIL_REHEAD);
+        result.put(HIDDEN_STAND_UUIDS_KEY, hiddenStands.keySet().stream().map(UUID::toString).collect(Collectors.toList()));
+        result.put(HEADS_KEY, heads.stream().map(ItemStack::serialize).collect(Collectors.toList()));
+        result.put(NAME_KEY, name);
+        result.put(ALLOW_LATE_JOIN_KEY, allowLateJoin);
         if (lobbyLoc != null)
-            result.put("lobbyloc", lobbyLoc.serialize());
+            result.put(LOBBY_LOC_KEY, lobbyLoc.serialize());
         if (startLoc != null)
-            result.put("startloc", startLoc.serialize());
+            result.put(START_LOC_KEY, startLoc.serialize());
         if (quitLoc != null)
-            result.put("quitloc", quitLoc.serialize());
-        result.put("game_time_length", gameTimeLength);
+            result.put(QUIT_LOC_KEY, quitLoc.serialize());
+        result.put(GAME_TIME_LENGTH_KEY, gameTimeLength);
 
         return result;
     }
@@ -132,7 +145,7 @@ public class Game implements ConfigurationSerializable {
     public static Game deserialize(@NotNull Map<String, Object> data) {
         Object temp;
 
-        temp = data.get("starting_hidden_percent");
+        temp = data.get(STARTING_HIDDEN_PERCENT_KEY);
         int starting_hidden_percent;
         if (temp instanceof Integer tempInt){
             starting_hidden_percent = tempInt;
@@ -143,7 +156,7 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get("min_milli_rehead_cooldown");
+        temp = data.get(MIN_Millis_UNTIL_REHEAD_KEY);
         int min_milli_rehead_cooldown;
         if (temp instanceof Integer tempInt){
             min_milli_rehead_cooldown = tempInt;
@@ -154,7 +167,7 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get("average_ticks_until_rehead");
+        temp = data.get(AVERAGE_TICKS_UNTIL_REHEAD_KEY);
         int average_ticks_until_rehead;
         if (temp instanceof Integer tempInt){
             average_ticks_until_rehead = tempInt;
@@ -165,7 +178,7 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get("uuids");
+        temp = data.get(HIDDEN_STAND_UUIDS_KEY);
         HashMap<UUID, HiddenStand> hiddenStands = new HashMap<>();
         if (temp instanceof List<?> objList){
             for (Object obj: objList){
@@ -195,7 +208,7 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get("heads");
+        temp = data.get(HEADS_KEY);
         LinkedHashSet<ItemStack> heads = new LinkedHashSet<ItemStack>();
         if (temp instanceof List<?> objList2){
             for (Object obj: objList2){
@@ -220,7 +233,7 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get("name");
+        temp = data.get(NAME_KEY);
         String name;
         if (temp instanceof String tempName){
             name = tempName;
@@ -229,7 +242,7 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get("allowLateJoin");
+        temp = data.get(ALLOW_LATE_JOIN_KEY);
         Boolean allowLateJoin;
         if (temp instanceof Boolean tempBool){
             allowLateJoin = tempBool;
@@ -245,7 +258,7 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get("lobbyloc");
+        temp = data.get(LOBBY_LOC_KEY);
         Location lobbyLoc = null;
         if (temp instanceof Map<?, ?> map){
             Map<String, Object> stringObjectMap = new HashMap<>();
@@ -262,7 +275,7 @@ public class Game implements ConfigurationSerializable {
             GreenLogger.log(Level.WARNING, "couldn't deserialize lobby location: " + temp);
         }
 
-        temp = data.get("startloc");
+        temp = data.get(START_LOC_KEY);
         Location startLoc = null;
         if (temp instanceof Map<?, ?> map2){
             Map<String, Object> stringObjectMap = new HashMap<>();
@@ -279,7 +292,7 @@ public class Game implements ConfigurationSerializable {
             GreenLogger.log(Level.WARNING, "couldn't deserialize start location: " + temp);
         }
 
-        temp = data.get("quitloc");
+        temp = data.get(QUIT_LOC_KEY);
         Location quitLoc = null;
         if (temp instanceof Map<?, ?> map3){
             Map<String, Object> stringObjectMap = new HashMap<>();
@@ -296,7 +309,7 @@ public class Game implements ConfigurationSerializable {
             GreenLogger.log(Level.WARNING, "couldn't deserialize quit location: " + temp);
         }
 
-        temp = data.get("game_time_length");
+        temp = data.get(GAME_TIME_LENGTH_KEY);
         long game_time_length;
         if (temp instanceof Long tempLong){
             game_time_length = tempLong;

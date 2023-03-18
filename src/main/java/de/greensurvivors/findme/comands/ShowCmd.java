@@ -23,8 +23,7 @@ public class ShowCmd { //todo optional range parameter
                         Bukkit.getScheduler().runTask(Findme.inst(), () ->
                                 game.showAroundLocation(livingEntity.getLocation(), 20));
                     } else {
-                        cs.sendMessage(Lang.build("Unknown game."));
-
+                        cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                     }
                 } else {
                     cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));

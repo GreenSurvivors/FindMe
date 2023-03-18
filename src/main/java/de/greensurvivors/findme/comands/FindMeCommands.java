@@ -36,6 +36,9 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 			START = "start",
 
 			/** **/
+			END = "end",
+
+			/** **/
 			REMOVE_SHORT = "rem",
 			REMOVE_LONG = "remove",
 
@@ -90,6 +93,7 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 					case CREATE_SHORT, CREATE_LONG -> CreateCmd.handleCmd(cs, args);
 					case LIST -> ListCmd.handleCmd(cs, args);
 					case START -> StartCmd.handleCmd(cs, args);
+					case END -> EndCmd.handleCmd(cs, args);
 					case QUIT -> QuitCmd.handleCmd(cs, args);
 					case REMOVE_SHORT, REMOVE_LONG -> RemoveCmd.handleCmd(cs, args);
 					case PLUGIN_SHORT, PLUGIN_LONG -> PluginCmd.handleCmd(cs);
@@ -110,7 +114,6 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 	//get what game a stand belongs to
 	//info (about) a game -> Lobby/Start/quit pos; state; etc
 	//automode -> min/maxplayers; waiting time for players to join
-	//todo translations
 	//join cmd
 	//todo documentation
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
@@ -129,6 +132,9 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 				}
 				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_START)){
 					result.add(START);
+				}
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_END)){
+					result.add(END);
 				}
 				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_STAND, PermissionUtils.FINDME_REMOVE_GAME)){
 					result.add(REMOVE_LONG);

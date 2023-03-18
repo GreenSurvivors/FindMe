@@ -39,16 +39,23 @@ public class SignListener implements Listener {
             if (block.getState() instanceof Sign sign){
                 boolean foundGame = false;
 
-                if ("[join fm]".equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(1)))){
+                if (Lang.SIGN_JOIN.get().equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(1)))){
+                    Game gameOfPlayer = GameManager.inst().getGameOfPlayer(ePlayer);
+                    if (gameOfPlayer != null){
+                        ePlayer.sendMessage(Lang.build(Lang.ALREADY_IN_GAME.get().replace(Lang.VALUE, gameOfPlayer.getName())));
+                        return;
+                    }
+
+                    String line3 = LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(2));
                     for (String gameName : GameManager.inst().getGameNames()){
-                        if (gameName.equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(2)))){
+                        if (gameName.equalsIgnoreCase(line3)){
                             foundGame = true;
 
                             if (PermissionUtils.hasPermission(ePlayer, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_PLAYER)){
                                 Game game = GameManager.inst().getGame(gameName);
 
                                 if (!game.isAllowLateJoin() && game.getGameState().equals(Game.GameStates.ACTIVE)){
-                                    ePlayer.sendMessage("this game is already active.");
+                                    ePlayer.sendMessage(Lang.build(Lang.GAME_ALREADY_ACTIVE.get()));
                                 } else {
                                     GameManager.inst().playerJoinGame(ePlayer, game);
                                 }
@@ -61,7 +68,7 @@ public class SignListener implements Listener {
                     }
 
                     if (!foundGame){
-                        ePlayer.sendMessage(Lang.build("Game not found."));
+                        ePlayer.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, line3)));
                     }
                 }
             }

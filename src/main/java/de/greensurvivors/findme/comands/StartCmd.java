@@ -17,13 +17,17 @@ public class StartCmd {
                 Game game = GameManager.inst().getGame(args[1]);
 
                 if (game != null){
-                    //set the sign text in sync
-                    Bukkit.getScheduler().runTask(Findme.inst(), game::startup);
+                    if (game.getGameState() == Game.GameStates.ENDED){
+                        //set the sign text in sync
+                        Bukkit.getScheduler().runTask(Findme.inst(), game::startup);
 
-                    cs.sendMessage(Lang.build("starting the game."));
+                        cs.sendMessage(Lang.build(Lang.STARTING_GAME.get().replace(Lang.VALUE, args[1])));
+                    } else {
+                        cs.sendMessage(Lang.build(Lang.GAME_ALREADY_ACTIVE.get()));
+                    }
                 } else {
                     //no game by this name exits
-                    cs.sendMessage(Lang.build("Unknown game"));
+                    cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[1])));
                 }
             } else {
                 cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));

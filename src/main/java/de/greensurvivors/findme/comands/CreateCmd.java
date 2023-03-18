@@ -31,10 +31,10 @@ public class CreateCmd {
                         Bukkit.getScheduler().runTask(Findme.inst(), () -> {
                             if (GameManager.inst().addGame(args[2])){
                                 //success
-                                cs.sendMessage(Lang.build("success"));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, GAME)));
                             } else {
                                 //unsuccessful
-                                cs.sendMessage(Lang.build("game already exits"));
+                                cs.sendMessage(Lang.build(Lang.GAME_ALREADY_EXISTS.get().replace(Lang.VALUE, args[2])));
                             }
                         });
                     } else {
@@ -53,10 +53,10 @@ public class CreateCmd {
                                 game.addHiddenStand(livingEntity.getLocation());
                                 });
 
-                                cs.sendMessage(Lang.build("created new stand."));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, STAND)));
                             } else {
                                 //no game by this name exits
-                                cs.sendMessage(Lang.build("Unknown game"));
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
                         } else {
                             //no location of cs
@@ -77,18 +77,18 @@ public class CreateCmd {
                                     Sign sign = getSignLookingAt(livingEntity);
 
                                     if (sign != null){
-                                        sign.line(1, Lang.build("[join fm]"));
+                                        sign.line(1, Lang.build(Lang.SIGN_JOIN.get()));
                                         sign.line(2, Lang.build(game.getName()));
 
                                     } else {
-                                        cs.sendMessage(Lang.build("Lang.NO_SIGN.get()"));
+                                        cs.sendMessage(Lang.build(Lang.NO_SIGN.get()));
                                     }
                                 });
 
-                                cs.sendMessage(Lang.build("created new sign."));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, SIGN)));
                             } else {
                                 //no game by this name exits
-                                cs.sendMessage(Lang.build("Unknown game"));
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
                         } else {
                             //no location of cs
@@ -100,7 +100,7 @@ public class CreateCmd {
                 }
                 default -> {
                     //didn't understand what should get created
-                    cs.sendMessage(Lang.build("try /fm help"));
+                    cs.sendMessage(Lang.build(Lang.UNKNOWN_ARGUMENT.get().replace(Lang.VALUE, args[1])));
                 }
             }
         }

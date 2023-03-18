@@ -11,21 +11,30 @@ import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
 public enum Lang implements Cons {
-	SIGN_TRANSMITTER_ID("Mc1110"),
-	SIGN_TRANSMITTER_NAME("Transmitter"),
-	SIGN_RECEIVER_ID("Mc1111"),
-	SIGN_RECEIVER_NAME("Reveiver"),
-	NO_WALLSIGN("You have to place this at a wall."),
+	SUCCESSFULLY_SET(String.format("&2%s was successfully set to &6'&e%s&6'.", TYPE, VALUE)),
+	SUCCESSFULLY_REMOVED(String.format("&2%s was successfully removed.", VALUE)),
+	SUCCESSFULLY_CREATED(String.format("&2Successfully created new %s", VALUE)),
+	STARTING_GAME(String.format("&8Starting game %s.", VALUE)),
+	ENDING_GAME(String.format("&8Ending game %s.", VALUE)),
 
+	SIGN_JOIN("[join fm]"),
+
+	GAME_ALREADY_ACTIVE("The game is already active."),
+	GAME_ALREADY_EXISTS(String.format("&cThe game &6'&e%s&6'&c already exists.", VALUE)),
+
+	ALREADY_IN_GAME(String.format("&cYou are already in game &6'%s&6'&c. Use &e/fm quit", VALUE)),
 
 	NO_PLAYER("&cYou have to be a player."),
 	NO_NUMBER(String.format("&6'&e%s&6' &cis not a valid number.", VALUE)),
+	NOT_IN_GAME("You are not in a game."),
 	NO_BOOL(String.format("&6'&e%s&6' &cis not a valid boolean.", VALUE)),
 	NO_PERMISSION_COMMAND("&cYou have no permission to perform this command."),
 	NO_PERMISSION_SOMETHING("&cYou have no permission to do that."),
 	NO_SUCH_PLAYER(String.format("&cCould not get a valid player from %s", VALUE)),
-	UNKNOWN_ARGUMENT(String.format("&cUnknown or wrong argument '%s'.", VALUE)),
+	NO_SIGN("&cYou are not looking at a sign."),
+	UNKNOWN_ARGUMENT(String.format("&cUnknown or wrong argument &6'&e%s&6'&c. Try &e/fm help", VALUE)),
 	UNKNOWN_ERROR("&cUnknown Error. What happened?"),
+	UNKNOWN_GAME(String.format("&cUnknown Game &6'&e%s&6'. Try &e/fm list", VALUE)),
 	NOT_ENOUGH_ARGS("&cNot enough arguments."),
 
 	FORMAT_LOCATION(String.format("&f%s&6, &f%s&e, &f%s&e, &f%s", WORLD, X, Y, Z)),

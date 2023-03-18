@@ -20,10 +20,10 @@ public class EndCmd {
                     //set the sign text in sync
                     Bukkit.getScheduler().runTask(Findme.inst(), game::end);
 
-                    cs.sendMessage(Lang.build("ending the game."));
+                    cs.sendMessage(Lang.build(Lang.ENDING_GAME.get().replace(Lang.VALUE, args[1])));
                 } else {
                     //no game by this name exits
-                    cs.sendMessage(Lang.build("Unknown game"));
+                    cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[1])));
                 }
             } else {
                 cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
