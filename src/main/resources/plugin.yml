@@ -1,12 +1,12 @@
-name: GreenFinder
+name: FindMe
 version: 0.0.1-SNAPSHOT
-main: de.greensurvivors.greenfinder.GreenFinder
+main: de.greensurvivors.findme.FindMe
 api-version: 1.19
 authors: [ Feuerreiter ]
 website: greensurvivors.de
 
 commands:
-  greenfinder:
+  findme:
     aliases:
-      - gf
-    description: All green finder commands.
+      - fm
+    description: All find me commands.

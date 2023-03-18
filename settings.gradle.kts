@@ -5,4 +5,4 @@ pluginManagement {
 }
 
 
-rootProject.name = "GreenFinder"
+rootProject.name = "FindMe"
