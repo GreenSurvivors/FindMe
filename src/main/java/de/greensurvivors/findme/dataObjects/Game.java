@@ -12,6 +12,7 @@ import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Slime;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -22,12 +23,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Game implements ConfigurationSerializable {
-    //pattern to mach if a string is a valid uuid
-    private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\z");
 
     //all known game states
     public enum GameStates {
@@ -93,7 +91,7 @@ public class Game implements ConfigurationSerializable {
     private final static String AVERAGE_TICKS_UNTIL_REHEAD_KEY = "average_ticks_until_rehead";
     private final static String MIN_Millis_UNTIL_REHEAD_KEY = "min_milli_rehead_cooldown";
     private final static String HEADS_KEY = "heads";
-    private final static String HIDDEN_STAND_UUIDS_KEY = "uuids";
+    private final static String HIDDEN_STANDS_KEY = "hidden_stands";
     private final static String NAME_KEY = "name";
     private final static String ALLOW_LATE_JOIN_KEY = "allowLateJoin";
     private final static String LOBBY_LOC_KEY = "lobbyloc";
@@ -167,7 +165,7 @@ public class Game implements ConfigurationSerializable {
         result.put(STARTING_HIDDEN_PERCENT_KEY, String.valueOf(startingHiddenPercent));
         result.put(AVERAGE_TICKS_UNTIL_REHEAD_KEY, averageTicksUntilRehead);
         result.put(MIN_Millis_UNTIL_REHEAD_KEY, minMillisUntilRehead);
-        result.put(HIDDEN_STAND_UUIDS_KEY, hiddenStands.keySet().stream().map(UUID::toString).collect(Collectors.toList()));
+        result.put(HIDDEN_STANDS_KEY, hiddenStands.values().stream().map(HiddenStand::serialize).collect(Collectors.toList()));
         result.put(HEADS_KEY, heads.stream().filter(Objects::nonNull).map(ItemStack::serialize).collect(Collectors.toList()));
         result.put(NAME_KEY, name);
         result.put(ALLOW_LATE_JOIN_KEY, allowLateJoin);
@@ -232,19 +230,37 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get(HIDDEN_STAND_UUIDS_KEY);
+        temp = data.get(HIDDEN_STANDS_KEY);
         HashMap<UUID, HiddenStand> hiddenStands = new HashMap<>();
         if (temp instanceof List<?> objList){
             for (Object obj: objList){
-                if (obj instanceof String str){
-                    if(UUID_PATTERN.matcher(str).find()){
-                        UUID uuid = UUID.fromString(str);
-                        hiddenStands.put(uuid, new HiddenStand(uuid));
-                    } else {
-                        GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + str + ", skipping. Reason: not a valid uuid.");
+
+                if (obj instanceof HiddenStand hiddenStand) {
+                    hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
+                } else if (obj instanceof Map<?, ?> map){
+                    Map<String, Object> hiddenStandMap = new HashMap<>();
+                    for (Object obj2: map.keySet()){
+                        if (obj2 instanceof String str){
+                            hiddenStandMap.put(str, map.get(obj2));
+                        } else {
+                            GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand property: " + obj2 + ", skipping. Reason: not a string.");
+                        }
                     }
+                    HiddenStand hiddenStand = HiddenStand.deserialize(hiddenStandMap);
+                    if (hiddenStand == null){
+                        break;
+                    }
+
+                    hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
+                } else if (obj instanceof MemorySection memorySection){
+                    HiddenStand hiddenStand = HiddenStand.deserialize(memorySection.getValues(false));
+                    if (hiddenStand == null){
+                        break;
+                    }
+
+                    hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
                 } else {
-                    GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + obj + ", skipping. Reason: not a String.");
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand: " + obj + ", skipping. Reason: unknown type.");
                 }
             }
         } else {
@@ -392,8 +408,8 @@ public class Game implements ConfigurationSerializable {
      * @param location
      */
     public void addHiddenStand(@NotNull Location location){
-        HiddenStand hiddenStand = new HiddenStand(location);
-        hiddenStands.put(hiddenStand.getUUID(), hiddenStand);
+        HiddenStand hiddenStand = new HiddenStand(location, name);
+        hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
 
         MainConfig.inst().saveGame(this);
     }
@@ -407,19 +423,20 @@ public class Game implements ConfigurationSerializable {
         World world = location.getWorld();
 
         for (HiddenStand hiddenStand : hiddenStands.values()){
-            Location standLoc = hiddenStand.getArmorStand().getLocation();
+            if (hiddenStand.getArmorStand() != null){
+                Location standLoc = hiddenStand.getArmorStand().getLocation();
 
-            if (world != standLoc.getWorld())
-                continue;
+                if (world != standLoc.getWorld())
+                    continue;
 
-            if (NumberConversions.square(range) >= (NumberConversions.square(location.getX() - standLoc.getX()) +
-                    NumberConversions.square(location.getY() - standLoc.getY()) +
-                    NumberConversions.square(location.getZ() - standLoc.getZ()))){
-                hiddenStand.getArmorStand().setGlowing(true);
+                if (NumberConversions.square(range) >= (NumberConversions.square(location.getX() - standLoc.getX()) +
+                        NumberConversions.square(location.getY() - standLoc.getY()) +
+                        NumberConversions.square(location.getZ() - standLoc.getZ()))){
+                    hiddenStand.getArmorStand().setGlowing(true);
 
-                Bukkit.getScheduler().runTaskLater(FindMe.inst(), () ->{
-                    hiddenStand.getArmorStand().setGlowing(false);
-                }, 200);
+                    Bukkit.getScheduler().runTaskLater(FindMe.inst(), () ->
+                            hiddenStand.getArmorStand().setGlowing(false), 200);
+                }
             }
         }
     }
@@ -433,8 +450,13 @@ public class Game implements ConfigurationSerializable {
         ArmorStand result = null;
         double lastDistance = Double.MAX_VALUE;
 
-        Collection<ArmorStand> nearbyStands = startingPos.getNearbyEntitiesByType(ArmorStand.class, 5);
-        nearbyStands = nearbyStands.stream().filter(s -> hiddenStands.get(s.getUniqueId()) != null).collect(Collectors.toSet());
+        Collection<Slime> nearbySlimes = startingPos.getNearbyEntitiesByType(Slime.class, 5);
+        Collection<ArmorStand> nearbyStands = nearbySlimes.stream().
+                //get all tracked slimes that are in radius
+                map(s -> hiddenStands.get(s.getUniqueId())).filter(Objects::nonNull).
+                //get the armorstands the slimes belongs to (should never be null, but one never knows for sure)
+                map(HiddenStand::getArmorStand).filter(Objects::nonNull).
+                collect(Collectors.toSet());
 
         for(ArmorStand armorStand : nearbyStands) {
             double distance = startingPos.distanceSquared(armorStand.getLocation());
@@ -448,8 +470,8 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * removes a hidden armor stand and no longer keeps track of it (saves the game)
-     * @param uuid
+     * removes a hidden armor stand + slime pair and no longer keeps track of it (saves the game)
+     * @param uuid of a slime the armor stand belongs to
      */
     public void removeHiddenStand(@NotNull UUID uuid){
         hiddenStands.remove(uuid);
@@ -653,14 +675,14 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * called whenever a player finds a hidden armor stand, increments the score of the player
+     * called whenever a player finds a hidden stand (technically the slime of it), increments the score of the player
      * @param player the player who found the stand
-     * @param uuid uuid of the hidden stand
+     * @param uuid uuid of the slime part of a hidden stand
      */
     public void findStand(@NotNull Player player, @NotNull UUID uuid){
         HiddenStand hiddenStand = hiddenStands.get(uuid);
 
-        if (hiddenStand == null){
+        if (hiddenStand == null || hiddenStand.getArmorStand() == null){
             return;
         }
 
