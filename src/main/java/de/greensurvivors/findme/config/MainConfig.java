@@ -1,6 +1,6 @@
 package de.greensurvivors.findme.config;
 
-import de.greensurvivors.findme.Findme;
+import de.greensurvivors.findme.FindMe;
 import de.greensurvivors.findme.GreenLogger;
 import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
@@ -55,7 +55,7 @@ public class MainConfig {
      * Load language configuration.
      */
     private void loadLanguage() {
-        File file = new File(Findme.inst().getDataFolder(), "language.yml");
+        File file = new File(FindMe.inst().getDataFolder(), "language.yml");
         FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
         String k;
         // check Config
@@ -70,8 +70,8 @@ public class MainConfig {
         // save modified configuration
         cfg.options().setHeader(Collections.singletonList(String.format(
                 "Language configuration for %s (%s)",
-                Findme.inst().getName(),
-                Findme.inst().getDescription().getVersion())));
+                FindMe.inst().getName(),
+                FindMe.inst().getDescription().getVersion())));
         cfg.options().parseComments(true);
         try {
             cfg.save(file);
@@ -93,7 +93,7 @@ public class MainConfig {
      * (re)load all games from disc
      */
     private void loadAllGames(){
-        File gamesMotherFolder = new File(Findme.inst().getDataFolder(), GameConfig.FOLDER);
+        File gamesMotherFolder = new File(FindMe.inst().getDataFolder(), GameConfig.FOLDER);
         File[] gameFiles = gamesMotherFolder.listFiles();
 
         if (gameFiles != null){
@@ -127,7 +127,7 @@ public class MainConfig {
      * Load region restock and clears cached ones.
      */
     public void loadGamesSave() {
-        Bukkit.getScheduler().runTask(Findme.inst(), () -> {
+        Bukkit.getScheduler().runTask(FindMe.inst(), () -> {
             // clear cache
             GameManager.inst().clearAll();
             loadAllGames();

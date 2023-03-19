@@ -1,6 +1,6 @@
 package de.greensurvivors.findme.comands;
 
-import de.greensurvivors.findme.Findme;
+import de.greensurvivors.findme.FindMe;
 import de.greensurvivors.findme.PermissionUtils;
 import de.greensurvivors.findme.language.Lang;
 import net.kyori.adventure.text.Component;
@@ -24,7 +24,7 @@ public class PluginCmd {
 			// header
 			components.add(Lang.build(Lang.PLUGIN_HEADER.get()));
 			// version (update ?)
-			components.add(Lang.build(Lang.PLUGIN_VERSION.get().replace(Lang.VALUE, Findme.inst().getDescription().getVersion())));
+			components.add(Lang.build(Lang.PLUGIN_VERSION.get().replace(Lang.VALUE, FindMe.inst().getDescription().getVersion())));
 
 			// send components
 			cs.sendMessage(Lang.join(components));

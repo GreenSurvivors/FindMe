@@ -1,6 +1,6 @@
 package de.greensurvivors.findme.config;
 
-import de.greensurvivors.findme.Findme;
+import de.greensurvivors.findme.FindMe;
 import de.greensurvivors.findme.GreenLogger;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -27,7 +27,7 @@ public class GameConfig {
      * remove config file
      */
     public boolean removeCfg(){
-        File file = new File(Findme.inst().getDataFolder(), path + fileName);
+        File file = new File(FindMe.inst().getDataFolder(), path + fileName);
         return file.delete();
     }
 
@@ -35,7 +35,7 @@ public class GameConfig {
      * Save configuration to file.
      */
     public void saveCfg() {
-        File file = new File(Findme.inst().getDataFolder(), path + fileName);
+        File file = new File(FindMe.inst().getDataFolder(), path + fileName);
 
         //make sure the cfg was loaded
         if (cfg == null) {
@@ -45,8 +45,8 @@ public class GameConfig {
         // save modified configuration
         cfg.options().setHeader(Collections.singletonList(String.format(
                 fileName.replace(" .yml", "").replace("_", " ") + " game file for %s (%s)",
-                Findme.inst().getName(),
-                Findme.inst().getDescription().getVersion())));
+                FindMe.inst().getName(),
+                FindMe.inst().getDescription().getVersion())));
         cfg.options().parseComments(true);
         try {
             cfg.save(file);
@@ -61,7 +61,7 @@ public class GameConfig {
      */
     public YamlConfiguration getCfg() {
         if (cfg == null) {
-            File file = new File(Findme.inst().getDataFolder(), path + fileName);
+            File file = new File(FindMe.inst().getDataFolder(), path + fileName);
             cfg = YamlConfiguration.loadConfiguration(file);
         }
         return cfg;

@@ -1,6 +1,6 @@
 package de.greensurvivors.findme.dataObjects;
 
-import de.greensurvivors.findme.Findme;
+import de.greensurvivors.findme.FindMe;
 import de.greensurvivors.findme.GreenLogger;
 import de.greensurvivors.findme.Utils;
 import de.greensurvivors.findme.config.MainConfig;
@@ -193,8 +193,17 @@ public class Game implements ConfigurationSerializable {
         double starting_hidden_percent;
         if (temp instanceof Double tempDouble){
             starting_hidden_percent = tempDouble;
-        } else if (temp instanceof String str && Utils.isDouble(str)){
-            starting_hidden_percent = Double.parseDouble(str);
+        } else if (temp instanceof Integer tempInt){
+            starting_hidden_percent = tempInt;
+        } else if (temp instanceof String str){
+            if (Utils.isDouble(str)) {
+                starting_hidden_percent = Double.parseDouble(str);
+            } else if (Utils.isInt(str)){
+                starting_hidden_percent = Integer.parseInt(str);
+            } else {
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp);
+                return null;
+            }
         } else {
             GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp);
             return null;
@@ -204,8 +213,8 @@ public class Game implements ConfigurationSerializable {
         int min_milli_rehead_cooldown;
         if (temp instanceof Integer tempInt){
             min_milli_rehead_cooldown = tempInt;
-        } else if (temp instanceof String b && Utils.isInt(b)){
-            min_milli_rehead_cooldown = Integer.parseInt(b);
+        } else if (temp instanceof String str && Utils.isInt(str)){
+            min_milli_rehead_cooldown = Integer.parseInt(str);
         } else {
             GreenLogger.log(Level.SEVERE, "couldn't deserialize min_milli_rehead_cooldown: " + temp);
             return null;
@@ -215,8 +224,8 @@ public class Game implements ConfigurationSerializable {
         int average_ticks_until_rehead;
         if (temp instanceof Integer tempInt){
             average_ticks_until_rehead = tempInt;
-        } else if (temp instanceof String b && Utils.isInt(b)){
-            average_ticks_until_rehead = Integer.parseInt(b);
+        } else if (temp instanceof String str && Utils.isInt(str)){
+            average_ticks_until_rehead = Integer.parseInt(str);
         } else {
             GreenLogger.log(Level.SEVERE, "couldn't deserialize average_ticks_until_rehead: " + temp);
             return null;
@@ -411,7 +420,7 @@ public class Game implements ConfigurationSerializable {
                     NumberConversions.square(location.getZ() - standLoc.getZ()))){
                 hiddenStand.getArmorStand().setGlowing(true);
 
-                Bukkit.getScheduler().runTaskLater(Findme.inst(), () ->{
+                Bukkit.getScheduler().runTaskLater(FindMe.inst(), () ->{
                     hiddenStand.getArmorStand().setGlowing(false);
                 }, 200);
             }
@@ -527,7 +536,7 @@ public class Game implements ConfigurationSerializable {
         gameState = GameStates.STARTING;
 
         remainingCountdownSeconds = 10;
-        Bukkit.getScheduler().runTaskLater(Findme.inst(), this::startingCountdown, 20);
+        Bukkit.getScheduler().runTaskLater(FindMe.inst(), this::startingCountdown, 20);
     }
 
     /**
@@ -540,7 +549,7 @@ public class Game implements ConfigurationSerializable {
         if (remainingCountdownSeconds <= 0){
             startMain();
         } else {
-            Bukkit.getScheduler().runTaskLater(Findme.inst(), this::startingCountdown, 20);
+            Bukkit.getScheduler().runTaskLater(FindMe.inst(), this::startingCountdown, 20);
 
             for (Player player : players){
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.8f, 1.0f);
@@ -585,7 +594,7 @@ public class Game implements ConfigurationSerializable {
 
         //next game tick or end of game
         if (remainingGameTime >= 0){
-            Bukkit.getScheduler().runTaskLater(Findme.inst(), this::GameTimer, 1);
+            Bukkit.getScheduler().runTaskLater(FindMe.inst(), this::GameTimer, 1);
         } else {
             end();
         }
@@ -629,7 +638,7 @@ public class Game implements ConfigurationSerializable {
         }
 
         remainingGameTime = gameTimeLength;
-        Bukkit.getScheduler().runTaskLater(Findme.inst(), this::GameTimer, 1);
+        Bukkit.getScheduler().runTaskLater(FindMe.inst(), this::GameTimer, 1);
     }
 
     /**

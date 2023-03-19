@@ -11,10 +11,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class Findme extends JavaPlugin {
-    private static Findme instance;
+public final class FindMe extends JavaPlugin {
+    private static FindMe instance;
 
-    public static Findme inst() {
+    public static FindMe inst() {
         return instance;
     }
 

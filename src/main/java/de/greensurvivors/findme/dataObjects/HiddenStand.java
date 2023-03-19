@@ -1,6 +1,6 @@
 package de.greensurvivors.findme.dataObjects;
 
-import de.greensurvivors.findme.Findme;
+import de.greensurvivors.findme.FindMe;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
@@ -10,7 +10,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.UUID;
 
 public class HiddenStand {
-    public static final NamespacedKey HIDDEN_KEY = new NamespacedKey(Findme.inst(), "isHidden");
+    public static final NamespacedKey HIDDEN_KEY = new NamespacedKey(FindMe.inst(), "isHidden");
 
     private final ArmorStand armorStand;
     private long cooldown = 0;
