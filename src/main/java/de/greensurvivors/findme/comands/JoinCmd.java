@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class JoinCmd { //todo join another player
+public class JoinCmd {
     /**
      * join a game
      * /fm join <game name>

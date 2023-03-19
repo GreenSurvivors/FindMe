@@ -46,25 +46,6 @@ public class Utils {
     private static final int MAX_INT_CHARS = (int) (Math.log10(Integer.MAX_VALUE) + 1);
     private static final long MAX_LONG_CHARS = (long) (Math.log10(Long.MAX_VALUE) + 1);
 
-    private static Boolean paperState = null;
-
-    private static boolean hasClass(String className) {
-        try {
-            Class.forName(className);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
-    public static boolean isPaper(){
-        if (paperState == null) {
-            paperState = (hasClass("com.destroystokyo.paper.PaperConfig") || hasClass("io.papermc.paper.configuration.Configuration"));
-        }
-
-        return paperState;
-    }
-
     /**
      * Test if a String can safely convert into an integer
      * @param toTest String input

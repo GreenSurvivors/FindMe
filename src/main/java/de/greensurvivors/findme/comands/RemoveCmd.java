@@ -24,7 +24,7 @@ public class RemoveCmd {
      * @param cs
      * @param args
      */
-    public static void handleCmd(CommandSender cs, String[] args) {
+    public static void handleCmd(CommandSender cs, String[] args) { //todo remove all stands with a game
         if (args.length >= 3){
             switch (args[1]){
                 //fm rem game <game name>

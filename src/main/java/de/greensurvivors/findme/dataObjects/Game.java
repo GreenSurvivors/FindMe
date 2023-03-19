@@ -542,21 +542,13 @@ public class Game implements ConfigurationSerializable {
             noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
-                if (Utils.isPaper()){
-                    player.teleportAsync(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                } else {
-                    player.teleport(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                }
+                player.teleportAsync(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
             } else {
                 GreenLogger.log(Level.WARNING, "No start postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
             }
         } else {
             if (lobbyLoc != null){
-                if (Utils.isPaper()){
-                    player.teleportAsync(lobbyLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                } else {
-                    player.teleport(lobbyLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                }
+                player.teleportAsync(lobbyLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
             } else {
                 GreenLogger.log(Level.WARNING, "No lobby postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
             }
@@ -574,11 +566,7 @@ public class Game implements ConfigurationSerializable {
         noCollisionTeam.removePlayer(player);
 
         if (quitLoc != null){
-            if (Utils.isPaper()){
-                player.teleportAsync(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-            } else {
-                player.teleport(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-            }
+            player.teleportAsync(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
         } else {
             GreenLogger.log(Level.WARNING, "No quit postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
         }
@@ -643,18 +631,20 @@ public class Game implements ConfigurationSerializable {
         final int max = heads.size();
 
         //only try to rehead if we have heads to begin with
-        Random random = new Random();
-        ItemStack[] headArray = heads.toArray(new ItemStack[0]);
+        if (max > 0){
+            Random random = new Random();
+            ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
-        for (HiddenStand hiddenStand : hiddenStands.values()){
-            if (hiddenStand.getArmorStand() != null) {
-                ItemStack headItemstack = hiddenStand.getArmorStand().getEquipment().getHelmet();
+            for (HiddenStand hiddenStand : hiddenStands.values()){
+                if (hiddenStand.getArmorStand() != null) {
+                    ItemStack headItemstack = hiddenStand.getArmorStand().getEquipment().getHelmet();
 
-                if ((headItemstack == null || headItemstack.getType().isAir()) &&
-                        hiddenStand.isCooldownOver(minMillisUntilRehead) &&
-                        random.nextLong(averageTicksUntilRehead) == 1){
-                    hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[max == 0 ? 0 : random.nextInt(max)]);
-                    hiddenStand.setCooldownNow();
+                    if ((headItemstack == null || headItemstack.getType().isAir()) &&
+                            hiddenStand.isCooldownOver(minMillisUntilRehead) &&
+                            random.nextLong(averageTicksUntilRehead) == 1){
+                        hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
+                        hiddenStand.setCooldownNow();
+                    }
                 }
             }
         }
@@ -676,19 +666,21 @@ public class Game implements ConfigurationSerializable {
         gameState = GameStates.ACTIVE;
         final int max = heads.size();
         //only set heads if the set isn't empty
-        Random random = new Random();
-        ItemStack[] headArray = heads.toArray(new ItemStack[0]);
+        if (max > 0){
+            Random random = new Random();
+            ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
-        for (HiddenStand hiddenStand : hiddenStands.values()) {
-            if (hiddenStand.getArmorStand() != null){
-                if (random.nextInt(100) <= startingHiddenPercent) {
-                    hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[max == 0 ? 0 : random.nextInt(max)]);
-                } else {
-                    hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+            for (HiddenStand hiddenStand : hiddenStands.values()) {
+                if (hiddenStand.getArmorStand() != null){
+                    if (random.nextInt(100) <= startingHiddenPercent) {
+                        hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
+                    } else {
+                        hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+                    }
                 }
-            }
 
-            hiddenStand.setCooldownNow();
+                hiddenStand.setCooldownNow();
+            }
         }
 
         for (Player player : players){
@@ -696,11 +688,7 @@ public class Game implements ConfigurationSerializable {
             noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
-                if (Utils.isPaper()){
-                    player.teleportAsync(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                } else {
-                    player.teleport(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                }
+                player.teleportAsync(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
             }
         }
 
@@ -765,11 +753,7 @@ public class Game implements ConfigurationSerializable {
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
             if (quitLoc != null){
-                if (Utils.isPaper()){
-                    player.teleportAsync(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                } else {
-                    player.teleport(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                }
+                player.teleportAsync(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
             }
 
             GameManager.inst().playersGameEnded(player);
@@ -953,5 +937,13 @@ public class Game implements ConfigurationSerializable {
      */
     public long getRemainingGameTime(){
         return remainingGameTime;
+    }
+
+    public int getNumOfPlayers(){
+        return players.size();
+    }
+
+    public int getNumOfHeads(){
+        return heads.size();
     }
 }

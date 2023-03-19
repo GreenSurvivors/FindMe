@@ -23,10 +23,18 @@ public class StartCmd {
 
                 if (game != null){
                     if (game.getGameState() == Game.GameStates.ENDED){
-                        //start the game
-                       game.startup();
+                        if (game.getNumOfPlayers() > 0){
+                            if (game.getNumOfHeads() > 0) {
+                                //start the game
+                                game.startup();
 
-                        cs.sendMessage(Lang.build(Lang.STARTING_GAME.get().replace(Lang.VALUE, args[1])));
+                                cs.sendMessage(Lang.build(Lang.STARTING_GAME.get().replace(Lang.VALUE, args[1])));
+                            } else { //todo
+
+                            }
+                        } else {
+
+                        }
                     } else {
                         cs.sendMessage(Lang.build(Lang.GAME_ALREADY_ACTIVE.get()));
                     }
