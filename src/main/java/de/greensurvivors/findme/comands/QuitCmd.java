@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class QuitCmd {
@@ -53,6 +54,11 @@ public class QuitCmd {
     }
 
     public static List<String> handleTap(CommandSender cs, String[] args) {
-        return null;
+        if (args.length == 2){
+            if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_OTHER_PLAYERS)){
+                return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
+            }
+        }
+        return List.of();
     }
 }

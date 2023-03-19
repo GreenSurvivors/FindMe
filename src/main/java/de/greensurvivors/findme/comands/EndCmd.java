@@ -7,6 +7,7 @@ import de.greensurvivors.findme.language.Lang;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EndCmd {
     /**
@@ -34,7 +35,9 @@ public class EndCmd {
     }
 
     public static List<String> handleTap(CommandSender cs, String[] args) {
-        //todo
-        return null;
+        if (args.length == 2 && PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_END)){
+            return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
+        }
+        return List.of();
     }
 }

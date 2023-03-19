@@ -107,7 +107,7 @@ public class HiddenStand implements ConfigurationSerializable {
             noCollistionTeam.addEntity(slime2);
         }
 
-        // the armor stand and slime should never be seperated. If they are we properly lost track of one of them.
+        // the armor stand and slime should never be separated. If they are we properly lost track of one of them.
         // so if one was loaded while the other wasn't, try to generate a new one of the other one
         if (this.armorStand == null && this.slime != null){
             String gameName = this.slime.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
@@ -173,7 +173,7 @@ public class HiddenStand implements ConfigurationSerializable {
     }
 
     public @Nullable ArmorStand getArmorStand() {
-        if (armorStand == null){
+        if (armorStand == null || !armorStand.isValid()){
             //try to fetch the entity from bukkit
             Entity entity = Bukkit.getEntity(uuid_armorstand);
 
@@ -187,7 +187,7 @@ public class HiddenStand implements ConfigurationSerializable {
     }
 
     public @Nullable Slime getSlime() {
-        if (slime == null){
+        if (slime == null || !slime.isValid()){
             //try to fetch the entity from bukkit
             Entity entity = Bukkit.getEntity(uuid_slime);
 

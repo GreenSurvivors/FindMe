@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class JoinCmd { //todo join another player
     /**
@@ -68,8 +69,18 @@ public class JoinCmd { //todo join another player
             cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
         }
     }
-
+// fm join <game name>
+// fm join <game name> <player> to force somebody to join a game
     public static List<String> handleTap(CommandSender cs, String[] args) {
-        return null;
+        if (args.length == 2) {
+            if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_PLAYER)){
+                return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
+            }
+        } else if (args.length == 3){
+            if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_OTHER_PLAYERS)){
+                return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+            }
+        }
+        return List.of();
     }
 }

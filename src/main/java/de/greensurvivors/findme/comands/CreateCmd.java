@@ -128,7 +128,7 @@ public class CreateCmd {
                 }
             }
         }
-        return null;
+        return List.of();
     }
     /**
      * Get location of a sign a living entity is looking at.

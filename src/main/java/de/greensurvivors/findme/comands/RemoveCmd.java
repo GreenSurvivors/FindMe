@@ -3,6 +3,7 @@ package de.greensurvivors.findme.comands;
 import de.greensurvivors.findme.PermissionUtils;
 import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
+import de.greensurvivors.findme.dataObjects.HiddenStand;
 import de.greensurvivors.findme.language.Lang;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
@@ -48,9 +49,14 @@ public class RemoveCmd {
 
                             if (game != null){
                                 //remove the entity
-                                game.removeHiddenStand(game.getNearestStand(livingEntity.getLocation()).getUniqueId());
-
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, STAND)));
+                                HiddenStand hiddenStand = game.getNearestStand(livingEntity.getLocation());
+                                if (hiddenStand != null){
+                                    game.removeHiddenStand(hiddenStand.getUUIDSlime());
+                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, STAND)));
+                                } else {
+                                    //no hidden stand was found
+                                    cs.sendMessage(Lang.build(Lang.NO_NEARBY_STAND.get()));
+                                }
                             } else {
                                 //no game by this name exits
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
@@ -60,6 +66,7 @@ public class RemoveCmd {
                             cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
                     } else {
+                        //no permission
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }

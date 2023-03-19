@@ -17,6 +17,9 @@ public enum PermissionUtils {
 	FINDME_SET_GAMELENGTH("findme.set.gamelength"),
 	FINDME_SET_LATEJOIN("findme.set.latejoin"),
 	FINDME_SET_LOCATIONS("findme.set.locations"),
+	FINDME_SET_AVERAGE_TICKS_UNTIL_REHEAD("findme.set.av_ticks_rehead"),
+	FINDME_SET_STARTING_PERCENT("findme.set.stating_percent"),
+	FINDME_SET_REHEAD_COOLDOWN("findme.set.cooldown"),
 
 	FINDME_START("findme.start"),
 	FINDME_END("findme.end"),

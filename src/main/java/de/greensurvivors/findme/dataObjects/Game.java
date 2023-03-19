@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -76,12 +77,13 @@ public class Game implements ConfigurationSerializable {
     //how many percent of all hidden stands get a head at game start
     private Double startingHiddenPercent = 75.0;
     //how many ticks on average will pass until an armor stand gets a new head
-    private long averageTicksUntilRehead = 900;
+    private long averageTicksUntilRehead = 1200;
     //how long the cooldown is, while a hidden stand cant get a new head
-    private long minMillisUntilRehead = 15000;
+    private long minMillisUntilRehead = 20000;
 
     //how long a game is until it automatically ends
-    private long gameTimeLength = 5*60*20;
+    //default value is 5 minutes
+    private long gameTimeLength = TimeUnit.MINUTES.toSeconds(5)*TimeHelper.TICKS_PER_SECOND;
     //internal value how many seconds remain in the starting countdown of the game
     private byte remainingCountdownSeconds = 0;
     //how long the game will last, will be set to gameTimeLength at the start of the game
@@ -464,23 +466,24 @@ public class Game implements ConfigurationSerializable {
      * @param startingPos location around the nearest stand will be searched
      * @return nearest hidden armor stand or null if no where found
      */
-    public @Nullable ArmorStand getNearestStand(@NotNull Location startingPos){
-        ArmorStand result = null;
+    public @Nullable HiddenStand getNearestStand(@NotNull Location startingPos){
+        HiddenStand result = null;
         double lastDistance = Double.MAX_VALUE;
 
         Collection<Slime> nearbySlimes = startingPos.getNearbyEntitiesByType(Slime.class, 5);
-        Collection<ArmorStand> nearbyStands = nearbySlimes.stream().
+        Set<HiddenStand> nearbyStands = nearbySlimes.stream().
                 //get all tracked slimes that are in radius
                 map(s -> hiddenStands.get(s.getUniqueId())).filter(Objects::nonNull).
-                //get the armorstands the slimes belongs to (should never be null, but one never knows for sure)
-                map(HiddenStand::getArmorStand).filter(Objects::nonNull).
                 collect(Collectors.toSet());
 
-        for(ArmorStand armorStand : nearbyStands) {
-            double distance = startingPos.distanceSquared(armorStand.getLocation());
+        for(HiddenStand hiddenStand : nearbyStands) {
+            //we don't need the root, if we only want to know what entity is further
+            //also, hiddenStand.getSlime is backed up by getting the initial slimes from getNearbyEntitiesByType,
+            //so it never will be null.
+            double distance = startingPos.distanceSquared(hiddenStand.getSlime().getLocation());
             if(distance < lastDistance) {
                 lastDistance = distance;
-                result = armorStand;
+                result = hiddenStand;
             }
         }
 
@@ -492,6 +495,20 @@ public class Game implements ConfigurationSerializable {
      * @param uuid of a slime the armor stand belongs to
      */
     public void removeHiddenStand(@NotNull UUID uuid){
+        HiddenStand hiddenStand =  hiddenStands.get(uuid);
+        //kill the entities
+        if (hiddenStand != null){
+            Slime slime = hiddenStand.getSlime();
+            if (slime != null){
+                slime.setHealth(0);
+            }
+
+            ArmorStand armorStand = hiddenStand.getArmorStand();
+            if (armorStand != null){
+                armorStand.setHealth(0);
+            }
+        }
+
         hiddenStands.remove(uuid);
 
         MainConfig.inst().saveGame(this);

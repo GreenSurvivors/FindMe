@@ -13,8 +13,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SetCmd {
     private static final String
@@ -165,7 +168,7 @@ public class SetCmd {
                 }
                 //fm set atr <time in ticks>
                 case AVERAGE_TICKS_UNTIL_REHEAD_LONG, AVERAGE_TICKS_UNTIL_REHEAD_SHORT -> {
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_AVERAGE_TICKS_UNTIL_REHEAD)){
                         if (args.length >= 4){
                             Game game = GameManager.inst().getGame(args[2]);
 
@@ -190,7 +193,7 @@ public class SetCmd {
                 //fm set shp <percent double>
                 //don't get fooled thou, we are generating just a random int, so every number after the point has no effect.
                 case STARTING_PERCENT_LONG, STARTING_PERCENT_SHORT -> {
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_STARTING_PERCENT)){
                         if (args.length >= 4){
                             Game game = GameManager.inst().getGame(args[2]);
 
@@ -245,7 +248,52 @@ public class SetCmd {
         }
     }
 
+    //todo tap complete for the time args
     public static List<String> handleTap(CommandSender cs, String[] args) {
-        return null;
+        switch (args.length){
+            case 2 -> {
+                List<String> result = new ArrayList<>();
+
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS)){
+                    result.add(HEADS);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
+                    result.add(GAME_LENGTH);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
+                    result.add(LATE_JOIN_LONG);
+                    result.add(LATE_JOIN_SHORT);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LOCATIONS)){
+                    result.add(STARTPOINT_LONG);
+                    result.add(STARTPOINT_SHORT);
+                    result.add(LOBBY);
+                    result.add(ENDPOINT_LONG);
+                    result.add(ENDPOINT_SHORT);
+                    result.add(ENDPOINT_ALT);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_AVERAGE_TICKS_UNTIL_REHEAD)){
+                    result.add(AVERAGE_TICKS_UNTIL_REHEAD_LONG);
+                    result.add(AVERAGE_TICKS_UNTIL_REHEAD_SHORT);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_STARTING_PERCENT)){
+                    result.add(STARTING_PERCENT_LONG);
+                    result.add(STARTING_PERCENT_SHORT);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_REHEAD_COOLDOWN)){
+                    result.add(REHEAD_COOLDOWN_LONG);
+                    result.add(REHEAD_COOLDOWN_SHORT);
+                }
+
+                return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
+            }
+            case 3 -> {
+                if ((args[1].equalsIgnoreCase(LATE_JOIN_LONG) || args[1].equalsIgnoreCase(LATE_JOIN_SHORT)) &&
+                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
+                    return Stream.of(String.valueOf(true), String.valueOf(false)).filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+                }
+            }
+        }
+        return List.of();
     }
 }

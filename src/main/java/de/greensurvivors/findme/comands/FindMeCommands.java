@@ -8,7 +8,6 @@ import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -110,7 +109,6 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 	//todo quit sign
 	//info (about) a game -> Lobby/Start/quit pos; state; etc
 	//automode -> min/maxplayers; waiting time for players to join
-	//todo loading entity's even if region was not loaded
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 		if (args.length == 1) {
 			List<String> result = new ArrayList<>();
@@ -158,9 +156,27 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 				case REMOVE_SHORT, REMOVE_LONG -> {
 					return RemoveCmd.handleTap(cs, args);
 				}
+				case START -> {
+					return StartCmd.handleTap(cs, args);
+				}
+				case END -> {
+					return EndCmd.handleTap(cs, args);
+				}
+				case JOIN -> {
+					return JoinCmd.handleTap(cs, args);
+				}
+				case QUIT -> {
+					return QuitCmd.handleTap(cs, args);
+				}
+				case SHOW -> {
+					return ShowCmd.handleTap(cs, args);
+				}
+				case SET -> {
+					return SetCmd.handleTap(cs, args);
+				}
 			}
 		}
 
-		return Collections.emptyList();
+		return List.of();
 	}
 }

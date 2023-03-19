@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class PluginCmd {
@@ -31,10 +30,5 @@ public class PluginCmd {
 		} else {
 			cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
 		}
-	}
-
-	//currently no additional parameters are supported.
-	public static List<String> handleTap(CommandSender cs, String[] args) {
-		return Collections.emptyList();
 	}
 }
