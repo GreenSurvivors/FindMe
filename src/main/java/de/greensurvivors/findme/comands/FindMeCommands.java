@@ -1,8 +1,6 @@
 package de.greensurvivors.findme.comands;
 
-import de.greensurvivors.findme.Findme;
 import de.greensurvivors.findme.PermissionUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,30 +17,36 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 	public static final String
 			CMD                    = "findme",
 
-			/** **/
+			/** subcommand for creating a new game, hidden armor stands and signs **/
 			CREATE_SHORT = "c",
 			CREATE_LONG = "create",
 
-			/** **/
+			/** subcommand to list all games **/
 			LIST = "list",
 
-			/** **/
+			/** subcommand for setting the config values of a game **/
 			SET = "set",
 
-			/** **/
-			SHOW_LONG = "show",
+			/** subcommand to show all (nearby) hidden armor stands of a game**/
+			SHOW = "show",
 
-			/** **/
+			/** subcommand to start a game **/
 			START = "start",
 
-			/** **/
+			/** subcommand for aboarding a game **/
 			END = "end",
 
-			/** **/
+			/** Show information about a game / hidden armor stande*/
+			INFO = "info",
+
+			/** subcommand to join a game**/
+			JOIN = "join",
+
+			/** subcommand to delete a game or a hidden stand. signs can just get broken**/
 			REMOVE_SHORT = "rem",
 			REMOVE_LONG = "remove",
 
-			/** **/
+			/** subcommand to quit a game**/
 			QUIT = "quit",
 
 			/** subcommand to Show plugin overview*/
@@ -51,17 +55,7 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 
 			/** subcommand for reloading this plugin*/
 			RELOAD_SHORT = "rel",
-			RELOAD_LONG = "reload",
-			/** add a item*/
-			ADD = "add",
-			/** Show information about an item, used in WinterLectern and DropRecipe*/
-			INFO = "info",
-			/** change period, used in DropRecipe and RestockRegions*/
-			PERIOD = "period",
-			/** get the state of a specific value */
-			GET = "get",
-			/** prefixes for subcommands. used in Restock Regions and region Monsters*/
-			WORLD_PREFIX = "-w";
+			RELOAD_LONG = "reload";
 
 	private static FindMeCommands instance;
 
@@ -75,7 +69,7 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
-		Bukkit.getScheduler().runTaskAsynchronously(Findme.inst(), () -> handle(cs, args));
+		handle(cs, args);
 		return true;
 	}
 
@@ -88,12 +82,13 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 		if (PermissionUtils.hasAnyPermission(cs)) {
 			if (args.length > 0) {
 				switch (args[0].toLowerCase()) {
-					case SHOW_LONG -> ShowCmd.handleCmd(cs, args);
+					case SHOW -> ShowCmd.handleCmd(cs, args);
 					case SET -> SetCmd.handleCmd(cs, args);
 					case CREATE_SHORT, CREATE_LONG -> CreateCmd.handleCmd(cs, args);
 					case LIST -> ListCmd.handleCmd(cs, args);
 					case START -> StartCmd.handleCmd(cs, args);
 					case END -> EndCmd.handleCmd(cs, args);
+					case JOIN -> JoinCmd.handleCmd(cs, args);
 					case QUIT -> QuitCmd.handleCmd(cs, args);
 					case REMOVE_SHORT, REMOVE_LONG -> RemoveCmd.handleCmd(cs, args);
 					case PLUGIN_SHORT, PLUGIN_LONG -> PluginCmd.handleCmd(cs);
@@ -112,15 +107,15 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 
 	@Override
 	//get what game a stand belongs to
+	//todo quit sign
 	//info (about) a game -> Lobby/Start/quit pos; state; etc
 	//automode -> min/maxplayers; waiting time for players to join
-	//todo documentation
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 			if (args.length == 1) {
 				List<String> result = new ArrayList<>();
 
 				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SHOW)){
-					result.add(SHOW_LONG);
+					result.add(SHOW);
 				}
 				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_STAND, PermissionUtils.FINDME_CREATE_SIGN, PermissionUtils.FINDME_CREATE_GAME)){
 					result.add(CREATE_SHORT);
@@ -141,6 +136,9 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 				}
 				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH, PermissionUtils.FINDME_SET_HEADS, PermissionUtils.FINDME_SET_LATEJOIN, PermissionUtils.FINDME_SET_LOCATIONS)){
 					result.add(SET);
+				}
+				if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_PLAYER)){
+					result.add(JOIN);
 				}
 				//this has no permission check, so a player can always quit.
 				result.add(QUIT);

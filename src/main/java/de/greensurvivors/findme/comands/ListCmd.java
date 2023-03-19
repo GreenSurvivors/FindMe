@@ -8,6 +8,12 @@ import org.bukkit.command.CommandSender;
 
 public class ListCmd { //list all games
 
+    /**
+     * list all games
+     * /fm list
+     * @param cs
+     * @param args
+     */
     public static void handleCmd(CommandSender cs, String[] args) { //todo
         if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_LIST)){
             cs.sendMessage("list");

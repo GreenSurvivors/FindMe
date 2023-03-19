@@ -22,7 +22,9 @@ public class ArmorstandListener implements Listener {
         return instance;
     }
 
-
+    /**
+     * if an armor stand gets right-clicked, of a player in a game, the armor stand will get found
+     */
     @EventHandler(ignoreCancelled = true)
     private void onArmorStandClicked(PlayerArmorStandManipulateEvent event){
         ArmorStand armorStand = event.getRightClicked();
@@ -35,7 +37,7 @@ public class ArmorstandListener implements Listener {
                 Game game = GameManager.inst().getGameOfPlayer(ePlayer);
 
                 if (game != null && game.getGameState() == Game.GameStates.ACTIVE) {
-                    game.findStand(armorStand.getUniqueId());
+                    game.findStand(ePlayer, armorStand.getUniqueId());
                 }
             } else {
                 ePlayer.sendMessage(Lang.build(Lang.NO_PERMISSION_SOMETHING.get()));

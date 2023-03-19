@@ -14,6 +14,7 @@ public class PluginCmd {
 
 	/**
 	 * Handle plugin command
+	 * /fm plugin
 	 * @param cs CommandSender
 	 */
 	public static void handleCmd(CommandSender cs) {

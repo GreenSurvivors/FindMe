@@ -25,6 +25,10 @@ public class SignListener implements Listener {
         return instance;
     }
 
+    /**
+     * join a findMe! game, if the 2nd line is [gf join] and 3rd line is the name of a game
+     * @param event
+     */
     @EventHandler
     private void onSignRightClick(PlayerInteractEvent event){
         if (event.useInteractedBlock() == Event.Result.DENY){
@@ -42,7 +46,7 @@ public class SignListener implements Listener {
                 if (Lang.SIGN_JOIN.get().equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(1)))){
                     Game gameOfPlayer = GameManager.inst().getGameOfPlayer(ePlayer);
                     if (gameOfPlayer != null){
-                        ePlayer.sendMessage(Lang.build(Lang.ALREADY_IN_GAME.get().replace(Lang.VALUE, gameOfPlayer.getName())));
+                        ePlayer.sendMessage(Lang.build(Lang.ALREADY_IN_GAME_SELF.get().replace(Lang.VALUE, gameOfPlayer.getName())));
                         return;
                     }
 

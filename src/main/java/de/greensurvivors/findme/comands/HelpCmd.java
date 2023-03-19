@@ -8,7 +8,6 @@ import static de.greensurvivors.findme.PermissionUtils.hasAnyPermission;
 import static de.greensurvivors.findme.PermissionUtils.hasPermission;
 
 public class HelpCmd {
-
 	//todo make help where the commands are explained
 
 	/**

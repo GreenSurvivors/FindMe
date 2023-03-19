@@ -30,7 +30,7 @@ public class MainConfig {
     }
 
     /**
-     *
+     * deletes a game file
      * @param name
      */
     public void removeGame(String name) {
@@ -38,6 +38,10 @@ public class MainConfig {
         gameConfig.removeCfg();
     }
 
+    /**
+     * save a game to the disc
+     * @param game
+     */
     public void saveGame(Game game) {
         GameConfig gameConfig = new GameConfig(game.getName());
         FileConfiguration fcfg = gameConfig.getCfg();
@@ -76,12 +80,18 @@ public class MainConfig {
         }
     }
 
-    public void reloadMain() {
+    /**
+     * load language and all games
+     */
+    public void reloadAll() {
         loadLanguage();
 
         loadGamesSave();
     }
 
+    /**
+     * (re)load all games from disc
+     */
     private void loadAllGames(){
         File gamesMotherFolder = new File(Findme.inst().getDataFolder(), GameConfig.FOLDER);
         File[] gameFiles = gamesMotherFolder.listFiles();

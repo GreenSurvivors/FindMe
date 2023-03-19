@@ -48,7 +48,7 @@ public class Utils {
 
     private static Boolean paperState = null;
 
-    public static boolean hasClass(String className) {
+    private static boolean hasClass(String className) {
         try {
             Class.forName(className);
             return true;

@@ -1,11 +1,9 @@
 package de.greensurvivors.findme.comands;
 
-import de.greensurvivors.findme.Findme;
 import de.greensurvivors.findme.PermissionUtils;
 import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
 import de.greensurvivors.findme.language.Lang;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 
@@ -18,14 +16,21 @@ public class RemoveCmd {
             GAME = "game",
             STAND = "stand";
 
+    /**
+     * delete a game or a hidden armor stand
+     * /fm rem game <game name>
+     * /fm rem stand <game name> - removes the nearest stand
+     * @param cs
+     * @param args
+     */
     public static void handleCmd(CommandSender cs, String[] args) {
         if (args.length >= 3){
             switch (args[1]){
-                //fm c game <name>
+                //fm rem game <game name>
                 case GAME -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_GAME)){
                         if (GameManager.inst().removeGame(args[2])){
-                            //success
+                            //successful
                             cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, GAME)));
                         } else {
                             //unsuccessful
@@ -35,17 +40,15 @@ public class RemoveCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
-                //fm c stand <name>
+                //fm rem stand <game name>
                 case STAND -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_STAND)){
                         if (cs instanceof LivingEntity livingEntity){
                             Game game = GameManager.inst().getGame(args[2]);
 
                             if (game != null){
-                                //summon the entity in sync
-                                Bukkit.getScheduler().runTask(Findme.inst(), () -> {
-                                    game.removeHiddenStand(game.getNearestStand(livingEntity.getLocation()).getUniqueId());
-                                });
+                                //remove the entity
+                                game.removeHiddenStand(game.getNearestStand(livingEntity.getLocation()).getUniqueId());
 
                                 cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, STAND)));
                             } else {

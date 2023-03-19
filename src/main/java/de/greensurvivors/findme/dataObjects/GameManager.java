@@ -25,6 +25,10 @@ public class GameManager {
         return instance;
     }
 
+    /**
+     * get a set of all games that are in active state
+     * @return
+     */
     public Set<Game> getActiveGames(){
         return games.values().stream().filter(g -> g.getGameState() == Game.GameStates.ACTIVE).collect(Collectors.toSet());
     }
@@ -55,6 +59,11 @@ public class GameManager {
         return true;
     }
 
+    /**
+     * proper way to remove a findMe! game
+     * @param name
+     * @return
+     */
     public boolean removeGame(@NotNull String name){
         Game game = getGame(name);
         if (game != null){
@@ -68,34 +77,74 @@ public class GameManager {
         }
     }
 
+    /**
+     * get the game a player is in or null if they are not part of one
+     * @param player
+     * @return
+     */
     public @Nullable Game getGameOfPlayer (@NotNull Player player){
         return playersInGames.get(player);
     }
 
+    /**
+     * get a game by its name
+     * @param nameOfGame
+     * @return
+     */
     public @Nullable Game getGame (@NotNull String nameOfGame){
         return games.get(nameOfGame);
     }
 
+    /**
+     * get set of all game names
+     * @return
+     */
     public @NotNull Set<String> getGameNames(){
         return games.keySet();
     }
 
+    /**
+     * proper way for a player to join a game
+     * @param player
+     * @param game
+     */
     public void playerJoinGame(@NotNull Player player, @NotNull Game game){
         game.playerJoin(player);
         playersInGames.put(player, game);
 
     }
 
+    /**
+     * way to quit a game if the game is unknown. relays on internal lookup, so use the sister function if the game is known
+     * @param player
+     */
+    public void playerQuitGame(@NotNull Player player){
+        Game game = playersInGames.get(player);
+
+        if (game != null){
+            game.playerQuit(player);
+            playersInGames.remove(player);
+        }
+    }
+
+    /**
+     * way to quit a game if the game is known. use the sister function if the game is unknown
+     * @param player
+     */
     public void playerQuitGame(@NotNull Player player, @NotNull Game game){
         game.playerQuit(player);
         playersInGames.remove(player);
     }
 
+    /**
+     * clears all games and internal data. Only supposed to be called on shutdown.
+     */
     public void clearAll(){
         for (Game game : games.values()){
             game.clear();
         }
 
         games.clear();
+        playersInGames.clear();
     }
 }

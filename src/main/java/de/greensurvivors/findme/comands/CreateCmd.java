@@ -1,11 +1,9 @@
 package de.greensurvivors.findme.comands;
 
-import de.greensurvivors.findme.Findme;
 import de.greensurvivors.findme.PermissionUtils;
 import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
 import de.greensurvivors.findme.language.Lang;
-import org.bukkit.Bukkit;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -21,22 +19,22 @@ public class CreateCmd {
             GAME = "game",
             STAND = "stand",
             SIGN = "sign";
-
+    /**
+     * creates new games, hidden armor stands and join signs
+     */
     public static void handleCmd(CommandSender cs, String[] args) {
         if (args.length >= 3){
             switch (args[1]){
                 //fm c game <name>
                 case GAME -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_GAME)){
-                        Bukkit.getScheduler().runTask(Findme.inst(), () -> {
-                            if (GameManager.inst().addGame(args[2])){
-                                //success
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, GAME)));
-                            } else {
-                                //unsuccessful
-                                cs.sendMessage(Lang.build(Lang.GAME_ALREADY_EXISTS.get().replace(Lang.VALUE, args[2])));
-                            }
-                        });
+                        if (GameManager.inst().addGame(args[2])){
+                            //success
+                            cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, GAME)));
+                        } else {
+                            //unsuccessful
+                            cs.sendMessage(Lang.build(Lang.GAME_ALREADY_EXISTS.get().replace(Lang.VALUE, args[2])));
+                        }
                     } else {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
@@ -48,10 +46,8 @@ public class CreateCmd {
                             Game game = GameManager.inst().getGame(args[2]);
 
                             if (game != null){
-                                //summon the entity in sync
-                                Bukkit.getScheduler().runTask(Findme.inst(), () -> {
+                                //summon the entity
                                 game.addHiddenStand(livingEntity.getLocation());
-                                });
 
                                 cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, STAND)));
                             } else {
@@ -66,26 +62,24 @@ public class CreateCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm c sign <name>
                 case SIGN -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_STAND)){
                         if (cs instanceof LivingEntity livingEntity){
                             Game game = GameManager.inst().getGame(args[2]);
 
                             if (game != null){
-                                //set the sign text in sync
-                                Bukkit.getScheduler().runTask(Findme.inst(), () -> {
-                                    Sign sign = getSignLookingAt(livingEntity);
+                                //set the sign text
+                                Sign sign = getSignLookingAt(livingEntity);
 
-                                    if (sign != null){
-                                        sign.line(1, Lang.build(Lang.SIGN_JOIN.get()));
-                                        sign.line(2, Lang.build(game.getName()));
+                                if (sign != null){
+                                    sign.line(1, Lang.build(Lang.SIGN_JOIN.get()));
+                                    sign.line(2, Lang.build(game.getName()));
 
-                                    } else {
-                                        cs.sendMessage(Lang.build(Lang.NO_SIGN.get()));
-                                    }
-                                });
-
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, SIGN)));
+                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, SIGN)));
+                                } else {
+                                    cs.sendMessage(Lang.build(Lang.NO_SIGN.get()));
+                                }
                             } else {
                                 //no game by this name exits
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
@@ -109,6 +103,7 @@ public class CreateCmd {
     public static List<String> handleTap(CommandSender cs, String[] args) {
         switch (args.length){
             case 2 -> {
+                //test for permission before adding suggestions
                 List<String> result = new ArrayList<>();
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_GAME)){
                     result.add(GAME);

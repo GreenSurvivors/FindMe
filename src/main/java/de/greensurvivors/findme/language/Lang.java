@@ -22,11 +22,19 @@ public enum Lang implements Cons {
 	GAME_ALREADY_ACTIVE("The game is already active."),
 	GAME_ALREADY_EXISTS(String.format("&cThe game &6'&e%s&6'&c already exists.", VALUE)),
 
-	ALREADY_IN_GAME(String.format("&cYou are already in game &6'%s&6'&c. Use &e/fm quit", VALUE)),
+	ALREADY_IN_GAME_SELF(String.format("&cYou are already in game &6'%s&6'&c. Use &e/fm quit", VALUE)),
+	ALREADY_IN_GAME_OTHER(String.format("&6'&e%s&6'&c is already in game &6'%s&6'&c. Use &e/fm quit", VALUE, TYPE)),
+
+	MESSAGE_JOIN("&8Welcome in a game of 'find me!'. use &e/fm&8 quit to exit the game."),
+	MESSAGE_OBJECTIVE("&8Objective: find as many hidden things as fast as possible!"),
+	QUIT_OTHER(String.format("&8Player &6'%s&6'&8 quit the game", VALUE)),
+
+	PLAYER_NOT_ONLINE(String.format("&6'&e%s&6'&c is not a player or not online.", VALUE)),
+	PLAYER_NOT_INGAME(String.format("&cPlayer &6'&e%s&6'&c is in a game.", VALUE)),
 
 	NO_PLAYER("&cYou have to be a player."),
 	NO_NUMBER(String.format("&6'&e%s&6' &cis not a valid number.", VALUE)),
-	NOT_IN_GAME("You are not in a game."),
+	NOT_IN_GAME("&cYou are not in a game."),
 	NO_BOOL(String.format("&6'&e%s&6' &cis not a valid boolean.", VALUE)),
 	NO_PERMISSION_COMMAND("&cYou have no permission to perform this command."),
 	NO_PERMISSION_SOMETHING("&cYou have no permission to do that."),

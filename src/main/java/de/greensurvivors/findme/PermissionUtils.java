@@ -21,6 +21,8 @@ public enum PermissionUtils {
 	FINDME_START("findme.start"),
 	FINDME_END("findme.end"),
 
+	FINDME_OTHER_PLAYERS("findme.otherplayers"),
+
 	FINDME_SHOW("findme.show"),
 
 	FINDME_LIST("findme.list"),

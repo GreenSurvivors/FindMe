@@ -28,9 +28,15 @@ public class SetCmd {
             AVERAGE_TICKS_UNTIL_REHEAD_LONG = "average_ticks_until_rehead", AVERAGE_TICKS_UNTIL_REHEAD_SHORT = "atr",
             REHEAD_COOLDOWN_LONG = "rehead_cooldown", REHEAD_COOLDOWN_SHORT = "cooldown";
 
+    /**
+     * set settings of a game
+     * @param cs
+     * @param args
+     */
     public static void handleCmd(CommandSender cs, String[] args) {
         if (args.length >= 3){
             switch (args[1]){
+                //fm set heads
                 case HEADS -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS)){
                         if (cs instanceof Player player) {
@@ -47,15 +53,13 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set gamelength <time in ticks, seconds or minutes>
                 case GAME_LENGTH -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
                         if (args.length >= 4){
                             Game game = GameManager.inst().getGame(args[2]);
 
-                            if (game == null){
-                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
-                                return;
-                            } else {
+                            if (game != null){
                                 long ticks = 0;
                                 for (int i = 3; i < args.length; i++){
                                     ticks += (new TimeHelper(args[i])).getTicks();
@@ -63,6 +67,8 @@ public class SetCmd {
 
                                 game.setGameTimeLength(ticks);
                                 cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, GAME_LENGTH).replace(Lang.TYPE, String.valueOf(ticks)));
+                            } else {
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
                         } else {
                             cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
@@ -71,22 +77,23 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set latejoin <bool>
                 case LATE_JOIN_SHORT, LATE_JOIN_LONG -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
                         if (args.length >= 4){
                             Game game = GameManager.inst().getGame(args[2]);
 
-                            if (game == null){
-                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
-                            } else {
+                            if (game != null){
                                 Boolean lateJoinAllowed = BooleanUtils.toBooleanObject(args[3]);
                                 if (lateJoinAllowed != null){
                                     game.setAllowLateJoin(lateJoinAllowed);
 
                                     cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LATE_JOIN_LONG).replace(Lang.TYPE, args[3]));
                                 } else {
-                                 cs.sendMessage(Lang.build(Lang.NO_BOOL.get().replace(Lang.VALUE, args[3])));
+                                    cs.sendMessage(Lang.build(Lang.NO_BOOL.get().replace(Lang.VALUE, args[3])));
                                 }
+                            } else {
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
                         } else {
                             cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
@@ -95,19 +102,20 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set startpoint while standing at the right location
                 case STARTPOINT_SHORT, STARTPOINT_LONG -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LOCATIONS)){
                         if (cs instanceof LivingEntity livingEntity) {
                             Game game = GameManager.inst().getGame(args[2]);
 
-                            if (game == null){
-                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
-                                return;
-                            }
+                            if (game != null){
+                                Location loc = livingEntity.getLocation();
+                                game.setStartLoc(loc);
 
-                            Location loc = livingEntity.getLocation();
-                            game.setStartLoc(loc);
-                            cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc)));
+                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc)));
+                            } else {
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
+                            }
                         } else {
                             cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
@@ -115,19 +123,19 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set lobby while standing at the right location
                 case LOBBY -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LOCATIONS)){
                         if (cs instanceof LivingEntity livingEntity) {
                             Game game = GameManager.inst().getGame(args[2]);
 
-                            if (game == null){
+                            if (game != null){
+                                Location loc = livingEntity.getLocation();
+                                game.setLobbyLoc (loc);
+                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LOBBY).replace(Lang.TYPE, Lang.locationToString(loc)));
+                            } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
-                                return;
                             }
-
-                            Location loc = livingEntity.getLocation();
-                            game.setLobbyLoc (loc);
-                            cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LOBBY).replace(Lang.TYPE, Lang.locationToString(loc)));
                         } else {
                             cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
@@ -135,19 +143,19 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set endpoint while standing at the right location
                 case ENDPOINT_SHORT, ENDPOINT_LONG, ENDPOINT_ALT -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LOCATIONS)){
                         if (cs instanceof LivingEntity livingEntity) {
                             Game game = GameManager.inst().getGame(args[2]);
 
-                            if (game == null){
+                            if (game != null){
+                                Location loc = livingEntity.getLocation();
+                                game.setQuitLoc(loc);
+                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, ENDPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc)));
+                            } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
-                                return;
                             }
-
-                            Location loc = livingEntity.getLocation();
-                            game.setQuitLoc(loc);
-                            cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, ENDPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc)));
                         } else {
                             cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
                         }
@@ -155,15 +163,13 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set atr <time in ticks>
                 case AVERAGE_TICKS_UNTIL_REHEAD_LONG, AVERAGE_TICKS_UNTIL_REHEAD_SHORT -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
                         if (args.length >= 4){
                             Game game = GameManager.inst().getGame(args[2]);
 
-                            if (game == null){
-                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
-                                return;
-                            } else {
+                            if (game != null){
                                 long ticks = 0;
                                 for (int i = 3; i < args.length; i++){
                                     ticks += (new TimeHelper(args[i])).getTicks();
@@ -171,6 +177,8 @@ public class SetCmd {
 
                                 game.setAverageTicksUntilRehead(ticks);
                                 cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, AVERAGE_TICKS_UNTIL_REHEAD_LONG).replace(Lang.TYPE, String.valueOf(ticks)));
+                            } else {
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
                         } else {
                             cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
@@ -179,15 +187,14 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set shp <percent double>
+                //don't get fooled thou, we are generating just a random int, so every number after the point has no effect.
                 case STARTING_PERCENT_LONG, STARTING_PERCENT_SHORT -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
                         if (args.length >= 4){
                             Game game = GameManager.inst().getGame(args[2]);
 
-                            if (game == null){
-                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
-                                return;
-                            } else {
+                            if (game != null){
                                 if (Utils.isDouble(args[3])){
                                     double percent = Double.parseDouble(args[3]);
 
@@ -196,6 +203,8 @@ public class SetCmd {
                                 } else {
                                     cs.sendMessage(Lang.build(Lang.NO_NUMBER.get().replace(Lang.VALUE, args[3])));
                                 }
+                            } else {
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
                         } else {
                             cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
@@ -204,15 +213,13 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set cooldown <game name> <time in ticks, seconds, minutes>
                 case REHEAD_COOLDOWN_LONG, REHEAD_COOLDOWN_SHORT -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
                         if (args.length >= 4){
                             Game game = GameManager.inst().getGame(args[2]);
 
-                            if (game == null){
-                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
-                                return;
-                            } else {
+                            if (game != null){
                                 long millis = 0;
                                 for (int i = 3; i < args.length; i++){
                                     //don't get confused, the time helper has a second field, but it is just the modulo of minutes of the whole time span
@@ -221,6 +228,8 @@ public class SetCmd {
 
                                 game.setReheadCooldown(millis);
                                 cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, REHEAD_COOLDOWN_LONG).replace(Lang.TYPE, String.valueOf(millis)));
+                            } else {
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
                         } else {
                             cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));

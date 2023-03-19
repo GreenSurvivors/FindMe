@@ -9,11 +9,12 @@ public class ReloadCmd {
 
     /**
      * Handle reload command
+     * /fm reload
      * @param cs CommandSender
      */
     public static void handleCmd(CommandSender cs, String[] args) {
         if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_RELOAD)) {
-            MainConfig.inst().reloadMain();
+            MainConfig.inst().reloadAll();
             cs.sendMessage(Lang.build(Lang.RELOAD.get()));
         } else {
             cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));

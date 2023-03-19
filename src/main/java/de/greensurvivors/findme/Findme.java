@@ -5,6 +5,7 @@ import de.greensurvivors.findme.config.MainConfig;
 import de.greensurvivors.findme.dataObjects.GameManager;
 import de.greensurvivors.findme.listener.ArmorstandListener;
 import de.greensurvivors.findme.listener.InventoryListener;
+import de.greensurvivors.findme.listener.QuitListener;
 import de.greensurvivors.findme.listener.SignListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
@@ -26,7 +27,7 @@ public final class Findme extends JavaPlugin {
         GreenLogger.setLogger(getLogger());
 
         // configuration
-        MainConfig.inst().reloadMain();
+        MainConfig.inst().reloadAll();
 
         // command
         getCommand(FindMeCommands.CMD).setExecutor(FindMeCommands.inst());
@@ -36,6 +37,7 @@ public final class Findme extends JavaPlugin {
         pm.registerEvents(ArmorstandListener.inst(), this);
         pm.registerEvents(InventoryListener.inst(), this);
         pm.registerEvents(SignListener.inst(), this);
+        pm.registerEvents(QuitListener.inst(), this);
     }
 
     @Override
