@@ -11,6 +11,7 @@ import org.bukkit.entity.Slime;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.persistence.PersistentDataType;
 
 public class SlimeListener implements Listener {
@@ -28,21 +29,23 @@ public class SlimeListener implements Listener {
      */
     @EventHandler(ignoreCancelled = true)
     private void onSlimeClicked(PlayerInteractEntityEvent event){
-        Entity rightClicked = event.getRightClicked();
+        if (event.getHand() == EquipmentSlot.HAND){
+            Entity rightClicked = event.getRightClicked();
 
-        if (rightClicked instanceof Slime slime){
-            if (slime.getPersistentDataContainer().get(HiddenStand.HIDDEN_KEY, PersistentDataType.INTEGER) != null){
-                event.setCancelled(true);
+            if (rightClicked instanceof Slime slime){
+                if (slime.getPersistentDataContainer().get(HiddenStand.HIDDEN_KEY, PersistentDataType.STRING) != null){
+                    event.setCancelled(true);
 
-                Player ePlayer = event.getPlayer();
-                if (PermissionUtils.hasPermission(ePlayer, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_PLAYER)){
-                    Game game = GameManager.inst().getGameOfPlayer(ePlayer);
+                    Player ePlayer = event.getPlayer();
+                    if (PermissionUtils.hasPermission(ePlayer, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_PLAYER)){
+                        Game game = GameManager.inst().getGameOfPlayer(ePlayer);
 
-                    if (game != null && game.getGameState() == Game.GameStates.ACTIVE) {
-                        game.findStand(ePlayer, slime.getUniqueId());
+                        if (game != null && game.getGameState() == Game.GameStates.ACTIVE) {
+                            game.findStand(ePlayer, slime.getUniqueId());
+                        }
+                    } else {
+                        ePlayer.sendMessage(Lang.build(Lang.NO_PERMISSION_SOMETHING.get()));
                     }
-                } else {
-                    ePlayer.sendMessage(Lang.build(Lang.NO_PERMISSION_SOMETHING.get()));
                 }
             }
         }

@@ -21,19 +21,19 @@ public class ShowCmd {
     public static void handleCmd(CommandSender cs, String[] args) {
         if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SHOW)){
             if (cs instanceof LivingEntity livingEntity){
-                if (args.length >= 3){
-                    Game game = GameManager.inst().getGame(args[2]);
+                if (args.length >= 2){
+                    Game game = GameManager.inst().getGame(args[1]);
 
                     if (game != null){
                         int range = 20;
-                        if (args.length >= 4 && Utils.isInt(args[3])){
-                            range = Integer.parseInt(args[3]);
+                        if (args.length >= 3 && Utils.isInt(args[2])){
+                            range = Integer.parseInt(args[2]);
                         }
 
                         //get the entity glowing
                         game.showAroundLocation(livingEntity.getLocation(), range);
                     } else {
-                        cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
+                        cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[1])));
                     }
                 } else {
                     cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));

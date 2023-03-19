@@ -46,8 +46,9 @@ public class Game implements ConfigurationSerializable {
     }
 
     //shown scoreboard
-    private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+    private final Scoreboard scoreboard;
     private final Objective objective;
+    private final Team noCollisionTeam;
 
     //set of all known uuids of all hidden stands.
     //the Class Hiddenstand just caches the armorstand and tracks the cooldown for reheading
@@ -105,8 +106,13 @@ public class Game implements ConfigurationSerializable {
      * @param name of the game
      */
     public Game(@NotNull String name){
+        this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, Lang.build(name));
-        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+        this.noCollisionTeam = scoreboard.registerNewTeam("noCollision");
+        this.noCollisionTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        this.noCollisionTeam.setCanSeeFriendlyInvisibles(false);
 
         this.name = name;
 
@@ -115,6 +121,8 @@ public class Game implements ConfigurationSerializable {
 
     /**
      * deserialization constructor. only for internal use.
+     * @param scoreboard
+     * @param noCollisionTeam
      * @param startingHiddenPercent
      * @param averageTicksUntilRehead
      * @param minMillisUntilRehead
@@ -127,12 +135,16 @@ public class Game implements ConfigurationSerializable {
      * @param quitLoc
      * @param gameTimeLength
      */
-    private Game(double startingHiddenPercent, int averageTicksUntilRehead, int minMillisUntilRehead,
+    private Game(Scoreboard scoreboard, Team noCollisionTeam,
+                 double startingHiddenPercent, int averageTicksUntilRehead, int minMillisUntilRehead,
                  @NotNull HashMap<UUID, HiddenStand> hiddenStands, @NotNull LinkedHashSet<ItemStack> heads,
                  @NotNull String name,
                  boolean allowLateJoin,
                  @Nullable Location lobbyLoc, @Nullable Location startLoc, @Nullable Location quitLoc,
                  long gameTimeLength){
+
+        this.scoreboard = scoreboard;
+        this.noCollisionTeam = noCollisionTeam;
 
         this.hiddenStands.putAll(hiddenStands);
         this.heads.addAll(heads);
@@ -153,6 +165,8 @@ public class Game implements ConfigurationSerializable {
 
         this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, Lang.build(name));
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+        noCollisionTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
     }
 
     /**
@@ -186,6 +200,11 @@ public class Game implements ConfigurationSerializable {
      * @return
      */
     public static Game deserialize(@NotNull Map<String, Object> data) {
+        Scoreboard scoreboard_ = Bukkit.getScoreboardManager().getNewScoreboard();
+        Team noCollisionTeam_ = scoreboard_.registerNewTeam("noCollision");
+        noCollisionTeam_.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        noCollisionTeam_.setCanSeeFriendlyInvisibles(false);
+
         Object temp;
 
         temp = data.get(STARTING_HIDDEN_PERCENT_KEY);
@@ -246,18 +265,17 @@ public class Game implements ConfigurationSerializable {
                             GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand property: " + obj2 + ", skipping. Reason: not a string.");
                         }
                     }
-                    HiddenStand hiddenStand = HiddenStand.deserialize(hiddenStandMap);
+                    HiddenStand hiddenStand = HiddenStand.deserialize(hiddenStandMap, noCollisionTeam_);
                     if (hiddenStand == null){
                         break;
                     }
 
                     hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
                 } else if (obj instanceof MemorySection memorySection){
-                    HiddenStand hiddenStand = HiddenStand.deserialize(memorySection.getValues(false));
+                    HiddenStand hiddenStand = HiddenStand.deserialize(memorySection.getValues(false), noCollisionTeam_);
                     if (hiddenStand == null){
                         break;
                     }
-
                     hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
                 } else {
                     GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand: " + obj + ", skipping. Reason: unknown type.");
@@ -393,7 +411,7 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        return new Game(starting_hidden_percent,
+        return new Game(scoreboard_, noCollisionTeam_, starting_hidden_percent,
                 average_ticks_until_rehead, min_milli_rehead_cooldown,
                 hiddenStands, heads,
                 name,
@@ -408,7 +426,7 @@ public class Game implements ConfigurationSerializable {
      * @param location
      */
     public void addHiddenStand(@NotNull Location location){
-        HiddenStand hiddenStand = new HiddenStand(location, name);
+        HiddenStand hiddenStand = new HiddenStand(location, name, noCollisionTeam);
         hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
 
         MainConfig.inst().saveGame(this);
@@ -423,8 +441,8 @@ public class Game implements ConfigurationSerializable {
         World world = location.getWorld();
 
         for (HiddenStand hiddenStand : hiddenStands.values()){
-            if (hiddenStand.getArmorStand() != null){
-                Location standLoc = hiddenStand.getArmorStand().getLocation();
+            if (hiddenStand.getSlime() != null){
+                Location standLoc = hiddenStand.getSlime().getLocation();
 
                 if (world != standLoc.getWorld())
                     continue;
@@ -432,10 +450,10 @@ public class Game implements ConfigurationSerializable {
                 if (NumberConversions.square(range) >= (NumberConversions.square(location.getX() - standLoc.getX()) +
                         NumberConversions.square(location.getY() - standLoc.getY()) +
                         NumberConversions.square(location.getZ() - standLoc.getZ()))){
-                    hiddenStand.getArmorStand().setGlowing(true);
+                    hiddenStand.getSlime().setGlowing(true);
 
                     Bukkit.getScheduler().runTaskLater(FindMe.inst(), () ->
-                            hiddenStand.getArmorStand().setGlowing(false), 200);
+                            hiddenStand.getSlime().setGlowing(false), 200);
                 }
             }
         }
@@ -504,6 +522,7 @@ public class Game implements ConfigurationSerializable {
 
         if (gameState.equals(GameStates.ACTIVE)){
             player.setScoreboard(scoreboard);
+            noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
                 if (Utils.isPaper()){
@@ -535,6 +554,7 @@ public class Game implements ConfigurationSerializable {
     protected void playerQuit(@NotNull Player player){
         players.remove(player);
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        noCollisionTeam.removePlayer(player);
 
         if (quitLoc != null){
             if (Utils.isPaper()){
@@ -656,6 +676,7 @@ public class Game implements ConfigurationSerializable {
 
         for (Player player : players){
             player.setScoreboard(scoreboard);
+            noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
                 if (Utils.isPaper()){
@@ -683,6 +704,12 @@ public class Game implements ConfigurationSerializable {
         HiddenStand hiddenStand = hiddenStands.get(uuid);
 
         if (hiddenStand == null || hiddenStand.getArmorStand() == null){
+            return;
+        }
+
+        //don't react to empty stands
+        ItemStack oldHelmet = hiddenStand.getArmorStand().getEquipment().getHelmet();
+        if (oldHelmet == null || oldHelmet.getType().isAir()){
             return;
         }
 
@@ -717,6 +744,7 @@ public class Game implements ConfigurationSerializable {
     public void end(){
         for (Player player : players){
             scoreboard.resetScores(player);
+            noCollisionTeam.removePlayer(player);
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
             if (quitLoc != null){

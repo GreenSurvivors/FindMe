@@ -11,6 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Slime;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +34,8 @@ public class HiddenStand implements ConfigurationSerializable {
 
     public static final NamespacedKey HIDDEN_KEY = new NamespacedKey(FindMe.inst(), "findMeGame");
 
+    private final Team noCollistionTeam;
+
     private UUID uuid_armorstand;
     private UUID uuid_slime;
     private ArmorStand armorStand;//might be null, if not loaded yet
@@ -54,6 +57,10 @@ public class HiddenStand implements ConfigurationSerializable {
             newSlime.setPersistent(true);
 
             newSlime.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
+
+            slime = newSlime;
+
+            noCollistionTeam.addEntity(newSlime);
         }).getUniqueId();
     }
 
@@ -72,26 +79,32 @@ public class HiddenStand implements ConfigurationSerializable {
             newArmorStand.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
 
             armorStand = newArmorStand;
+
+            noCollistionTeam.addEntity(newArmorStand);
         }).getUniqueId();
     }
 
-    public HiddenStand(@NotNull Location location, @NotNull String gameName){
+    public HiddenStand(@NotNull Location location, @NotNull String gameName, @NotNull Team noCollistionTeam){
+        this.noCollistionTeam = noCollistionTeam;
         summonSlime(location, gameName);
         summonArmorStand(location, gameName);
     }
 
-    public HiddenStand(@NotNull UUID uuid_armorstand, @NotNull UUID uuid_slime){
+    public HiddenStand(@NotNull UUID uuid_armorstand, @NotNull UUID uuid_slime, @NotNull Team noCollistionTeam){
+        this.noCollistionTeam = noCollistionTeam;
         this.uuid_armorstand = uuid_armorstand;
         this.uuid_slime = uuid_slime;
         Entity entity = Bukkit.getEntity(uuid_armorstand);
 
         if (entity instanceof ArmorStand armorStand2){
             this.armorStand = armorStand2;
+            noCollistionTeam.addEntity(armorStand2);
         }
         entity = Bukkit.getEntity(uuid_slime);
 
         if (entity instanceof Slime slime2){
             this.slime = slime2;
+            noCollistionTeam.addEntity(slime2);
         }
 
         // the armor stand and slime should never be seperated. If they are we properly lost track of one of them.
@@ -127,7 +140,7 @@ public class HiddenStand implements ConfigurationSerializable {
      *
      * @return a new instance
      */
-    public static @Nullable HiddenStand deserialize(@NotNull Map<String, Object> data) {
+    public static @Nullable HiddenStand deserialize(@NotNull Map<String, Object> data, Team noCollistionTeam) {
         Object obj = data.get(UUID_ARMORSTAND_KEY);
         UUID armorStandUUID;
         if (obj instanceof String str){
@@ -156,7 +169,7 @@ public class HiddenStand implements ConfigurationSerializable {
             return null;
         }
 
-        return new HiddenStand(armorStandUUID, slimeUUID);
+        return new HiddenStand(armorStandUUID, slimeUUID, noCollistionTeam);
     }
 
     public @Nullable ArmorStand getArmorStand() {
@@ -166,6 +179,7 @@ public class HiddenStand implements ConfigurationSerializable {
 
             if (entity instanceof ArmorStand armorStand2){
                 this.armorStand = armorStand2;
+                noCollistionTeam.addEntity(armorStand2);
             }
         }
 
@@ -179,6 +193,7 @@ public class HiddenStand implements ConfigurationSerializable {
 
             if (entity instanceof Slime slime2){
                 this.slime = slime2;
+                noCollistionTeam.addEntity(slime2);
             }
         }
 
