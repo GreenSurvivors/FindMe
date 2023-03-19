@@ -70,11 +70,15 @@ public class CreateCmd {
 
                             if (game != null){
                                 //set the sign text
-                                Sign sign = getSignLookingAt(livingEntity);
 
-                                if (sign != null){
+                                Block block = getSignLookingAt(livingEntity);
+
+                                if (block != null){
+                                    Sign sign = (Sign)block.getState();
                                     sign.line(1, Lang.build(Lang.SIGN_JOIN.get()));
                                     sign.line(2, Lang.build(game.getName()));
+
+                                    sign.update();
 
                                     cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, SIGN)));
                                 } else {
@@ -114,12 +118,12 @@ public class CreateCmd {
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_STAND)){
                     result.add(STAND);
                 }
-                return result.stream().filter(s -> args[1].toLowerCase().startsWith(s)).collect(Collectors.toList());
+                return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
             }
             case 3 -> {
                 if (args[1].equalsIgnoreCase(STAND) || args[1].equalsIgnoreCase(SIGN)){
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_SIGN, PermissionUtils.FINDME_CREATE_STAND)){
-                        return GameManager.inst().getGameNames().stream().filter(s -> args[2].toLowerCase().startsWith(s)).collect(Collectors.toList());
+                        return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
                     }
                 }
             }
@@ -131,12 +135,12 @@ public class CreateCmd {
      * @param entity looking at a sign
      * @return location of sign, or null if the entity is not looking at a sign
      */
-    private static Sign getSignLookingAt(LivingEntity entity) {
+    private static Block getSignLookingAt(LivingEntity entity) {
         // player is looking at a sign
         Block block = entity.getTargetBlockExact(5);
 
         if (block != null && Tag.ALL_SIGNS.isTagged(block.getType()))  {
-            return (Sign)block.getState();
+            return block;
         } else {
             return null;
         }

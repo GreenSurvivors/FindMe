@@ -43,11 +43,12 @@ public class QuitCmd {
 
             if (game != null){
                 GameManager.inst().playerQuitGame(player, game);
+                cs.sendMessage(Lang.build(Lang.QUIT_SELF.get()));
             } else {
-                cs.sendMessage(Lang.NOT_IN_GAME.get());
+                cs.sendMessage(Lang.build(Lang.NOT_IN_GAME.get()));
             }
         } else {
-            cs.sendMessage(Lang.NO_PLAYER.get());
+            cs.sendMessage(Lang.build(Lang.NO_PLAYER.get()));
         }
     }
 

@@ -66,7 +66,7 @@ public class SetCmd {
                                 }
 
                                 game.setGameTimeLength(ticks);
-                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, GAME_LENGTH).replace(Lang.TYPE, String.valueOf(ticks)));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, GAME_LENGTH).replace(Lang.TYPE, String.valueOf(ticks))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -88,7 +88,7 @@ public class SetCmd {
                                 if (lateJoinAllowed != null){
                                     game.setAllowLateJoin(lateJoinAllowed);
 
-                                    cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LATE_JOIN_LONG).replace(Lang.TYPE, args[3]));
+                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LATE_JOIN_LONG).replace(Lang.TYPE, args[3])));
                                 } else {
                                     cs.sendMessage(Lang.build(Lang.NO_BOOL.get().replace(Lang.VALUE, args[3])));
                                 }
@@ -112,7 +112,7 @@ public class SetCmd {
                                 Location loc = livingEntity.getLocation();
                                 game.setStartLoc(loc);
 
-                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc)));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -132,7 +132,7 @@ public class SetCmd {
                             if (game != null){
                                 Location loc = livingEntity.getLocation();
                                 game.setLobbyLoc (loc);
-                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LOBBY).replace(Lang.TYPE, Lang.locationToString(loc)));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LOBBY).replace(Lang.TYPE, Lang.locationToString(loc))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -152,7 +152,7 @@ public class SetCmd {
                             if (game != null){
                                 Location loc = livingEntity.getLocation();
                                 game.setQuitLoc(loc);
-                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, ENDPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc)));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, ENDPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -176,7 +176,7 @@ public class SetCmd {
                                 }
 
                                 game.setAverageTicksUntilRehead(ticks);
-                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, AVERAGE_TICKS_UNTIL_REHEAD_LONG).replace(Lang.TYPE, String.valueOf(ticks)));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, AVERAGE_TICKS_UNTIL_REHEAD_LONG).replace(Lang.TYPE, String.valueOf(ticks))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -199,7 +199,7 @@ public class SetCmd {
                                     double percent = Double.parseDouble(args[3]);
 
                                     game.setStartingHiddenPercent(percent);
-                                    cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTING_PERCENT_LONG).replace(Lang.TYPE, String.valueOf(percent)));
+                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTING_PERCENT_LONG).replace(Lang.TYPE, String.valueOf(percent))));
                                 } else {
                                     cs.sendMessage(Lang.build(Lang.NO_NUMBER.get().replace(Lang.VALUE, args[3])));
                                 }
@@ -227,7 +227,7 @@ public class SetCmd {
                                 }
 
                                 game.setReheadCooldown(millis);
-                                cs.sendMessage(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, REHEAD_COOLDOWN_LONG).replace(Lang.TYPE, String.valueOf(millis)));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, REHEAD_COOLDOWN_LONG).replace(Lang.TYPE, String.valueOf(millis))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }

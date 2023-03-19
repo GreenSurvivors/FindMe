@@ -14,10 +14,10 @@ public enum Lang implements Cons {
 	SUCCESSFULLY_SET(String.format("&2%s was successfully set to &6'&e%s&6'.", TYPE, VALUE)),
 	SUCCESSFULLY_REMOVED(String.format("&2%s was successfully removed.", VALUE)),
 	SUCCESSFULLY_CREATED(String.format("&2Successfully created new %s", VALUE)),
-	STARTING_GAME(String.format("&8Starting game %s.", VALUE)),
-	ENDING_GAME(String.format("&8Ending game %s.", VALUE)),
+	STARTING_GAME(String.format("&2Starting game %s.", VALUE)),
+	ENDING_GAME(String.format("&2Ending game %s.", VALUE)),
 
-	SIGN_JOIN("[join fm]"),
+	SIGN_JOIN("&2[join fm]"),
 
 	GAME_ALREADY_ACTIVE("The game is already active."),
 	GAME_ALREADY_EXISTS(String.format("&cThe game &6'&e%s&6'&c already exists.", VALUE)),
@@ -25,9 +25,11 @@ public enum Lang implements Cons {
 	ALREADY_IN_GAME_SELF(String.format("&cYou are already in game &6'%s&6'&c. Use &e/fm quit", VALUE)),
 	ALREADY_IN_GAME_OTHER(String.format("&6'&e%s&6'&c is already in game &6'%s&6'&c. Use &e/fm quit", VALUE, TYPE)),
 
-	MESSAGE_JOIN("&8Welcome in a game of 'find me!'. use &e/fm&8 quit to exit the game."),
-	MESSAGE_OBJECTIVE("&8Objective: find as many hidden things as fast as possible!"),
-	QUIT_OTHER(String.format("&8Player &6'%s&6'&8 quit the game", VALUE)),
+	MESSAGE_JOIN("&2Welcome in a game of 'find me!'. use &e/fm quit&2 to exit the game."),
+	MESSAGE_OBJECTIVE("&2Objective: find as many hidden things as fast as possible!"),
+
+	QUIT_OTHER(String.format("&2Player &6'%s&6'&8 quit the game", VALUE)),
+	QUIT_SELF("&aSuccessfully quit the game."),
 
 	PLAYER_NOT_ONLINE(String.format("&6'&e%s&6'&c is not a player or not online.", VALUE)),
 	PLAYER_NOT_INGAME(String.format("&cPlayer &6'&e%s&6'&c is in a game.", VALUE)),

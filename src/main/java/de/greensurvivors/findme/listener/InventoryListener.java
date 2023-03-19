@@ -12,9 +12,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 
 public class InventoryListener  implements Listener {
     private static InventoryListener instance;
@@ -70,7 +70,7 @@ public class InventoryListener  implements Listener {
                 Game game = GameManager.inst().getGame(name);
 
                 if (game != null){
-                    game.setHeads(List.of(event.getView().getTopInventory().getContents()));
+                    game.setHeads(Arrays.asList(event.getView().getTopInventory().getContents()));
 
                     int num = numOfOpedInventories.get(game.getName())-1;
                     if (num <= 0){

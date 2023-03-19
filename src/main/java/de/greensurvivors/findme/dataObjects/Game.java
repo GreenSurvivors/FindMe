@@ -5,11 +5,12 @@ import de.greensurvivors.findme.GreenLogger;
 import de.greensurvivors.findme.Utils;
 import de.greensurvivors.findme.config.MainConfig;
 import de.greensurvivors.findme.language.Lang;
+import net.kyori.adventure.title.Title;
 import org.apache.commons.lang3.BooleanUtils;
 import org.bukkit.*;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -76,9 +77,9 @@ public class Game implements ConfigurationSerializable {
     //how many percent of all hidden stands get a head at game start
     private Double startingHiddenPercent = 75.0;
     //how many ticks on average will pass until an armor stand gets a new head
-    private long averageTicksUntilRehead = 600;
+    private long averageTicksUntilRehead = 900;
     //how long the cooldown is, while a hidden stand cant get a new head
-    private long minMillisUntilRehead = 10000;
+    private long minMillisUntilRehead = 15000;
 
     //how long a game is until it automatically ends
     private long gameTimeLength = 5*60*20;
@@ -167,7 +168,7 @@ public class Game implements ConfigurationSerializable {
         result.put(AVERAGE_TICKS_UNTIL_REHEAD_KEY, averageTicksUntilRehead);
         result.put(MIN_Millis_UNTIL_REHEAD_KEY, minMillisUntilRehead);
         result.put(HIDDEN_STAND_UUIDS_KEY, hiddenStands.keySet().stream().map(UUID::toString).collect(Collectors.toList()));
-        result.put(HEADS_KEY, heads.stream().map(ItemStack::serialize).collect(Collectors.toList()));
+        result.put(HEADS_KEY, heads.stream().filter(Objects::nonNull).map(ItemStack::serialize).collect(Collectors.toList()));
         result.put(NAME_KEY, name);
         result.put(ALLOW_LATE_JOIN_KEY, allowLateJoin);
         if (lobbyLoc != null)
@@ -238,17 +239,7 @@ public class Game implements ConfigurationSerializable {
                 if (obj instanceof String str){
                     if(UUID_PATTERN.matcher(str).find()){
                         UUID uuid = UUID.fromString(str);
-
-                        Entity entity = Bukkit.getEntity(uuid);
-                        if (entity != null){
-                            if (entity instanceof ArmorStand armorStand){
-                                hiddenStands.put(uuid, new HiddenStand(armorStand));
-                            } else {
-                                GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + entity + ", skipping. Reason: not a armor stand.");
-                            }
-                        } else {
-                            GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + uuid + ", skipping. Reason: not a known entity.");
-                        }
+                        hiddenStands.put(uuid, new HiddenStand(uuid));
                     } else {
                         GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + str + ", skipping. Reason: not a valid uuid.");
                     }
@@ -324,6 +315,8 @@ public class Game implements ConfigurationSerializable {
                 }
             }
             lobbyLoc = Location.deserialize(stringObjectMap);
+        } else if (temp instanceof MemorySection memorySection) {
+            lobbyLoc = Location.deserialize(memorySection.getValues(false));
         } else {
             GreenLogger.log(Level.WARNING, "couldn't deserialize lobby location: " + temp);
         }
@@ -341,6 +334,8 @@ public class Game implements ConfigurationSerializable {
                 }
             }
             startLoc = Location.deserialize(stringObjectMap);
+        } else if (temp instanceof MemorySection memorySection) {
+            startLoc = Location.deserialize(memorySection.getValues(false));
         } else {
             GreenLogger.log(Level.WARNING, "couldn't deserialize start location: " + temp);
         }
@@ -358,6 +353,8 @@ public class Game implements ConfigurationSerializable {
                 }
             }
             quitLoc = Location.deserialize(stringObjectMap);
+        } else if (temp instanceof MemorySection memorySection) {
+            quitLoc = Location.deserialize(memorySection.getValues(false));
         } else {
             GreenLogger.log(Level.WARNING, "couldn't deserialize quit location: " + temp);
         }
@@ -480,8 +477,8 @@ public class Game implements ConfigurationSerializable {
      */
     protected void playerJoin(@NotNull Player player){
         players.add(player);
-        player.sendMessage(Lang.MESSAGE_JOIN.get());
-        player.sendMessage(Lang.MESSAGE_OBJECTIVE.get());
+        player.sendMessage(Lang.build(Lang.MESSAGE_JOIN.get()));
+        player.sendMessage(Lang.build(Lang.MESSAGE_OBJECTIVE.get()));
 
         if (gameState.equals(GameStates.ACTIVE)){
             player.setScoreboard(scoreboard);
@@ -526,6 +523,10 @@ public class Game implements ConfigurationSerializable {
         } else {
             GreenLogger.log(Level.WARNING, "No quit postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
         }
+
+        if (players.isEmpty()){
+            end();
+        }
     }
 
     /**
@@ -552,6 +553,7 @@ public class Game implements ConfigurationSerializable {
             Bukkit.getScheduler().runTaskLater(FindMe.inst(), this::startingCountdown, 20);
 
             for (Player player : players){
+                player.showTitle(Title.title(Lang.build(String.valueOf(remainingCountdownSeconds)), Lang.build("")));
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.8f, 1.0f);
             }
         }
@@ -579,16 +581,22 @@ public class Game implements ConfigurationSerializable {
         }
 
         //rehead hidden stands, if it is not in cooldown
+        final int max = heads.size();
+
+        //only try to rehead if we have heads to begin with
         Random random = new Random();
         ItemStack[] headArray = heads.toArray(new ItemStack[0]);
-        final int max = headArray.length -1;
 
         for (HiddenStand hiddenStand : hiddenStands.values()){
-            if (!hiddenStand.getArmorStand().getEquipment().getHelmet().getType().isItem() &&
-                    hiddenStand.isCooldownOver(minMillisUntilRehead) &&
-                    random.nextLong(averageTicksUntilRehead) == 1){
-                hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
-                hiddenStand.setCooldownNow();
+            if (hiddenStand.getArmorStand() != null) {
+                ItemStack headItemstack = hiddenStand.getArmorStand().getEquipment().getHelmet();
+
+                if ((headItemstack == null || headItemstack.getType().isAir()) &&
+                        hiddenStand.isCooldownOver(minMillisUntilRehead) &&
+                        random.nextLong(averageTicksUntilRehead) == 1){
+                    hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[max == 0 ? 0 : random.nextInt(max)]);
+                    hiddenStand.setCooldownNow();
+                }
             }
         }
 
@@ -607,15 +615,18 @@ public class Game implements ConfigurationSerializable {
      */
     private void startMain (){
         gameState = GameStates.ACTIVE;
+        final int max = heads.size();
+        //only set heads if the set isn't empty
         Random random = new Random();
         ItemStack[] headArray = heads.toArray(new ItemStack[0]);
-        final int max = headArray.length -1;
 
-        for (HiddenStand hiddenStand : hiddenStands.values()){
-            if (random.nextInt(100) <= startingHiddenPercent){
-                hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
-            } else {
-                hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+        for (HiddenStand hiddenStand : hiddenStands.values()) {
+            if (hiddenStand.getArmorStand() != null){
+                if (random.nextInt(100) <= startingHiddenPercent) {
+                    hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[max == 0 ? 0 : random.nextInt(max)]);
+                } else {
+                    hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+                }
             }
 
             hiddenStand.setCooldownNow();
@@ -693,6 +704,8 @@ public class Game implements ConfigurationSerializable {
                     player.teleport(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
                 }
             }
+
+            GameManager.inst().playersGameEnded(player);
         }
 
         if (gameState != GameStates.ENDED && quitLoc == null){

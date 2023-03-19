@@ -128,6 +128,14 @@ public class GameManager {
     }
 
     /**
+     * called by the game if it ends
+     * @param player
+     */
+    protected void playersGameEnded(@NotNull Player player){
+        playersInGames.remove(player);
+    }
+
+    /**
      * way to quit a game if the game is known. use the sister function if the game is unknown
      * @param player
      */
