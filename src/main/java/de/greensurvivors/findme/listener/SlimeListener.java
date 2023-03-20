@@ -3,7 +3,7 @@ package de.greensurvivors.findme.listener;
 import de.greensurvivors.findme.PermissionUtils;
 import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
-import de.greensurvivors.findme.dataObjects.HiddenStand;
+import de.greensurvivors.findme.dataObjects.Hideaway;
 import de.greensurvivors.findme.language.Lang;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -25,7 +25,7 @@ public class SlimeListener implements Listener {
     }
 
     /**
-     * if a slime gets right-clicked, of a player in a game, the hidden stand will get found
+     * if a slime gets right-clicked, of a player in a game, the hideaway will get found
      */
     @EventHandler(ignoreCancelled = true)
     private void onSlimeClicked(PlayerInteractEntityEvent event){
@@ -33,7 +33,7 @@ public class SlimeListener implements Listener {
             Entity rightClicked = event.getRightClicked();
 
             if (rightClicked instanceof Slime slime){
-                if (slime.getPersistentDataContainer().get(HiddenStand.HIDDEN_KEY, PersistentDataType.STRING) != null){
+                if (slime.getPersistentDataContainer().get(Hideaway.HIDDEN_KEY, PersistentDataType.STRING) != null){
                     event.setCancelled(true);
 
                     Player ePlayer = event.getPlayer();
@@ -41,7 +41,7 @@ public class SlimeListener implements Listener {
                         Game game = GameManager.inst().getGameOfPlayer(ePlayer);
 
                         if (game != null && game.getGameState() == Game.GameStates.ACTIVE) {
-                            game.findStand(ePlayer, slime.getUniqueId());
+                            game.findHideaway(ePlayer, slime.getUniqueId());
                         }
                     } else {
                         ePlayer.sendMessage(Lang.build(Lang.NO_PERMISSION_SOMETHING.get()));

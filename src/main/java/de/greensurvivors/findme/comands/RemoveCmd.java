@@ -3,7 +3,7 @@ package de.greensurvivors.findme.comands;
 import de.greensurvivors.findme.PermissionUtils;
 import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
-import de.greensurvivors.findme.dataObjects.HiddenStand;
+import de.greensurvivors.findme.dataObjects.Hideaway;
 import de.greensurvivors.findme.language.Lang;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
@@ -15,16 +15,16 @@ import java.util.stream.Collectors;
 public class RemoveCmd {
     private static final String
             GAME = "game",
-            STAND = "stand";
+            HIDEAWAY_LONG = "hideaway", HIDEAWAY_SHORT = "hide";
 
     /**
-     * delete a game or a hidden armor stand
+     * delete a game or a hiding place
      * /fm rem game <game name>
-     * /fm rem stand <game name> - removes the nearest stand
+     * /fm rem stand <game name> - removes the nearest hideaway
      * @param cs
      * @param args
      */
-    public static void handleCmd(CommandSender cs, String[] args) { //todo remove all stands with a game
+    public static void handleCmd(CommandSender cs, String[] args) { //todo remove all hideaways with a game
         if (args.length >= 3){
             switch (args[1]){
                 //fm rem game <game name>
@@ -41,20 +41,20 @@ public class RemoveCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
-                //fm rem stand <game name>
-                case STAND -> {
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_STAND)){
+                //fm rem hide <game name>
+                case HIDEAWAY_LONG, HIDEAWAY_SHORT -> {
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_HIDEAWAY)){
                         if (cs instanceof LivingEntity livingEntity){
                             Game game = GameManager.inst().getGame(args[2]);
 
                             if (game != null){
                                 //remove the entity
-                                HiddenStand hiddenStand = game.getNearestStand(livingEntity.getLocation());
-                                if (hiddenStand != null){
-                                    game.removeHiddenStand(hiddenStand.getUUIDSlime());
-                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, STAND)));
+                                Hideaway hideaway = game.getNearestHideaway(livingEntity.getLocation());
+                                if (hideaway != null){
+                                    game.removeHideaway(hideaway.getUUIDSlime());
+                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, HIDEAWAY_LONG)));
                                 } else {
-                                    //no hidden stand was found
+                                    //no hideaways where found
                                     cs.sendMessage(Lang.build(Lang.NO_NEARBY_STAND.get()));
                                 }
                             } else {
@@ -85,14 +85,15 @@ public class RemoveCmd {
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_GAME)){
                     result.add(GAME);
                 }
-                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_STAND)){
-                    result.add(STAND);
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_HIDEAWAY)){
+                    result.add(HIDEAWAY_LONG);
+                    result.add(HIDEAWAY_SHORT);
                 }
                 return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
             }
             case 3 -> {
-                if (args[1].equalsIgnoreCase(STAND) || args[1].equalsIgnoreCase(GAME)){
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_STAND, PermissionUtils.FINDME_REMOVE_GAME)){
+                if (args[1].equalsIgnoreCase(HIDEAWAY_LONG) || args[1].equalsIgnoreCase(HIDEAWAY_SHORT) || args[1].equalsIgnoreCase(GAME)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_HIDEAWAY, PermissionUtils.FINDME_REMOVE_GAME)){
                         return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
                     }
                 }

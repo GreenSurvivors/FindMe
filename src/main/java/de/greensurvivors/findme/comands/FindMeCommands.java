@@ -16,7 +16,7 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 	public static final String
 			CMD                    = "findme",
 
-			/** subcommand for creating a new game, hidden armor stands and signs **/
+			/** subcommand for creating a new game, hiding places and signs **/
 			CREATE_SHORT = "c",
 			CREATE_LONG = "create",
 
@@ -26,7 +26,7 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 			/** subcommand for setting the config values of a game **/
 			SET = "set",
 
-			/** subcommand to show all (nearby) hidden armor stands of a game**/
+			/** subcommand to show all (nearby) hideaways of a game**/
 			SHOW = "show",
 
 			/** subcommand to start a game **/
@@ -35,13 +35,13 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 			/** subcommand for aboarding a game **/
 			END = "end",
 
-			/** Show information about a game / hidden armor stande*/
+			/** Show information about a game / hideaway*/
 			INFO = "info",
 
 			/** subcommand to join a game**/
 			JOIN = "join",
 
-			/** subcommand to delete a game or a hidden stand. signs can just get broken**/
+			/** subcommand to delete a game or a hideaway. signs can just get broken**/
 			REMOVE_SHORT = "rem",
 			REMOVE_LONG = "remove",
 
@@ -109,6 +109,11 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 	//todo quit sign
 	//info (about) a game -> Lobby/Start/quit pos; state; etc
 	//automode -> min/maxplayers; waiting time for players to join
+
+	//todo
+	//kann nicht in die Lobby porten wenn nicht geladen
+//kann spiel nicht starten
+//slimes despawnen und werden niemals wieder neu erstellt
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 		if (args.length == 1) {
 			List<String> result = new ArrayList<>();
@@ -116,7 +121,7 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 			if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SHOW)){
 				result.add(SHOW);
 			}
-			if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_STAND, PermissionUtils.FINDME_CREATE_SIGN, PermissionUtils.FINDME_CREATE_GAME)){
+			if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_HIDEAWAY, PermissionUtils.FINDME_CREATE_SIGN, PermissionUtils.FINDME_CREATE_GAME)){
 				result.add(CREATE_SHORT);
 				result.add(CREATE_LONG);
 			}
@@ -129,7 +134,7 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 			if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_END)){
 				result.add(END);
 			}
-			if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_STAND, PermissionUtils.FINDME_REMOVE_GAME)){
+			if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_REMOVE, PermissionUtils.FINDME_REMOVE_HIDEAWAY, PermissionUtils.FINDME_REMOVE_GAME)){
 				result.add(REMOVE_LONG);
 				result.add(REMOVE_SHORT);
 			}

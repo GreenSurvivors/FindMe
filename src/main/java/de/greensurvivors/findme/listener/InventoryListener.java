@@ -33,15 +33,15 @@ public class InventoryListener  implements Listener {
         if (game == null)
             return null;
 
-        final int BANK_INVENTORY_SIZE = 6 * 9;
+        final int INVENTORY_SIZE = 6 * 9;
 
         //inventory holder has to be null, or non op player will not be able to open the inventory
-        Inventory inventory = Bukkit.getServer().createInventory(null, BANK_INVENTORY_SIZE, LegacyComponentSerializer.legacyAmpersand().deserialize(game.getName()));
+        Inventory inventory = Bukkit.getServer().createInventory(null, INVENTORY_SIZE, LegacyComponentSerializer.legacyAmpersand().deserialize(game.getName()));
         inventory.setMaxStackSize(1024);
         LinkedHashSet<ItemStack> heads = game.getHeads();
 
         //add items
-        for (ItemStack itemStack : heads){
+        for (ItemStack itemStack : heads){//todo why can a head be null here?
             inventory.addItem(itemStack);
         }
 

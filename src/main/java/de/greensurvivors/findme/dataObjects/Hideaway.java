@@ -2,6 +2,7 @@ package de.greensurvivors.findme.dataObjects;
 
 import de.greensurvivors.findme.FindMe;
 import de.greensurvivors.findme.GreenLogger;
+import de.greensurvivors.findme.language.Lang;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -21,7 +22,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
-public class HiddenStand implements ConfigurationSerializable {
+public class Hideaway implements ConfigurationSerializable {
     //pattern to mach if a string is a valid uuid
     private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\z");
 
@@ -49,6 +50,7 @@ public class HiddenStand implements ConfigurationSerializable {
             newSlime.setInvisible(true);
             newSlime.setSize(1);
             newSlime.setAI(false);
+            newSlime.customName(Lang.build(""));
             newSlime.setCustomNameVisible(false);
             newSlime.setCollidable(false);
             newSlime.setGravity(false);
@@ -84,13 +86,13 @@ public class HiddenStand implements ConfigurationSerializable {
         }).getUniqueId();
     }
 
-    public HiddenStand(@NotNull Location location, @NotNull String gameName, @NotNull Team noCollistionTeam){
+    public Hideaway(@NotNull Location location, @NotNull String gameName, @NotNull Team noCollistionTeam){
         this.noCollistionTeam = noCollistionTeam;
         summonSlime(location, gameName);
         summonArmorStand(location, gameName);
     }
 
-    public HiddenStand(@NotNull UUID uuid_armorstand, @NotNull UUID uuid_slime, @NotNull Team noCollistionTeam){
+    public Hideaway(@NotNull UUID uuid_armorstand, @NotNull UUID uuid_slime, @NotNull Team noCollistionTeam){
         this.noCollistionTeam = noCollistionTeam;
         this.uuid_armorstand = uuid_armorstand;
         this.uuid_slime = uuid_slime;
@@ -140,7 +142,7 @@ public class HiddenStand implements ConfigurationSerializable {
      *
      * @return a new instance
      */
-    public static @Nullable HiddenStand deserialize(@NotNull Map<String, Object> data, Team noCollistionTeam) {
+    public static @Nullable Hideaway deserialize(@NotNull Map<String, Object> data, Team noCollistionTeam) {
         Object obj = data.get(UUID_ARMORSTAND_KEY);
         UUID armorStandUUID;
         if (obj instanceof String str){
@@ -169,7 +171,7 @@ public class HiddenStand implements ConfigurationSerializable {
             return null;
         }
 
-        return new HiddenStand(armorStandUUID, slimeUUID, noCollistionTeam);
+        return new Hideaway(armorStandUUID, slimeUUID, noCollistionTeam);
     }
 
     public @Nullable ArmorStand getArmorStand() {

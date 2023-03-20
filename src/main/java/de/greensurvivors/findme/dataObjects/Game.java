@@ -51,10 +51,10 @@ public class Game implements ConfigurationSerializable {
     private final Objective objective;
     private final Team noCollisionTeam;
 
-    //set of all known uuids of all hidden stands.
-    //the Class Hiddenstand just caches the armorstand and tracks the cooldown for reheading
-    private final HashMap<UUID, HiddenStand> hiddenStands = new HashMap<>();
-    //set of all items an armor stand can wear on its head
+    //set of all known uuids of the slime part of all hideaways.
+    //the Class tracks the cooldown for hiding
+    private final HashMap<UUID, Hideaway> hideaways = new HashMap<>();
+    //set of all items that can get hidden away
     private final LinkedHashSet<ItemStack> heads = new LinkedHashSet<>();
 
     //set of players ingame
@@ -74,12 +74,12 @@ public class Game implements ConfigurationSerializable {
     //location the player will teleport to on end of the game or when they quit
     private Location quitLoc;
 
-    //how many percent of all hidden stands get a head at game start
+    //how many percent of all hideaways get a head at game start
     private Double startingHiddenPercent = 75.0;
-    //how many ticks on average will pass until an armor stand gets a new head
-    private long averageTicksUntilRehead = 1200;
-    //how long the cooldown is, while a hidden stand cant get a new head
-    private long minMillisUntilRehead = 20000;
+    //how many ticks on average will pass until a hideaways gets a new head
+    private long averageHideTicks = 1200;
+    //how long the cooldown is, while a hideaway cant get a new head
+    private long HideCooldownMillis = 20000;
 
     //how long a game is until it automatically ends
     //default value is 5 minutes
@@ -91,10 +91,10 @@ public class Game implements ConfigurationSerializable {
 
     /**(de)serialisation keys **/
     private final static String STARTING_HIDDEN_PERCENT_KEY = "starting_hidden_percent";
-    private final static String AVERAGE_TICKS_UNTIL_REHEAD_KEY = "average_ticks_until_rehead";
-    private final static String MIN_Millis_UNTIL_REHEAD_KEY = "min_milli_rehead_cooldown";
+    private final static String AVERAGE_HIDE_TICKS_KEY = "average_hide_ticks";
+    private final static String HIDE_COOLDOWN_Millis_KEY = "hide_cooldown_millis";
     private final static String HEADS_KEY = "heads";
-    private final static String HIDDEN_STANDS_KEY = "hidden_stands";
+    private final static String HIDEAWAY_KEY = "hideaways";
     private final static String NAME_KEY = "name";
     private final static String ALLOW_LATE_JOIN_KEY = "allowLateJoin";
     private final static String LOBBY_LOC_KEY = "lobbyloc";
@@ -126,9 +126,9 @@ public class Game implements ConfigurationSerializable {
      * @param scoreboard
      * @param noCollisionTeam
      * @param startingHiddenPercent
-     * @param averageTicksUntilRehead
-     * @param minMillisUntilRehead
-     * @param hiddenStands
+     * @param averageHideTicks
+     * @param HideCooldownMillis
+     * @param hideaways
      * @param heads
      * @param name
      * @param allowLateJoin
@@ -138,8 +138,8 @@ public class Game implements ConfigurationSerializable {
      * @param gameTimeLength
      */
     private Game(Scoreboard scoreboard, Team noCollisionTeam,
-                 double startingHiddenPercent, int averageTicksUntilRehead, int minMillisUntilRehead,
-                 @NotNull HashMap<UUID, HiddenStand> hiddenStands, @NotNull LinkedHashSet<ItemStack> heads,
+                 double startingHiddenPercent, int averageHideTicks, int HideCooldownMillis,
+                 @NotNull HashMap<UUID, Hideaway> hideaways, @NotNull LinkedHashSet<ItemStack> heads,
                  @NotNull String name,
                  boolean allowLateJoin,
                  @Nullable Location lobbyLoc, @Nullable Location startLoc, @Nullable Location quitLoc,
@@ -148,7 +148,7 @@ public class Game implements ConfigurationSerializable {
         this.scoreboard = scoreboard;
         this.noCollisionTeam = noCollisionTeam;
 
-        this.hiddenStands.putAll(hiddenStands);
+        this.hideaways.putAll(hideaways);
         this.heads.addAll(heads);
 
         this.name = name;
@@ -160,8 +160,8 @@ public class Game implements ConfigurationSerializable {
         this.quitLoc = quitLoc;
 
         this.startingHiddenPercent = startingHiddenPercent;
-        this.averageTicksUntilRehead = averageTicksUntilRehead;
-        this.minMillisUntilRehead = minMillisUntilRehead;
+        this.averageHideTicks = averageHideTicks;
+        this.HideCooldownMillis = HideCooldownMillis;
 
         this.gameTimeLength = gameTimeLength;
 
@@ -179,9 +179,9 @@ public class Game implements ConfigurationSerializable {
     public @NotNull Map<String, Object> serialize() {
         HashMap<String, Object> result = new HashMap<>();
         result.put(STARTING_HIDDEN_PERCENT_KEY, String.valueOf(startingHiddenPercent));
-        result.put(AVERAGE_TICKS_UNTIL_REHEAD_KEY, averageTicksUntilRehead);
-        result.put(MIN_Millis_UNTIL_REHEAD_KEY, minMillisUntilRehead);
-        result.put(HIDDEN_STANDS_KEY, hiddenStands.values().stream().map(HiddenStand::serialize).collect(Collectors.toList()));
+        result.put(AVERAGE_HIDE_TICKS_KEY, averageHideTicks);
+        result.put(HIDE_COOLDOWN_Millis_KEY, HideCooldownMillis);
+        result.put(HIDEAWAY_KEY, hideaways.values().stream().map(Hideaway::serialize).collect(Collectors.toList()));
         result.put(HEADS_KEY, heads.stream().filter(Objects::nonNull).map(ItemStack::serialize).collect(Collectors.toList()));
         result.put(NAME_KEY, name);
         result.put(ALLOW_LATE_JOIN_KEY, allowLateJoin);
@@ -229,56 +229,56 @@ public class Game implements ConfigurationSerializable {
             return null;
         }
 
-        temp = data.get(MIN_Millis_UNTIL_REHEAD_KEY);
-        int min_milli_rehead_cooldown;
+        temp = data.get(HIDE_COOLDOWN_Millis_KEY);
+        int hideCooldown_millis;
         if (temp instanceof Integer tempInt){
-            min_milli_rehead_cooldown = tempInt;
+            hideCooldown_millis = tempInt;
         } else if (temp instanceof String str && Utils.isInt(str)){
-            min_milli_rehead_cooldown = Integer.parseInt(str);
+            hideCooldown_millis = Integer.parseInt(str);
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize min_milli_rehead_cooldown: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize hideCooldown_millis: " + temp);
             return null;
         }
 
-        temp = data.get(AVERAGE_TICKS_UNTIL_REHEAD_KEY);
-        int average_ticks_until_rehead;
+        temp = data.get(AVERAGE_HIDE_TICKS_KEY);
+        int average_hide_ticks;
         if (temp instanceof Integer tempInt){
-            average_ticks_until_rehead = tempInt;
+            average_hide_ticks = tempInt;
         } else if (temp instanceof String str && Utils.isInt(str)){
-            average_ticks_until_rehead = Integer.parseInt(str);
+            average_hide_ticks = Integer.parseInt(str);
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize average_ticks_until_rehead: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize average_hide_ticks: " + temp);
             return null;
         }
 
-        temp = data.get(HIDDEN_STANDS_KEY);
-        HashMap<UUID, HiddenStand> hiddenStands = new HashMap<>();
+        temp = data.get(HIDEAWAY_KEY);
+        HashMap<UUID, Hideaway> hideaways_ = new HashMap<>();
         if (temp instanceof List<?> objList){
             for (Object obj: objList){
 
-                if (obj instanceof HiddenStand hiddenStand) {
-                    hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
+                if (obj instanceof Hideaway hideaway) {
+                    hideaways_.put(hideaway.getUUIDSlime(), hideaway);
                 } else if (obj instanceof Map<?, ?> map){
-                    Map<String, Object> hiddenStandMap = new HashMap<>();
+                    Map<String, Object> hideawaysMap = new HashMap<>();
                     for (Object obj2: map.keySet()){
                         if (obj2 instanceof String str){
-                            hiddenStandMap.put(str, map.get(obj2));
+                            hideawaysMap.put(str, map.get(obj2));
                         } else {
                             GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand property: " + obj2 + ", skipping. Reason: not a string.");
                         }
                     }
-                    HiddenStand hiddenStand = HiddenStand.deserialize(hiddenStandMap, noCollisionTeam_);
-                    if (hiddenStand == null){
+                    Hideaway hideaway = Hideaway.deserialize(hideawaysMap, noCollisionTeam_);
+                    if (hideaway == null){
                         break;
                     }
 
-                    hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
+                    hideaways_.put(hideaway.getUUIDSlime(), hideaway);
                 } else if (obj instanceof MemorySection memorySection){
-                    HiddenStand hiddenStand = HiddenStand.deserialize(memorySection.getValues(false), noCollisionTeam_);
-                    if (hiddenStand == null){
+                    Hideaway hideaway = Hideaway.deserialize(memorySection.getValues(false), noCollisionTeam_);
+                    if (hideaway == null){
                         break;
                     }
-                    hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
+                    hideaways_.put(hideaway.getUUIDSlime(), hideaway);
                 } else {
                     GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand: " + obj + ", skipping. Reason: unknown type.");
                 }
@@ -414,8 +414,8 @@ public class Game implements ConfigurationSerializable {
         }
 
         return new Game(scoreboard_, noCollisionTeam_, starting_hidden_percent,
-                average_ticks_until_rehead, min_milli_rehead_cooldown,
-                hiddenStands, heads,
+                average_hide_ticks, hideCooldown_millis,
+                hideaways_, heads,
                 name,
                 allowLateJoin,
                 lobbyLoc, startLoc, quitLoc,
@@ -424,38 +424,38 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * creates a new armor stand at the given location and keeps track of it (saves the game)
+     * creates a new hide away at the given location and keeps track of it (saves the game)
      * @param location
      */
-    public void addHiddenStand(@NotNull Location location){
-        HiddenStand hiddenStand = new HiddenStand(location, name, noCollisionTeam);
-        hiddenStands.put(hiddenStand.getUUIDSlime(), hiddenStand);
+    public void addHideaway(@NotNull Location location){
+        Hideaway hideaway = new Hideaway(location, name, noCollisionTeam);
+        hideaways.put(hideaway.getUUIDSlime(), hideaway);
 
         MainConfig.inst().saveGame(this);
     }
 
     /**
-     * gives all hidden stands around the given location a glowing effect for 10s
-     * @param location location around all hidden stands will get the glowing effect
-     * @param range range how far will be searched for hidden stands
+     * gives all hideaways around the given location a glowing effect for 10s
+     * @param location location around all hideaways will get the glowing effect
+     * @param range range how far will be searched for hideaways
      */
     public void showAroundLocation(@NotNull Location location, int range){
         World world = location.getWorld();
 
-        for (HiddenStand hiddenStand : hiddenStands.values()){
-            if (hiddenStand.getSlime() != null){
-                Location standLoc = hiddenStand.getSlime().getLocation();
+        for (Hideaway hideaway : hideaways.values()){
+            if (hideaway.getSlime() != null){
+                Location hidingLoc = hideaway.getSlime().getLocation();
 
-                if (world != standLoc.getWorld())
+                if (world != hidingLoc.getWorld())
                     continue;
 
-                if (NumberConversions.square(range) >= (NumberConversions.square(location.getX() - standLoc.getX()) +
-                        NumberConversions.square(location.getY() - standLoc.getY()) +
-                        NumberConversions.square(location.getZ() - standLoc.getZ()))){
-                    hiddenStand.getSlime().setGlowing(true);
+                if (NumberConversions.square(range) >= (NumberConversions.square(location.getX() - hidingLoc.getX()) +
+                        NumberConversions.square(location.getY() - hidingLoc.getY()) +
+                        NumberConversions.square(location.getZ() - hidingLoc.getZ()))){
+                    hideaway.getSlime().setGlowing(true);
 
                     Bukkit.getScheduler().runTaskLater(FindMe.inst(), () ->
-                            hiddenStand.getSlime().setGlowing(false), 200);
+                            hideaway.getSlime().setGlowing(false), 200);
                 }
             }
         }
@@ -466,24 +466,24 @@ public class Game implements ConfigurationSerializable {
      * @param startingPos location around the nearest stand will be searched
      * @return nearest hidden armor stand or null if no where found
      */
-    public @Nullable HiddenStand getNearestStand(@NotNull Location startingPos){
-        HiddenStand result = null;
+    public @Nullable Hideaway getNearestHideaway(@NotNull Location startingPos){
+        Hideaway result = null;
         double lastDistance = Double.MAX_VALUE;
 
         Collection<Slime> nearbySlimes = startingPos.getNearbyEntitiesByType(Slime.class, 5);
-        Set<HiddenStand> nearbyStands = nearbySlimes.stream().
+        Set<Hideaway> nearbyHidingPlaces = nearbySlimes.stream().
                 //get all tracked slimes that are in radius
-                map(s -> hiddenStands.get(s.getUniqueId())).filter(Objects::nonNull).
+                map(s -> hideaways.get(s.getUniqueId())).filter(Objects::nonNull).
                 collect(Collectors.toSet());
 
-        for(HiddenStand hiddenStand : nearbyStands) {
+        for(Hideaway hideaway : nearbyHidingPlaces) {
             //we don't need the root, if we only want to know what entity is further
-            //also, hiddenStand.getSlime is backed up by getting the initial slimes from getNearbyEntitiesByType,
+            //also, hideaway.getSlime is backed up by getting the initial slimes from getNearbyEntitiesByType,
             //so it never will be null.
-            double distance = startingPos.distanceSquared(hiddenStand.getSlime().getLocation());
+            double distance = startingPos.distanceSquared(hideaway.getSlime().getLocation());
             if(distance < lastDistance) {
                 lastDistance = distance;
-                result = hiddenStand;
+                result = hideaway;
             }
         }
 
@@ -494,22 +494,22 @@ public class Game implements ConfigurationSerializable {
      * removes a hidden armor stand + slime pair and no longer keeps track of it (saves the game)
      * @param uuid of a slime the armor stand belongs to
      */
-    public void removeHiddenStand(@NotNull UUID uuid){
-        HiddenStand hiddenStand =  hiddenStands.get(uuid);
+    public void removeHideaway(@NotNull UUID uuid){
+        Hideaway hideaway =  hideaways.get(uuid);
         //kill the entities
-        if (hiddenStand != null){
-            Slime slime = hiddenStand.getSlime();
+        if (hideaway != null){
+            Slime slime = hideaway.getSlime();
             if (slime != null){
                 slime.setHealth(0);
             }
 
-            ArmorStand armorStand = hiddenStand.getArmorStand();
+            ArmorStand armorStand = hideaway.getArmorStand();
             if (armorStand != null){
                 armorStand.setHealth(0);
             }
         }
 
-        hiddenStands.remove(uuid);
+        hideaways.remove(uuid);
 
         MainConfig.inst().saveGame(this);
     }
@@ -521,7 +521,7 @@ public class Game implements ConfigurationSerializable {
     protected void clear(){
         end();
 
-        hiddenStands.clear();
+        hideaways.clear();
         heads.clear();
 
         objective.unregister();
@@ -608,7 +608,7 @@ public class Game implements ConfigurationSerializable {
 
     /**
      * main loop of the findMe! game, calls itself every tick while the game is running
-     * shows the remaining time and handles reheading the hidden armor stands
+     * shows the remaining time and handles hiding new stuff in the hideaways
      * after the time runs out it will end the game.
      */
     private void GameTimer(){
@@ -627,23 +627,23 @@ public class Game implements ConfigurationSerializable {
             }
         }
 
-        //rehead hidden stands, if it is not in cooldown
+        //hide new stuff in hidden stands, if they are not in cooldown
         final int max = heads.size();
 
-        //only try to rehead if we have heads to begin with
+        //only try to hide if we have heads to begin with
         if (max > 0){
             Random random = new Random();
             ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
-            for (HiddenStand hiddenStand : hiddenStands.values()){
-                if (hiddenStand.getArmorStand() != null) {
-                    ItemStack headItemstack = hiddenStand.getArmorStand().getEquipment().getHelmet();
+            for (Hideaway hideaway : hideaways.values()){
+                if (hideaway.getArmorStand() != null) {
+                    ItemStack headItemstack = hideaway.getArmorStand().getEquipment().getHelmet();
 
                     if ((headItemstack == null || headItemstack.getType().isAir()) &&
-                            hiddenStand.isCooldownOver(minMillisUntilRehead) &&
-                            random.nextLong(averageTicksUntilRehead) == 1){
-                        hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
-                        hiddenStand.setCooldownNow();
+                            hideaway.isCooldownOver(HideCooldownMillis) &&
+                            random.nextLong(averageHideTicks) == 1){
+                        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
+                        hideaway.setCooldownNow();
                     }
                 }
             }
@@ -659,7 +659,7 @@ public class Game implements ConfigurationSerializable {
 
     /**
      * start of the main phase of the game.
-     * set random heads for the configurated percentage of hidden stands and show scoreboard;
+     * set random heads for the configurated percentage of hideaways and show scoreboard;
      * teleport all players to starting location if possible, and start main loop
      */
     private void startMain (){
@@ -670,16 +670,16 @@ public class Game implements ConfigurationSerializable {
             Random random = new Random();
             ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
-            for (HiddenStand hiddenStand : hiddenStands.values()) {
-                if (hiddenStand.getArmorStand() != null){
+            for (Hideaway hideaway : hideaways.values()) {
+                if (hideaway.getArmorStand() != null){
                     if (random.nextInt(100) <= startingHiddenPercent) {
-                        hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
+                        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
                     } else {
-                        hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+                        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
                     }
                 }
 
-                hiddenStand.setCooldownNow();
+                hideaway.setCooldownNow();
             }
         }
 
@@ -701,26 +701,26 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * called whenever a player finds a hidden stand (technically the slime of it), increments the score of the player
-     * @param player the player who found the stand
-     * @param uuid uuid of the slime part of a hidden stand
+     * called whenever a player finds a hideaway (technically the slime of it), increments the score of the player
+     * @param player the player who found the hideaway
+     * @param uuid uuid of the slime part of a hideaway
      */
-    public void findStand(@NotNull Player player, @NotNull UUID uuid){
-        HiddenStand hiddenStand = hiddenStands.get(uuid);
+    public void findHideaway(@NotNull Player player, @NotNull UUID uuid){
+        Hideaway hideaway = hideaways.get(uuid);
 
-        if (hiddenStand == null || hiddenStand.getArmorStand() == null){
+        if (hideaway == null || hideaway.getArmorStand() == null){
             return;
         }
 
         //don't react to empty stands
-        ItemStack oldHelmet = hiddenStand.getArmorStand().getEquipment().getHelmet();
+        ItemStack oldHelmet = hideaway.getArmorStand().getEquipment().getHelmet();
         if (oldHelmet == null || oldHelmet.getType().isAir()){
             return;
         }
 
         //remove head & play sound
-        hiddenStand.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
-        hiddenStand.getArmorStand().getLocation().getWorld().playSound(hiddenStand.getArmorStand(), Sound.ENTITY_ITEM_PICKUP,0.9f, 0.9f);
+        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+        hideaway.getArmorStand().getLocation().getWorld().playSound(hideaway.getArmorStand(), Sound.ENTITY_ITEM_PICKUP,0.9f, 0.9f);
 
         addScore(player, 1);
     }
@@ -884,23 +884,23 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * set how many ticks pass on average until a hidden armor stand gets its head back
+     * set how many ticks pass on average until a hideaway gets its head back
      * @param ticks
      */
-    public void setAverageTicksUntilRehead(long ticks) {
-        this.averageTicksUntilRehead = ticks;
+    public void setAverageHideTicks(long ticks) {
+        this.averageHideTicks = ticks;
     }
 
     /**
-     * get how many ticks pass on average until a hidden armor stand gets its head back
+     * get how many ticks pass on average until a hideaway gets its head back
      * @return
      */
-    public long getAverageTicksUntilRehead(){
-        return this.averageTicksUntilRehead;
+    public long getAverageHideTicks(){
+        return this.averageHideTicks;
     }
 
     /**
-     * set how much percent of all hidden stands will have a head when the game starts
+     * set how much percent of all hideaways will have a head when the game starts
      * @param percent 0 - 100, all values above 100 will act the same as 100 and all values under 0 will be the same as o
      */
     public void setStartingHiddenPercent(double percent) {
@@ -908,7 +908,7 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * gets how much percent of all hidden stands will have a head when the game starts
+     * gets how much percent of all hideaways will have a head when the game starts
      * @return
      */
     public double getStartingHiddenPercent(){
@@ -916,19 +916,19 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * set how long a hidden stand can not get its head back, after it was found
+     * set how long a hideaway is on cooldown and can not get its head back, after it was found
      * @param millis
      */
-    public void setReheadCooldown(long millis){
-        this.minMillisUntilRehead = millis;
+    public void setHideCooldown(long millis){
+        this.HideCooldownMillis = millis;
     }
 
     /**
-     * get how long a hidden stand can not get its head back, after it was found
+     * get how long a hideaway is on cooldown can not get its head back, after it was found
      * @return
      */
-    public long getReheadCooldown(){
-        return this.minMillisUntilRehead;
+    public long getHideCooldown(){
+        return this.HideCooldownMillis;
     }
 
     /**

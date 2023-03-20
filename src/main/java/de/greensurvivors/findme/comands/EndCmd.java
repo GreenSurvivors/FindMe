@@ -21,6 +21,7 @@ public class EndCmd {
 
                 if (game != null){
                     //end the game
+                    //this does not check for game state so a game can always get forced to end.
                     game.end();
 
                     cs.sendMessage(Lang.build(Lang.ENDING_GAME.get().replace(Lang.VALUE, args[1])));

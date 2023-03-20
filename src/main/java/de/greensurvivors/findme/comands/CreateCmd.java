@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 public class CreateCmd {
     private static final String
             GAME = "game",
-            STAND = "stand",
+            HIDEAWAY_LONG = "hideaway", HIDEAWAY_SHORT = "hide",
             SIGN = "sign";
     /**
-     * creates new games, hidden armor stands and join signs
+     * creates new games, hiding places and join signs
      */
     public static void handleCmd(CommandSender cs, String[] args) {
         if (args.length >= 3){
@@ -39,17 +39,17 @@ public class CreateCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
-                //fm c stand <name>
-                case STAND -> {
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_STAND)){
+                //fm c hide <name>
+                case HIDEAWAY_LONG, HIDEAWAY_SHORT -> {
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_HIDEAWAY)){
                         if (cs instanceof LivingEntity livingEntity){
                             Game game = GameManager.inst().getGame(args[2]);
 
                             if (game != null){
-                                //summon the entity
-                                game.addHiddenStand(livingEntity.getLocation());
+                                //summon the entitys
+                                game.addHideaway(livingEntity.getLocation());
 
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, STAND)));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, HIDEAWAY_LONG)));
                             } else {
                                 //no game by this name exits
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
@@ -64,7 +64,7 @@ public class CreateCmd {
                 }
                 //fm c sign <name>
                 case SIGN -> {
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_STAND)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_HIDEAWAY)){
                         if (cs instanceof LivingEntity livingEntity){
                             Game game = GameManager.inst().getGame(args[2]);
 
@@ -115,14 +115,15 @@ public class CreateCmd {
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_SIGN)){
                     result.add(SIGN);
                 }
-                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_STAND)){
-                    result.add(STAND);
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_HIDEAWAY)){
+                    result.add(HIDEAWAY_LONG);
+                    result.add(HIDEAWAY_SHORT);
                 }
                 return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
             }
             case 3 -> {
-                if (args[1].equalsIgnoreCase(STAND) || args[1].equalsIgnoreCase(SIGN)){
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_SIGN, PermissionUtils.FINDME_CREATE_STAND)){
+                if (args[1].equalsIgnoreCase(HIDEAWAY_LONG) || args[1].equalsIgnoreCase(HIDEAWAY_SHORT) || args[1].equalsIgnoreCase(SIGN)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_SIGN, PermissionUtils.FINDME_CREATE_HIDEAWAY)){
                         return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
                     }
                 }

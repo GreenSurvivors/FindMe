@@ -5,11 +5,11 @@ import org.bukkit.command.CommandSender;
 public enum PermissionUtils {
 	FINDME_REMOVE("findme.remove"),
 	FINDME_REMOVE_GAME("findme.remove.game"),
-	FINDME_REMOVE_STAND("findme.remove.stand"),
+	FINDME_REMOVE_HIDEAWAY("findme.remove.hideaway"),
 
 	FINDME_CREATE("findme.create"),
 	FINDME_CREATE_GAME("findme.create.game"),
-	FINDME_CREATE_STAND("findme.create.stand"),
+	FINDME_CREATE_HIDEAWAY("findme.create.hideaway"),
 	FINDME_CREATE_SIGN("findme.create.sign"),
 
 	FINDME_SET("findme.set"),
@@ -17,9 +17,9 @@ public enum PermissionUtils {
 	FINDME_SET_GAMELENGTH("findme.set.gamelength"),
 	FINDME_SET_LATEJOIN("findme.set.latejoin"),
 	FINDME_SET_LOCATIONS("findme.set.locations"),
-	FINDME_SET_AVERAGE_TICKS_UNTIL_REHEAD("findme.set.av_ticks_rehead"),
+	FINDME_SET_AVERAGE_TICKS_UNTIL_HIDE("findme.set.hide_ticks"),
 	FINDME_SET_STARTING_PERCENT("findme.set.stating_percent"),
-	FINDME_SET_REHEAD_COOLDOWN("findme.set.cooldown"),
+	FINDME_SET_HIDING_COOLDOWN("findme.set.cooldown"),
 
 	FINDME_START("findme.start"),
 	FINDME_END("findme.end"),

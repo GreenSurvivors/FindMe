@@ -16,7 +16,7 @@ public class ShowCmd {
     private final static int DEFAULT_RANGE = 20;
 
     /**
-     * show all hidden stands of a given game in a range
+     * show all hideaways of a given game in a range
      * /fm show <game name>
      * /fm show <game> <range>
      * @param cs
