@@ -25,6 +25,9 @@ public class QuitListener  implements Listener {
     //however if this change happens, it will get a config value
     @EventHandler(ignoreCancelled = true)
     private void onWorldChange(PlayerChangedWorldEvent event){
-        GameManager.inst().playerQuitGame(event.getPlayer());
+        //don't quit the player if they are being ported by the game
+        if (!GameManager.inst().isPlayerTeleportingGame(event.getPlayer())){
+            GameManager.inst().playerQuitGame(event.getPlayer());
+        }
     }
 }

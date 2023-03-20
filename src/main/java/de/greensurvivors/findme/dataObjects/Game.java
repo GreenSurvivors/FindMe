@@ -5,6 +5,8 @@ import de.greensurvivors.findme.GreenLogger;
 import de.greensurvivors.findme.Utils;
 import de.greensurvivors.findme.config.MainConfig;
 import de.greensurvivors.findme.language.Lang;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.apache.commons.lang3.BooleanUtils;
 import org.bukkit.*;
@@ -109,7 +111,7 @@ public class Game implements ConfigurationSerializable {
      */
     public Game(@NotNull String name){
         this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, Lang.build(name));
+        this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, PlainTextComponentSerializer.plainText().deserialize(name).color(NamedTextColor.GOLD));
         this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         this.noCollisionTeam = scoreboard.registerNewTeam("noCollision");
@@ -552,8 +554,6 @@ public class Game implements ConfigurationSerializable {
      * @param player who joins
      */
     protected void playerJoin(@NotNull Player player){
-        GreenLogger.log(Level.INFO, "player " + player.getName() + " joined " + name);
-
         players.add(player);
         player.sendMessage(Lang.build(Lang.MESSAGE_JOIN.get()));
         player.sendMessage(Lang.build(Lang.MESSAGE_OBJECTIVE.get()));
@@ -563,19 +563,25 @@ public class Game implements ConfigurationSerializable {
             noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
-                if(!startLoc.getChunk().isLoaded()){
-                    startLoc.getChunk().load();
-                }
-                player.teleportAsync(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                GameManager.inst().addTeleportingPlayer(player);
+
+                startLoc.getWorld().getChunkAtAsync(startLoc).thenAccept(chunk -> {
+                    player.teleport(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                    GameManager.inst().removeTeleportingPlayer(player);
+                });
             } else {
                 GreenLogger.log(Level.WARNING, "No start postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
             }
         } else {
+            GreenLogger.log(Level.INFO, "player " + player.getName() + " joined idle game " + name);
+
             if (lobbyLoc != null){
-                if(!lobbyLoc.getChunk().isLoaded()){
-                    lobbyLoc.getChunk().load();
-                }
-                player.teleportAsync(lobbyLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                GameManager.inst().addTeleportingPlayer(player);
+
+                lobbyLoc.getWorld().getChunkAtAsync(lobbyLoc).thenAccept(chunk -> {
+                    player.teleport(lobbyLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                    GameManager.inst().removeTeleportingPlayer(player);
+                });
             } else {
                 GreenLogger.log(Level.WARNING, "No lobby postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
             }
@@ -593,11 +599,12 @@ public class Game implements ConfigurationSerializable {
         noCollisionTeam.removePlayer(player);
 
         if (quitLoc != null){
-            if(!quitLoc.getChunk().isLoaded()){
-                quitLoc.getChunk().load();
-            }
+            GameManager.inst().addTeleportingPlayer(player);
 
-            player.teleportAsync(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+            quitLoc.getWorld().getChunkAtAsync(quitLoc).thenAccept(chunk -> {
+                player.teleport(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                GameManager.inst().removeTeleportingPlayer(player);
+            });
         } else {
             GreenLogger.log(Level.WARNING, "No quit postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
         }
@@ -715,7 +722,6 @@ public class Game implements ConfigurationSerializable {
             }
         }
 
-
         if(startLoc != null && !startLoc.getChunk().isLoaded()){
             startLoc.getChunk().load();
         }
@@ -725,7 +731,12 @@ public class Game implements ConfigurationSerializable {
             noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
-                player.teleportAsync(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                GameManager.inst().addTeleportingPlayer(player);
+
+                startLoc.getWorld().getChunkAtAsync(startLoc).thenAccept(chunk -> {
+                    player.teleport(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                    GameManager.inst().removeTeleportingPlayer(player);
+                });
             }
         }
 
@@ -790,7 +801,11 @@ public class Game implements ConfigurationSerializable {
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
             if (quitLoc != null){
-                player.teleportAsync(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                GameManager.inst().addTeleportingPlayer(player);
+                quitLoc.getWorld().getChunkAtAsync(quitLoc).thenAccept(chunk -> {
+                    player.teleport(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                    GameManager.inst().removeTeleportingPlayer(player);
+                });
             }
 
             GameManager.inst().playersGameEnded(player);

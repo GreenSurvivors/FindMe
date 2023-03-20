@@ -5,6 +5,7 @@ import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
 import de.greensurvivors.findme.language.Lang;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -50,7 +51,7 @@ public class SignListener implements Listener {
                         return;
                     }
 
-                    String line3 = LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(2));
+                    String line3 = PlainTextComponentSerializer.plainText().serialize(sign.line(2));
                     for (String gameName : GameManager.inst().getGameNames()){
                         if (gameName.equalsIgnoreCase(line3)){
                             foundGame = true;

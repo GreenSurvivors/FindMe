@@ -11,6 +11,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Slime;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.loot.LootTables;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
@@ -56,6 +57,9 @@ public class Hideaway implements ConfigurationSerializable {
             newSlime.setInvulnerable(true);
             //don't despawn this slime
             newSlime.setPersistent(true);
+
+            //don't drop anything on death
+            newSlime.setLootTable(LootTables.EMPTY.getLootTable());
 
             newSlime.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
 
@@ -120,7 +124,7 @@ public class Hideaway implements ConfigurationSerializable {
         } else if (armorStand != null && slime == null){
             String gameName = armorStand.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
             if (gameName != null){
-                summonArmorStand(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
+                summonSlime(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
             }
         }
     }
@@ -213,7 +217,7 @@ public class Hideaway implements ConfigurationSerializable {
             if (entity instanceof ArmorStand armorStand){
                 String gameName = armorStand.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
                 if (gameName != null){
-                    return summonSlime(armorStand.getLocation().clone().add(9, ARMORSTAND_OFFSET, 0), gameName);
+                    return summonSlime(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
                 }
             }
         }

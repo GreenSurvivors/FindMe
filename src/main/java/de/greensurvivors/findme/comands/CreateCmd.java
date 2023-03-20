@@ -4,6 +4,9 @@ import de.greensurvivors.findme.PermissionUtils;
 import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
 import de.greensurvivors.findme.language.Lang;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -76,7 +79,9 @@ public class CreateCmd {
                                 if (block != null){
                                     Sign sign = (Sign)block.getState();
                                     sign.line(1, Lang.build(Lang.SIGN_JOIN.get()));
-                                    sign.line(2, Lang.build(game.getName()));
+                                    Component component = PlainTextComponentSerializer.plainText().deserialize(game.getName());
+                                    component = component.color(NamedTextColor.GOLD);
+                                    sign.line(2, component);
 
                                     sign.update();
 

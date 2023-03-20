@@ -2,7 +2,8 @@ package de.greensurvivors.findme.listener;
 
 import de.greensurvivors.findme.dataObjects.Game;
 import de.greensurvivors.findme.dataObjects.GameManager;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,7 +38,7 @@ public class InventoryListener  implements Listener {
         final int INVENTORY_SIZE = 6 * 9;
 
         //inventory holder has to be null, or non op player will not be able to open the inventory
-        Inventory inventory = Bukkit.getServer().createInventory(null, INVENTORY_SIZE, LegacyComponentSerializer.legacyAmpersand().deserialize(game.getName()));
+        Inventory inventory = Bukkit.getServer().createInventory(null, INVENTORY_SIZE, PlainTextComponentSerializer.plainText().deserialize(game.getName()).color(NamedTextColor.GOLD));
         inventory.setMaxStackSize(1024);
         LinkedHashSet<ItemStack> heads = game.getHeads();
 
@@ -57,17 +58,18 @@ public class InventoryListener  implements Listener {
             numOfOpedInventories.put(gameName, numOfOpedInventories.get(gameName)+1);
         } else {
             inventory = buildHeadInv(gameName);
-
-            cachedViews.put(gameName, inventory);
-            player.openInventory(inventory);
-            numOfOpedInventories.put(gameName, 1);
+            if (inventory != null){
+                cachedViews.put(gameName, inventory);
+                player.openInventory(inventory);
+                numOfOpedInventories.put(gameName, 1);
+            }
         }
     }
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event){
         for(String name : GameManager.inst().getGameNames()){
-            if(LegacyComponentSerializer.legacyAmpersand().serialize(event.getView().title()).equalsIgnoreCase(name)){
+            if(PlainTextComponentSerializer.plainText().serialize(event.getView().title()).equalsIgnoreCase(name)){
                 Game game = GameManager.inst().getGame(name);
 
                 if (game != null){

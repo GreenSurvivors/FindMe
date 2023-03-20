@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ public class GameManager {
     private final HashMap<String, Game> games = new HashMap<>(); //name of game to better find it
 
     private final HashMap<Player, Game> playersInGames = new HashMap<>();
+    private final HashSet<Player> teleportingPlayers = new HashSet<>();
 
     public static GameManager inst(){
         if (instance == null){
@@ -155,5 +157,22 @@ public class GameManager {
 
         games.clear();
         playersInGames.clear();
+    }
+
+    protected void addTeleportingPlayer(@NotNull Player player){
+        teleportingPlayers.add(player);
+    }
+
+    protected void removeTeleportingPlayer(@NotNull Player player){
+        teleportingPlayers.remove(player);
+    }
+
+    /**
+     * returns if the player is teleporting because the game demands it e.a. porting to a lobby
+     * @param player
+     * @return
+     */
+    public boolean isPlayerTeleportingGame(@NotNull Player player){
+        return teleportingPlayers.contains(player);
     }
 }

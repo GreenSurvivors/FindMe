@@ -15,8 +15,8 @@ public enum Lang implements Cons {
 	SUCCESSFULLY_REMOVED(String.format("&2%s was successfully removed.", VALUE)),
 	SUCCESSFULLY_CREATED(String.format("&2Successfully created new %s", VALUE)),
 	STARTING_GAME(String.format("&2Starting game %s.", VALUE)),
-	STARTING_FAIL_HEADS(String.format("Couldn't start game &e%s&c, because no heads where set. use &e/fm set heads %s&c", VALUE, VALUE)),
-	STARTING_FAIL_PLAYERS(String.format("Couldn't start game &e%s&c, because no one joined. use &e/fm join %s&c", VALUE, VALUE)),
+	STARTING_FAIL_HEADS(String.format("&cCouldn't start game &6'&e%s&6'&c, because no heads where set. use &e/fm set heads %s&c", VALUE, VALUE)),
+	STARTING_FAIL_PLAYERS(String.format("&cCouldn't start game &e'&e%s&6'&c, because no one joined. use &e/fm join %s&c", VALUE, VALUE)),
 	ENDING_GAME(String.format("&2Ending game %s.", VALUE)),
 
 	SIGN_JOIN("&2[join fm]"),
@@ -38,7 +38,7 @@ public enum Lang implements Cons {
 
 	NO_PLAYER("&cYou have to be a player."),
 	NO_NUMBER(String.format("&6'&e%s&6' &cis not a valid number.", VALUE)),
-	NO_NEARBY_STAND("&cNo nearby hiding places where found. Try &e/fm list&c."),
+	NO_NEARBY_STAND("&cNo nearby hiding places where found. Try &e/fm show <game>&c."),
 	NOT_IN_GAME("&cYou are not in a game."),
 	NO_BOOL(String.format("&6'&e%s&6' &cis not a valid boolean.", VALUE)),
 	NO_PERMISSION_COMMAND("&cYou have no permission to perform this command."),
