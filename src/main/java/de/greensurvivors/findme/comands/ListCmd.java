@@ -14,7 +14,7 @@ public class ListCmd { //list all games
      * @param cs
      * @param args
      */
-    public static void handleCmd(CommandSender cs, String[] args) { //todo
+    public static void handleCmd(CommandSender cs, String[] args) {
         if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_LIST)){
             cs.sendMessage("list");
             for (String name : GameManager.inst().getGameNames()){

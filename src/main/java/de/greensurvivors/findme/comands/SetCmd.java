@@ -248,7 +248,6 @@ public class SetCmd {
         }
     }
 
-    //todo tap complete for the time args
     public static List<String> handleTap(CommandSender cs, String[] args) {
         switch (args.length){
             case 2 -> {

@@ -16,12 +16,14 @@ import org.bukkit.entity.LivingEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CreateCmd {
     private static final String
             GAME = "game",
             HIDEAWAY_LONG = "hideaway", HIDEAWAY_SHORT = "hide",
-            SIGN = "sign";
+            SIGN = "sign",
+                JOIN = "join", QUIT = "quit";
     /**
      * creates new games, hiding places and join signs
      */
@@ -67,31 +69,48 @@ public class CreateCmd {
                 }
                 //fm c sign <name>
                 case SIGN -> {
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_HIDEAWAY)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_SIGN)){
                         if (cs instanceof LivingEntity livingEntity){
-                            Game game = GameManager.inst().getGame(args[2]);
+                            Block block = getSignLookingAt(livingEntity);
 
-                            if (game != null){
-                                //set the sign text
+                            //set the sign text
+                            if (block != null){
+                                Sign sign = (Sign)block.getState();
 
-                                Block block = getSignLookingAt(livingEntity);
+                                if (args[2].equalsIgnoreCase(JOIN)){
+                                    if (args.length >= 4) {
+                                        Game game = GameManager.inst().getGame(args[3]);
 
-                                if (block != null){
-                                    Sign sign = (Sign)block.getState();
-                                    sign.line(1, Lang.build(Lang.SIGN_JOIN.get()));
-                                    Component component = PlainTextComponentSerializer.plainText().deserialize(game.getName());
-                                    component = component.color(NamedTextColor.GOLD);
-                                    sign.line(2, component);
+                                        if (game != null) {
+                                            sign.line(1, Lang.build(Lang.SIGN_JOIN.get()));
 
-                                    sign.update();
+                                            Component component = PlainTextComponentSerializer.plainText().deserialize(game.getName());
+                                            component = component.color(NamedTextColor.GOLD);
+                                            sign.line(2, component);
+                                        } else {
+                                            //no game by this name exits
+                                            cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
+                                            return;
+                                        }
+                                    } else {
+                                        //no game to join was given
+                                        cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
+                                        return;
+                                    }
+                                } else if (args[2].equalsIgnoreCase(QUIT)){
+                                    sign.line(1, Lang.build(Lang.SIGN_QUIT.get()));
 
-                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, SIGN)));
                                 } else {
-                                    cs.sendMessage(Lang.build(Lang.NO_SIGN.get()));
+                                    //no known signType
+                                    cs.sendMessage(Lang.build(Lang.UNKNOWN_ARGUMENT.get().replace(Lang.VALUE, args[2])));
+                                    return;
                                 }
+
+                                //update sign (else the text won't be shown) & send success message
+                                sign.update();
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, SIGN)));
                             } else {
-                                //no game by this name exits
-                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
+                                cs.sendMessage(Lang.build(Lang.NO_SIGN.get()));
                             }
                         } else {
                             //no location of cs
@@ -106,6 +125,8 @@ public class CreateCmd {
                     cs.sendMessage(Lang.build(Lang.UNKNOWN_ARGUMENT.get().replace(Lang.VALUE, args[1])));
                 }
             }
+        } else {
+            cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
         }
     }
 
@@ -127,9 +148,20 @@ public class CreateCmd {
                 return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
             }
             case 3 -> {
-                if (args[1].equalsIgnoreCase(HIDEAWAY_LONG) || args[1].equalsIgnoreCase(HIDEAWAY_SHORT) || args[1].equalsIgnoreCase(SIGN)){
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_SIGN, PermissionUtils.FINDME_CREATE_HIDEAWAY)){
+                if (args[1].equalsIgnoreCase(HIDEAWAY_LONG) || args[1].equalsIgnoreCase(HIDEAWAY_SHORT)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE, PermissionUtils.FINDME_CREATE_HIDEAWAY)){
                         return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+                    }
+                } else if (args[1].equalsIgnoreCase(SIGN)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE_SIGN)){
+                        return Stream.of(JOIN, QUIT).filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+                    }
+                }
+            }
+            case 4 -> {
+                if (args[1].equalsIgnoreCase(SIGN) && args[2].equalsIgnoreCase(JOIN)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_CREATE_SIGN)){
+                        return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[3])).collect(Collectors.toList());
                     }
                 }
             }
@@ -139,7 +171,7 @@ public class CreateCmd {
     /**
      * Get location of a sign a living entity is looking at.
      * @param entity looking at a sign
-     * @return location of sign, or null if the entity is not looking at a sign
+     * @return block of sign, or null if the entity is not looking at a sign
      */
     private static Block getSignLookingAt(LivingEntity entity) {
         // player is looking at a sign

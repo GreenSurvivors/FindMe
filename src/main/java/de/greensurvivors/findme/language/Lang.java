@@ -20,6 +20,7 @@ public enum Lang implements Cons {
 	ENDING_GAME(String.format("&2Ending game %s.", VALUE)),
 
 	SIGN_JOIN("&2[join fm]"),
+	SIGN_QUIT("&2[quit fm]"),
 
 	GAME_ALREADY_ACTIVE("The game is already active."),
 	GAME_ALREADY_EXISTS(String.format("&cThe game &6'&e%s&6'&c already exists.", VALUE)),

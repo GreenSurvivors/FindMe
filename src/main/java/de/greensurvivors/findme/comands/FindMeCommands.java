@@ -105,11 +105,6 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 	}
 
 	@Override
-	//get what game a stand belongs to
-	//todo quit sign
-	//info (about) a game -> Lobby/Start/quit pos; state; etc
-	//automode -> min/maxplayers; waiting time for players to join
-	//kann nicht in die Lobby porten wenn nicht geladen
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 		if (args.length == 1) {
 			List<String> result = new ArrayList<>();

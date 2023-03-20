@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.greensurvivors"
-version = "0.0.2-SNAPSHOT"
+version = "1.0.0"
 description = "lets you find ... things."
 
 java {

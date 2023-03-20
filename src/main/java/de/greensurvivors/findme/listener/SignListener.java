@@ -75,6 +75,16 @@ public class SignListener implements Listener {
                     if (!foundGame){
                         ePlayer.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, line3)));
                     }
+
+                } else if (Lang.SIGN_QUIT.get().equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(1)))){
+                    Game gameOfPlayer = GameManager.inst().getGameOfPlayer(ePlayer);
+                    if (gameOfPlayer != null){
+                        GameManager.inst().playerQuitGame(ePlayer, gameOfPlayer);
+
+                        ePlayer.sendMessage(Lang.build(Lang.QUIT_SELF.get()));
+                    } else {
+                        ePlayer.sendMessage(Lang.build(Lang.NOT_IN_GAME.get()));
+                    }
                 }
             }
         }

@@ -171,6 +171,9 @@ public class Game implements ConfigurationSerializable {
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         noCollisionTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+
+        //save a potential new entity of the hideaway list or a new version of serialization of future updates
+        MainConfig.inst().saveGame(this);
     }
 
     /**
@@ -275,12 +278,14 @@ public class Game implements ConfigurationSerializable {
                     }
 
                     hideaways_.put(hideaway.getUUIDSlime(), hideaway);
+                    hideaway.gotSlimeUpdate();
                 } else if (obj instanceof MemorySection memorySection){
                     Hideaway hideaway = Hideaway.deserialize(memorySection.getValues(false), noCollisionTeam_);
                     if (hideaway == null){
                         break;
                     }
                     hideaways_.put(hideaway.getUUIDSlime(), hideaway);
+                    hideaway.gotSlimeUpdate();
                 } else {
                     GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand: " + obj + ", skipping. Reason: unknown type.");
                 }
@@ -432,6 +437,7 @@ public class Game implements ConfigurationSerializable {
     public void addHideaway(@NotNull Location location){
         Hideaway hideaway = new Hideaway(location, name, noCollisionTeam);
         hideaways.put(hideaway.getUUIDSlime(), hideaway);
+        hideaway.gotSlimeUpdate();
 
         MainConfig.inst().saveGame(this);
     }
@@ -443,10 +449,17 @@ public class Game implements ConfigurationSerializable {
      */
     public void showAroundLocation(@NotNull Location location, int range){
         World world = location.getWorld();
+        Set<Hideaway> updatedHideaways = new HashSet<>();
 
         for (Hideaway hideaway : hideaways.values()){
-            if (hideaway.getSlime() != null){
-                Location hidingLoc = hideaway.getSlime().getLocation();
+            Slime slime = hideaway.getSlime();
+
+            if (slime != null){
+                if (hideaway.isSlimeUpdated()){
+                    updatedHideaways.add(hideaway);
+                }
+
+                Location hidingLoc = slime.getLocation();
 
                 if (world != hidingLoc.getWorld())
                     continue;
@@ -457,9 +470,20 @@ public class Game implements ConfigurationSerializable {
                     hideaway.getSlime().setGlowing(true);
 
                     Bukkit.getScheduler().runTaskLater(FindMe.inst(), () ->
-                            hideaway.getSlime().setGlowing(false), 200);
+                            slime.setGlowing(false), 400);
                 }
             }
+        }
+
+        //update the uuids
+        for (Hideaway hideaway : updatedHideaways){
+            hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
+            hideaways.put(hideaway.getUUIDSlime(), hideaway);
+
+            hideaway.gotSlimeUpdate();
+        }
+        if (updatedHideaways.size() > 0){
+            MainConfig.inst().saveGame(this);
         }
     }
 
@@ -473,10 +497,13 @@ public class Game implements ConfigurationSerializable {
         double lastDistance = Double.MAX_VALUE;
 
         Collection<Slime> nearbySlimes = startingPos.getNearbyEntitiesByType(Slime.class, 5);
+
         Set<Hideaway> nearbyHidingPlaces = nearbySlimes.stream().
                 //get all tracked slimes that are in radius
                 map(s -> hideaways.get(s.getUniqueId())).filter(Objects::nonNull).
                 collect(Collectors.toSet());
+
+        HashSet<Hideaway> updatedHideaways = new HashSet<>();
 
         for(Hideaway hideaway : nearbyHidingPlaces) {
             //we don't need the root, if we only want to know what entity is further
@@ -487,6 +514,21 @@ public class Game implements ConfigurationSerializable {
                 lastDistance = distance;
                 result = hideaway;
             }
+
+            if (hideaway.isSlimeUpdated()){
+                updatedHideaways.add(hideaway);
+            }
+        }
+
+        //update the uuids
+        for (Hideaway hideaway : updatedHideaways){
+            hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
+            hideaways.put(hideaway.getUUIDSlime(), hideaway);
+
+            hideaway.gotSlimeUpdate();
+        }
+        if (updatedHideaways.size() > 0){
+            MainConfig.inst().saveGame(this);
         }
 
         return result;
@@ -573,8 +615,6 @@ public class Game implements ConfigurationSerializable {
                 GreenLogger.log(Level.WARNING, "No start postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
             }
         } else {
-            GreenLogger.log(Level.INFO, "player " + player.getName() + " joined idle game " + name);
-
             if (lobbyLoc != null){
                 GameManager.inst().addTeleportingPlayer(player);
 
@@ -665,6 +705,8 @@ public class Game implements ConfigurationSerializable {
             }
         }
 
+        HashSet<Hideaway> updatedHideaways = new HashSet<>();
+
         //hide new stuff in hidden stands, if they are not in cooldown
         //only try to hide if we have heads to begin with
         final int numOfHeads = heads.size();
@@ -675,14 +717,34 @@ public class Game implements ConfigurationSerializable {
 
             for (Hideaway hideaway : hideaways.values()){
                 if (hideaway.getArmorStand() != null) {
-
-                    if (!hideaway.hasHead() &&
-                            hideaway.isCooldownOver(HideCooldownMillis) &&
-                            random.nextLong(averageHideTicks) == 1){
+                    if (hideaway.hasHead()){
+                        //make sure the slime didn't despawn and is still nice and updated
+                        hideaway.getSlime();
+                        if (hideaway.isSlimeUpdated()){
+                            updatedHideaways.add(hideaway);
+                        }
+                    } else if (hideaway.isCooldownOver(HideCooldownMillis) && random.nextLong(averageHideTicks) == 1){
                         hideaway.setHasHead(true);
                         hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(numOfHeads)]);
+
+                        //make sure the slime didn't despawn and is still nice and updated
+                        hideaway.getSlime();
+                        if (hideaway.isSlimeUpdated()){
+                            updatedHideaways.add(hideaway);
+                        }
                     }
                 }
+            }
+
+            //update the uuids
+            for (Hideaway hideaway : updatedHideaways){
+                hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
+                hideaways.put(hideaway.getUUIDSlime(), hideaway);
+
+                hideaway.gotSlimeUpdate();
+            }
+            if (updatedHideaways.size() > 0){
+                MainConfig.inst().saveGame(this);
             }
         }
 
@@ -998,4 +1060,5 @@ public class Game implements ConfigurationSerializable {
     public int getNumOfHeads(){
         return heads.size();
     }
+
 }

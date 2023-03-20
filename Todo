@@ -1,0 +1,12 @@
+todo
+    commands
+        set
+            tap complete for the time args of the
+        list
+            all
+        help
+            where the commands are explained
+        info
+            (about) a game like Lobby/Start/quit pos; state; etc
+            get what game a stand belongs to
+    automode -> min/maxplayers; waiting time for players to join - in 2.0

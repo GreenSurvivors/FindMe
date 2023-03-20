@@ -43,7 +43,10 @@ public class Hideaway implements ConfigurationSerializable {
     private boolean hasHead = false;
     private long cooldown = 0;
 
+    private boolean slimeUpdated = false;
+
     private Slime summonSlime(@NotNull Location location, @NotNull String gameName){
+        slimeUpdated = true;
         //get uuid and set all necessary properties of a freshly spawned slime
         //in other news: the settings are set with a lambda function, so no slime should ever flash for a moment.
         return location.getWorld().spawn(location, Slime.class, newSlime-> {
@@ -95,7 +98,7 @@ public class Hideaway implements ConfigurationSerializable {
         summonArmorStand(location, gameName);
     }
 
-    public Hideaway(@NotNull UUID uuid_armorstand, @NotNull UUID uuid_slime, @NotNull Team noCollistionTeam){
+    private Hideaway(@NotNull UUID uuid_armorstand, @NotNull UUID uuid_slime, @NotNull Team noCollistionTeam){
         this.noCollistionTeam = noCollistionTeam;
         this.uuid_armorstand = uuid_armorstand;
         this.uuid_slime = uuid_slime;
@@ -243,5 +246,17 @@ public class Hideaway implements ConfigurationSerializable {
 
     public void setHasHead(boolean hasHead) {
         this.hasHead = hasHead;
+    }
+
+    public boolean isSlimeUpdated() {
+        return slimeUpdated;
+    }
+
+    /**
+     * gives feedback that the uuid change of the slime was reflected in the tracking map
+     * it's serves no functional purpose but helps to detect and correct errors.
+     */
+    protected void gotSlimeUpdate() {
+        slimeUpdated = false;
     }
 }
