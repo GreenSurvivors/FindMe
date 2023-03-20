@@ -502,12 +502,12 @@ public class Game implements ConfigurationSerializable {
         if (hideaway != null){
             Slime slime = hideaway.getSlime();
             if (slime != null){
-                slime.setHealth(0);
+                slime.remove();;
             }
 
             ArmorStand armorStand = hideaway.getArmorStand();
             if (armorStand != null){
-                armorStand.setHealth(0);
+                armorStand.remove();;
             }
         }
 
@@ -527,7 +527,7 @@ public class Game implements ConfigurationSerializable {
 
                 ArmorStand armorStand = hideaway.getArmorStand();
                 if (armorStand != null) {
-                    armorStand.setHealth(0);
+                    armorStand.remove();
                 }
             }
         }

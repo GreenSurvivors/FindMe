@@ -288,13 +288,22 @@ public class SetCmd {
                 return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
             }
             case 3 -> {
+                //heads
                 if (args[1].equalsIgnoreCase(HEADS)) {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS)){
                         return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
                     }
+                //late join
                 } else if ((args[1].equalsIgnoreCase(LATE_JOIN_LONG) || args[1].equalsIgnoreCase(LATE_JOIN_SHORT)) &&
                         PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
                     return Stream.of(String.valueOf(true), String.valueOf(false)).filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+                //locations
+                } else if (args[1].equalsIgnoreCase(LOBBY) ||
+                        args[1].equalsIgnoreCase(STARTPOINT_LONG) ||
+                        args[1].equalsIgnoreCase(STARTPOINT_SHORT) || args[1].equalsIgnoreCase(ENDPOINT_LONG) || args[1].equalsIgnoreCase(ENDPOINT_SHORT) || args[1].equalsIgnoreCase(ENDPOINT_ALT)){
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET_LOCATIONS)){
+                        return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+                    }
                 }
             }
         }
