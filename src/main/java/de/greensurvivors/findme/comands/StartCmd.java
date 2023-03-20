@@ -29,11 +29,11 @@ public class StartCmd {
                                 game.startup();
 
                                 cs.sendMessage(Lang.build(Lang.STARTING_GAME.get().replace(Lang.VALUE, args[1])));
-                            } else { //todo
-
+                            } else {
+                                cs.sendMessage(Lang.build(Lang.STARTING_FAIL_HEADS.get().replace(Lang.VALUE, args[1])));
                             }
                         } else {
-
+                            cs.sendMessage(Lang.build(Lang.STARTING_FAIL_PLAYERS.get().replace(Lang.VALUE, args[1])));
                         }
                     } else {
                         cs.sendMessage(Lang.build(Lang.GAME_ALREADY_ACTIVE.get()));

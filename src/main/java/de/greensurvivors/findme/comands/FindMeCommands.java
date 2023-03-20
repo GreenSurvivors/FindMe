@@ -109,11 +109,7 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 	//todo quit sign
 	//info (about) a game -> Lobby/Start/quit pos; state; etc
 	//automode -> min/maxplayers; waiting time for players to join
-
-	//todo
 	//kann nicht in die Lobby porten wenn nicht geladen
-//kann spiel nicht starten
-//slimes despawnen und werden niemals wieder neu erstellt
 	public List<String> onTabComplete(@NotNull CommandSender cs, @NotNull Command cmd, @NotNull String label, String[] args) {
 		if (args.length == 1) {
 			List<String> result = new ArrayList<>();

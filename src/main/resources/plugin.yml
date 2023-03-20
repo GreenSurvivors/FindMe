@@ -1,5 +1,5 @@
 name: FindMe
-version: 0.0.1-SNAPSHOT
+version: 0.0.2-SNAPSHOT
 main: de.greensurvivors.findme.FindMe
 api-version: 1.19
 authors: [ Feuerreiter ]

@@ -15,6 +15,8 @@ public enum Lang implements Cons {
 	SUCCESSFULLY_REMOVED(String.format("&2%s was successfully removed.", VALUE)),
 	SUCCESSFULLY_CREATED(String.format("&2Successfully created new %s", VALUE)),
 	STARTING_GAME(String.format("&2Starting game %s.", VALUE)),
+	STARTING_FAIL_HEADS(String.format("Couldn't start game &e%s&c, because no heads where set. use &e/fm set heads %s&c", VALUE, VALUE)),
+	STARTING_FAIL_PLAYERS(String.format("Couldn't start game &e%s&c, because no one joined. use &e/fm join %s&c", VALUE, VALUE)),
 	ENDING_GAME(String.format("&2Ending game %s.", VALUE)),
 
 	SIGN_JOIN("&2[join fm]"),

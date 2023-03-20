@@ -514,6 +514,25 @@ public class Game implements ConfigurationSerializable {
         MainConfig.inst().saveGame(this);
     }
 
+    protected void removeAllHideaways() {
+        for (Hideaway hideaway : hideaways.values()){
+            //kill the entities
+            if (hideaway != null) {
+                Slime slime = hideaway.getSlime();
+                if (slime != null) {
+                    slime.setHealth(0);
+                }
+
+                ArmorStand armorStand = hideaway.getArmorStand();
+                if (armorStand != null) {
+                    armorStand.setHealth(0);
+                }
+            }
+        }
+
+        hideaways.clear();
+    }
+
     /**
      * forces the game to end and clears up the tracked data.
      * Will get the game into a broken state and is only for shutting doen
@@ -533,6 +552,8 @@ public class Game implements ConfigurationSerializable {
      * @param player who joins
      */
     protected void playerJoin(@NotNull Player player){
+        GreenLogger.log(Level.INFO, "player " + player.getName() + " joined " + name);
+
         players.add(player);
         player.sendMessage(Lang.build(Lang.MESSAGE_JOIN.get()));
         player.sendMessage(Lang.build(Lang.MESSAGE_OBJECTIVE.get()));
@@ -542,12 +563,18 @@ public class Game implements ConfigurationSerializable {
             noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
+                if(!startLoc.getChunk().isLoaded()){
+                    startLoc.getChunk().load();
+                }
                 player.teleportAsync(startLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
             } else {
                 GreenLogger.log(Level.WARNING, "No start postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
             }
         } else {
             if (lobbyLoc != null){
+                if(!lobbyLoc.getChunk().isLoaded()){
+                    lobbyLoc.getChunk().load();
+                }
                 player.teleportAsync(lobbyLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
             } else {
                 GreenLogger.log(Level.WARNING, "No lobby postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
@@ -566,6 +593,10 @@ public class Game implements ConfigurationSerializable {
         noCollisionTeam.removePlayer(player);
 
         if (quitLoc != null){
+            if(!quitLoc.getChunk().isLoaded()){
+                quitLoc.getChunk().load();
+            }
+
             player.teleportAsync(quitLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
         } else {
             GreenLogger.log(Level.WARNING, "No quit postion was given for FindMe! game \"" + name + "\". Couldn't teleport anybody.");
@@ -628,22 +659,21 @@ public class Game implements ConfigurationSerializable {
         }
 
         //hide new stuff in hidden stands, if they are not in cooldown
-        final int max = heads.size();
-
         //only try to hide if we have heads to begin with
-        if (max > 0){
+        final int numOfHeads = heads.size();
+        if (numOfHeads > 0){
+
             Random random = new Random();
             ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
             for (Hideaway hideaway : hideaways.values()){
                 if (hideaway.getArmorStand() != null) {
-                    ItemStack headItemstack = hideaway.getArmorStand().getEquipment().getHelmet();
 
-                    if ((headItemstack == null || headItemstack.getType().isAir()) &&
+                    if (!hideaway.hasHead() &&
                             hideaway.isCooldownOver(HideCooldownMillis) &&
                             random.nextLong(averageHideTicks) == 1){
-                        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
-                        hideaway.setCooldownNow();
+                        hideaway.setHasHead(true);
+                        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(numOfHeads)]);
                     }
                 }
             }
@@ -674,13 +704,20 @@ public class Game implements ConfigurationSerializable {
                 if (hideaway.getArmorStand() != null){
                     if (random.nextInt(100) <= startingHiddenPercent) {
                         hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
+                        hideaway.setHasHead(true);
                     } else {
                         hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+                        hideaway.setHasHead(false);
                     }
                 }
 
                 hideaway.setCooldownNow();
             }
+        }
+
+
+        if(startLoc != null && !startLoc.getChunk().isLoaded()){
+            startLoc.getChunk().load();
         }
 
         for (Player player : players){
@@ -712,17 +749,17 @@ public class Game implements ConfigurationSerializable {
             return;
         }
 
-        //don't react to empty stands
-        ItemStack oldHelmet = hideaway.getArmorStand().getEquipment().getHelmet();
-        if (oldHelmet == null || oldHelmet.getType().isAir()){
-            return;
+        //don't react to empty hideaways
+        if (hideaway.hasHead()){
+            hideaway.setHasHead(false);
+            hideaway.setCooldownNow();
+
+            //remove head & play sound
+            hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+            hideaway.getArmorStand().getLocation().getWorld().playSound(hideaway.getArmorStand(), Sound.ENTITY_ITEM_PICKUP,0.9f, 0.9f);
+
+            addScore(player, 1);
         }
-
-        //remove head & play sound
-        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
-        hideaway.getArmorStand().getLocation().getWorld().playSound(hideaway.getArmorStand(), Sound.ENTITY_ITEM_PICKUP,0.9f, 0.9f);
-
-        addScore(player, 1);
     }
 
     /**

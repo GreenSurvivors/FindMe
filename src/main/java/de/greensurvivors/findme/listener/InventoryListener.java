@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 
 public class InventoryListener  implements Listener {
     private static InventoryListener instance;
@@ -41,7 +42,7 @@ public class InventoryListener  implements Listener {
         LinkedHashSet<ItemStack> heads = game.getHeads();
 
         //add items
-        for (ItemStack itemStack : heads){//todo why can a head be null here?
+        for (ItemStack itemStack : heads){
             inventory.addItem(itemStack);
         }
 
@@ -70,7 +71,7 @@ public class InventoryListener  implements Listener {
                 Game game = GameManager.inst().getGame(name);
 
                 if (game != null){
-                    game.setHeads(Arrays.asList(event.getView().getTopInventory().getContents()));
+                    game.setHeads(Arrays.stream(event.getView().getTopInventory().getContents()).filter(Objects::nonNull).filter(i -> !i.getType().isAir()).toList() );
 
                     int num = numOfOpedInventories.get(game.getName())-1;
                     if (num <= 0){

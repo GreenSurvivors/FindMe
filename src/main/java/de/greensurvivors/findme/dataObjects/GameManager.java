@@ -68,6 +68,7 @@ public class GameManager {
         Game game = getGame(name);
         if (game != null){
             game.end();
+            game.removeAllHideaways();
 
             MainConfig.inst().removeGame(game.getName());
 
