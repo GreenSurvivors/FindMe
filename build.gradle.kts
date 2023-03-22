@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.greensurvivors"
-version = "1.0.0"
+version = "1.0.1-SNAPSHOT"
 description = "lets you find ... things."
 
 java {
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    paperDevBundle("1.19.3-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.19.3-R0.1-SNAPSHOT")
 }
 
 tasks {
