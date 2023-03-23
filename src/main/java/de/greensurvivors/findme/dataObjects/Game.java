@@ -13,8 +13,8 @@ import org.bukkit.*;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Slime;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -53,7 +53,7 @@ public class Game implements ConfigurationSerializable {
     private final Objective objective;
     private final Team noCollisionTeam;
 
-    //set of all known uuids of the slime part of all hideaways.
+    //set of all known uuids of the hitBoxEntity part of all hideaways.
     //the Class tracks the cooldown for hiding
     private final HashMap<UUID, Hideaway> hideaways = new HashMap<>();
     //set of all items that can get hidden away
@@ -262,7 +262,7 @@ public class Game implements ConfigurationSerializable {
             for (Object obj: objList){
 
                 if (obj instanceof Hideaway hideaway) {
-                    hideaways_.put(hideaway.getUUIDSlime(), hideaway);
+                    hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
                 } else if (obj instanceof Map<?, ?> map){
                     Map<String, Object> hideawaysMap = new HashMap<>();
                     for (Object obj2: map.keySet()){
@@ -277,15 +277,15 @@ public class Game implements ConfigurationSerializable {
                         break;
                     }
 
-                    hideaways_.put(hideaway.getUUIDSlime(), hideaway);
-                    hideaway.gotSlimeUpdate();
+                    hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
+                    hideaway.gotHitboxUpdate();
                 } else if (obj instanceof MemorySection memorySection){
                     Hideaway hideaway = Hideaway.deserialize(memorySection.getValues(false), noCollisionTeam_);
                     if (hideaway == null){
                         break;
                     }
-                    hideaways_.put(hideaway.getUUIDSlime(), hideaway);
-                    hideaway.gotSlimeUpdate();
+                    hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
+                    hideaway.gotHitboxUpdate();
                 } else {
                     GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand: " + obj + ", skipping. Reason: unknown type.");
                 }
@@ -436,8 +436,8 @@ public class Game implements ConfigurationSerializable {
      */
     public void addHideaway(@NotNull Location location){
         Hideaway hideaway = new Hideaway(location, name, noCollisionTeam);
-        hideaways.put(hideaway.getUUIDSlime(), hideaway);
-        hideaway.gotSlimeUpdate();
+        hideaways.put(hideaway.getUUIDHitBox(), hideaway);
+        hideaway.gotHitboxUpdate();
 
         MainConfig.inst().saveGame(this);
     }
@@ -452,14 +452,14 @@ public class Game implements ConfigurationSerializable {
         Set<Hideaway> updatedHideaways = new HashSet<>();
 
         for (Hideaway hideaway : hideaways.values()){
-            Slime slime = hideaway.getSlime();
+            Entity hitboxEntity = hideaway.getHitBoxEntity();
 
-            if (slime != null){
-                if (hideaway.isSlimeUpdated()){
+            if (hitboxEntity != null){
+                if (hideaway.isHitBoxUpdated()){
                     updatedHideaways.add(hideaway);
                 }
 
-                Location hidingLoc = slime.getLocation();
+                Location hidingLoc = hitboxEntity.getLocation();
 
                 if (world != hidingLoc.getWorld())
                     continue;
@@ -467,10 +467,10 @@ public class Game implements ConfigurationSerializable {
                 if (NumberConversions.square(range) >= (NumberConversions.square(location.getX() - hidingLoc.getX()) +
                         NumberConversions.square(location.getY() - hidingLoc.getY()) +
                         NumberConversions.square(location.getZ() - hidingLoc.getZ()))){
-                    hideaway.getSlime().setGlowing(true);
+                    hideaway.getHitBoxEntity().setGlowing(true);
 
                     Bukkit.getScheduler().runTaskLater(FindMe.inst(), () ->
-                            slime.setGlowing(false), 400);
+                            hitboxEntity.setGlowing(false), 400);
                 }
             }
         }
@@ -478,9 +478,9 @@ public class Game implements ConfigurationSerializable {
         //update the uuids
         for (Hideaway hideaway : updatedHideaways){
             hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
-            hideaways.put(hideaway.getUUIDSlime(), hideaway);
+            hideaways.put(hideaway.getUUIDHitBox(), hideaway);
 
-            hideaway.gotSlimeUpdate();
+            hideaway.gotHitboxUpdate();
         }
         if (updatedHideaways.size() > 0){
             MainConfig.inst().saveGame(this);
@@ -496,10 +496,10 @@ public class Game implements ConfigurationSerializable {
         Hideaway result = null;
         double lastDistance = Double.MAX_VALUE;
 
-        Collection<Slime> nearbySlimes = startingPos.getNearbyEntitiesByType(Slime.class, 5);
+        Collection<Entity> nearbyHitBoxEntities = startingPos.getNearbyEntitiesByType(Hideaway.getHitboxEntityClass(), 5);
 
-        Set<Hideaway> nearbyHidingPlaces = nearbySlimes.stream().
-                //get all tracked slimes that are in radius
+        Set<Hideaway> nearbyHidingPlaces = nearbyHitBoxEntities.stream().
+                //get all tracked hit box entities that are in radius
                 map(s -> hideaways.get(s.getUniqueId())).filter(Objects::nonNull).
                 collect(Collectors.toSet());
 
@@ -507,15 +507,15 @@ public class Game implements ConfigurationSerializable {
 
         for(Hideaway hideaway : nearbyHidingPlaces) {
             //we don't need the root, if we only want to know what entity is further
-            //also, hideaway.getSlime is backed up by getting the initial slimes from getNearbyEntitiesByType,
+            //also, hideaway.getHitBoxEntity is backed up by getting the initial entities from getNearbyEntitiesByType,
             //so it never will be null.
-            double distance = startingPos.distanceSquared(hideaway.getSlime().getLocation());
+            double distance = startingPos.distanceSquared(hideaway.getHitBoxEntity().getLocation());
             if(distance < lastDistance) {
                 lastDistance = distance;
                 result = hideaway;
             }
 
-            if (hideaway.isSlimeUpdated()){
+            if (hideaway.isHitBoxUpdated()){
                 updatedHideaways.add(hideaway);
             }
         }
@@ -523,9 +523,9 @@ public class Game implements ConfigurationSerializable {
         //update the uuids
         for (Hideaway hideaway : updatedHideaways){
             hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
-            hideaways.put(hideaway.getUUIDSlime(), hideaway);
+            hideaways.put(hideaway.getUUIDHitBox(), hideaway);
 
-            hideaway.gotSlimeUpdate();
+            hideaway.gotHitboxUpdate();
         }
         if (updatedHideaways.size() > 0){
             MainConfig.inst().saveGame(this);
@@ -535,16 +535,16 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * removes a hidden armor stand + slime pair and no longer keeps track of it (saves the game)
-     * @param uuid of a slime the armor stand belongs to
+     * removes a hidden armor stand + hitBoxEntity pair and no longer keeps track of it (saves the game)
+     * @param uuid of a hitBoxEntity the armor stand belongs to
      */
     public void removeHideaway(@NotNull UUID uuid){
         Hideaway hideaway =  hideaways.get(uuid);
         //kill the entities
         if (hideaway != null){
-            Slime slime = hideaway.getSlime();
-            if (slime != null){
-                slime.remove();;
+            Entity hitBoxEntity = hideaway.getHitBoxEntity();
+            if (hitBoxEntity != null){
+                hitBoxEntity.remove();;
             }
 
             ArmorStand armorStand = hideaway.getArmorStand();
@@ -562,9 +562,9 @@ public class Game implements ConfigurationSerializable {
         for (Hideaway hideaway : hideaways.values()){
             //kill the entities
             if (hideaway != null) {
-                Slime slime = hideaway.getSlime();
-                if (slime != null) {
-                    slime.setHealth(0);
+                Entity hitBoxEntity = hideaway.getHitBoxEntity();
+                if (hitBoxEntity != null) {
+                    hitBoxEntity.remove();
                 }
 
                 ArmorStand armorStand = hideaway.getArmorStand();
@@ -718,18 +718,18 @@ public class Game implements ConfigurationSerializable {
             for (Hideaway hideaway : hideaways.values()){
                 if (hideaway.getArmorStand() != null) {
                     if (hideaway.hasHead()){
-                        //make sure the slime didn't despawn and is still nice and updated
-                        hideaway.getSlime();
-                        if (hideaway.isSlimeUpdated()){
+                        //make sure the hitBoxEntity didn't despawn and is still nice and updated
+                        hideaway.getHitBoxEntity();
+                        if (hideaway.isHitBoxUpdated()){
                             updatedHideaways.add(hideaway);
                         }
                     } else if (hideaway.isCooldownOver(HideCooldownMillis) && random.nextLong(averageHideTicks) == 1){
                         hideaway.setHasHead(true);
                         hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(numOfHeads)]);
 
-                        //make sure the slime didn't despawn and is still nice and updated
-                        hideaway.getSlime();
-                        if (hideaway.isSlimeUpdated()){
+                        //make sure the hitBoxEntity didn't despawn and is still nice and updated
+                        hideaway.getHitBoxEntity();
+                        if (hideaway.isHitBoxUpdated()){
                             updatedHideaways.add(hideaway);
                         }
                     }
@@ -739,9 +739,9 @@ public class Game implements ConfigurationSerializable {
             //update the uuids
             for (Hideaway hideaway : updatedHideaways){
                 hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
-                hideaways.put(hideaway.getUUIDSlime(), hideaway);
+                hideaways.put(hideaway.getUUIDHitBox(), hideaway);
 
-                hideaway.gotSlimeUpdate();
+                hideaway.gotHitboxUpdate();
             }
             if (updatedHideaways.size() > 0){
                 MainConfig.inst().saveGame(this);
@@ -769,7 +769,14 @@ public class Game implements ConfigurationSerializable {
             Random random = new Random();
             ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
+            Set<Hideaway> updatedHideaways = new HashSet<>();
+
             for (Hideaway hideaway : hideaways.values()) {
+                hideaway.getHitBoxEntity();
+                if (hideaway.isHitBoxUpdated()) {
+                    updatedHideaways.add(hideaway);
+                }
+
                 if (hideaway.getArmorStand() != null){
                     if (random.nextInt(100) <= startingHiddenPercent) {
                         hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
@@ -781,6 +788,17 @@ public class Game implements ConfigurationSerializable {
                 }
 
                 hideaway.setCooldownNow();
+            }
+
+            //update the uuids
+            for (Hideaway hideaway : updatedHideaways){
+                hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
+                hideaways.put(hideaway.getUUIDHitBox(), hideaway);
+
+                hideaway.gotHitboxUpdate();
+            }
+            if (updatedHideaways.size() > 0){
+                MainConfig.inst().saveGame(this);
             }
         }
 
@@ -811,9 +829,9 @@ public class Game implements ConfigurationSerializable {
     }
 
     /**
-     * called whenever a player finds a hideaway (technically the slime of it), increments the score of the player
+     * called whenever a player finds a hideaway (technically the hitBoxEntity of it), increments the score of the player
      * @param player the player who found the hideaway
-     * @param uuid uuid of the slime part of a hideaway
+     * @param uuid uuid of the hitBoxEntity part of a hideaway
      */
     public void findHideaway(@NotNull Player player, @NotNull UUID uuid){
         Hideaway hideaway = hideaways.get(uuid);

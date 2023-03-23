@@ -51,7 +51,7 @@ public class RemoveCmd {
                                 //remove the entity
                                 Hideaway hideaway = game.getNearestHideaway(livingEntity.getLocation());
                                 if (hideaway != null){
-                                    game.removeHideaway(hideaway.getUUIDSlime());
+                                    game.removeHideaway(hideaway.getUUIDHitBox());
                                     cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, HIDEAWAY_LONG)));
                                 } else {
                                     //no hideaways where found

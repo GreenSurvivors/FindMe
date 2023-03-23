@@ -28,7 +28,7 @@ public class Hideaway implements ConfigurationSerializable {
     private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\z");
 
     private final static String
-            UUID_SLIME_KEY = "uuid_slime",
+            UUID_HITBOX_ENTITY_KEY = "uuid_hitbox",
             UUID_ARMORSTAND_KEY = "uuid_armorstand";
 
     //this number comes purely from testing with a small armor stand. Maybe one day a smart guy can add a fancy calculation why it is roughly this number.
@@ -38,17 +38,18 @@ public class Hideaway implements ConfigurationSerializable {
 
     private final Team noCollistionTeam;
 
-    private UUID uuid_armorstand;
-    private UUID uuid_slime;
+    private UUID uuidArmorStand;
+    private UUID uuidHitBoxEntity;
     private boolean hasHead = false;
     private long cooldown = 0;
 
-    private boolean slimeUpdated = false;
+    private boolean hitBoxUpdated = false;
+    private final static Class<? extends Entity> hitboxEntityClass = Slime.class;
 
-    private Slime summonSlime(@NotNull Location location, @NotNull String gameName){
-        slimeUpdated = true;
-        //get uuid and set all necessary properties of a freshly spawned slime
-        //in other news: the settings are set with a lambda function, so no slime should ever flash for a moment.
+    private Entity summonHitBoxEntity(@NotNull Location location, @NotNull String gameName){
+        hitBoxUpdated = true;
+        //get uuid and set all necessary properties of a freshly spawned hitBoxEntity
+        //in other news: the settings are set with a lambda function, so no hitBoxEntity should ever flash for a moment.
         return location.getWorld().spawn(location, Slime.class, newSlime-> {
             newSlime.setInvisible(true);
             newSlime.setSize(1);
@@ -58,7 +59,7 @@ public class Hideaway implements ConfigurationSerializable {
             newSlime.setCollidable(false);
             newSlime.setGravity(false);
             newSlime.setInvulnerable(true);
-            //don't despawn this slime
+            //don't despawn this hitBoxEntity
             newSlime.setPersistent(true);
 
             //don't drop anything on death
@@ -67,7 +68,7 @@ public class Hideaway implements ConfigurationSerializable {
             newSlime.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
 
             noCollistionTeam.addEntity(newSlime);
-            uuid_slime = newSlime.getUniqueId();
+            uuidHitBoxEntity = newSlime.getUniqueId();
         });
     }
 
@@ -88,21 +89,21 @@ public class Hideaway implements ConfigurationSerializable {
             newArmorStand.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
 
             noCollistionTeam.addEntity(newArmorStand);
-            uuid_armorstand = newArmorStand.getUniqueId();
+            uuidArmorStand = newArmorStand.getUniqueId();
         });
     }
 
     public Hideaway(@NotNull Location location, @NotNull String gameName, @NotNull Team noCollistionTeam){
         this.noCollistionTeam = noCollistionTeam;
-        summonSlime(location, gameName);
+        summonHitBoxEntity(location, gameName);
         summonArmorStand(location, gameName);
     }
 
-    private Hideaway(@NotNull UUID uuid_armorstand, @NotNull UUID uuid_slime, @NotNull Team noCollistionTeam){
+    private Hideaway(@NotNull UUID uuidArmorStand, @NotNull UUID uuidHitBoxEntity, @NotNull Team noCollistionTeam){
         this.noCollistionTeam = noCollistionTeam;
-        this.uuid_armorstand = uuid_armorstand;
-        this.uuid_slime = uuid_slime;
-        Entity entity = Bukkit.getEntity(uuid_armorstand);
+        this.uuidArmorStand = uuidArmorStand;
+        this.uuidHitBoxEntity = uuidHitBoxEntity;
+        Entity entity = Bukkit.getEntity(uuidArmorStand);
 
         ArmorStand armorStand = null;
         if (entity instanceof ArmorStand armorStand2){
@@ -110,24 +111,24 @@ public class Hideaway implements ConfigurationSerializable {
             noCollistionTeam.addEntity(armorStand2);
         }
 
-        entity = Bukkit.getEntity(uuid_slime);
-        Slime slime = null;
-        if (entity instanceof Slime slime2){
-            slime = slime2;
-            noCollistionTeam.addEntity(slime2);
+        entity = Bukkit.getEntity(uuidHitBoxEntity);
+        Entity hitBoxEntity = null;
+        if (hitboxEntityClass.isInstance(entity)){
+            hitBoxEntity = entity;
+            noCollistionTeam.addEntity(entity);
         }
 
-        // the armor stand and slime should never be separated. If they are we properly lost track of one of them.
+        // the armor stand and hitBoxEntity should never be separated. If they are we properly lost track of one of them.
         // so if one was loaded while the other wasn't, try to generate a new one of the other one
-        if (armorStand == null && slime != null){
-            String gameName = slime.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
+        if (armorStand == null && hitBoxEntity != null){
+            String gameName = hitBoxEntity.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
             if (gameName != null){
-                summonArmorStand(slime.getLocation(), gameName);
+                summonArmorStand(hitBoxEntity.getLocation(), gameName);
             }
-        } else if (armorStand != null && slime == null){
+        } else if (armorStand != null && hitBoxEntity == null){
             String gameName = armorStand.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
             if (gameName != null){
-                summonSlime(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
+                summonHitBoxEntity(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
             }
         }
     }
@@ -140,8 +141,8 @@ public class Hideaway implements ConfigurationSerializable {
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put(UUID_SLIME_KEY, uuid_slime.toString());
-        resultMap.put(UUID_ARMORSTAND_KEY, uuid_armorstand.toString());
+        resultMap.put(UUID_HITBOX_ENTITY_KEY, uuidHitBoxEntity.toString());
+        resultMap.put(UUID_ARMORSTAND_KEY, uuidArmorStand.toString());
         return resultMap;
     }
 
@@ -165,11 +166,11 @@ public class Hideaway implements ConfigurationSerializable {
             return null;
         }
 
-        obj = data.get(UUID_SLIME_KEY);
-        UUID slimeUUID;
+        obj = data.get(UUID_HITBOX_ENTITY_KEY);
+        UUID hitBoxEntityUUID;
         if (obj instanceof String str2){
             if(UUID_PATTERN.matcher(str2).find()){
-                slimeUUID = UUID.fromString(str2);
+                hitBoxEntityUUID = UUID.fromString(str2);
             } else {
                 GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + str2 + ", skipping. Reason: not a valid uuid.");
                 return null;
@@ -179,25 +180,25 @@ public class Hideaway implements ConfigurationSerializable {
             return null;
         }
 
-        return new Hideaway(armorStandUUID, slimeUUID, noCollistionTeam);
+        return new Hideaway(armorStandUUID, hitBoxEntityUUID, noCollistionTeam);
     }
 
     public @Nullable ArmorStand getArmorStand() {
         //try to fetch the armor stand from bukkit
-        Entity entity = Bukkit.getEntity(uuid_armorstand);
+        Entity entity = Bukkit.getEntity(uuidArmorStand);
 
         if (entity instanceof ArmorStand armorStand){
             noCollistionTeam.addEntity(armorStand);
 
             return armorStand;
         } else {
-            //try to get a new armor stand from the slime
-            entity = Bukkit.getEntity(uuid_slime);
+            //try to get a new armor stand from the hitBoxEntity
+            entity = Bukkit.getEntity(uuidHitBoxEntity);
 
-            if (entity instanceof Slime slime){
-                String gameName = slime.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
+            if (hitboxEntityClass.isInstance(entity)){
+                String gameName = entity.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
                 if (gameName != null){
-                    return summonArmorStand(slime.getLocation(), gameName);
+                    return summonArmorStand(entity.getLocation(), gameName);
                 }
             }
         }
@@ -205,22 +206,22 @@ public class Hideaway implements ConfigurationSerializable {
         return null;
     }
 
-    public @Nullable Slime getSlime() {
-        //try to fetch the slime from bukkit
-        Entity entity = Bukkit.getEntity(uuid_slime);
+    public @Nullable Entity getHitBoxEntity() {
+        //try to fetch the hitBoxEntity from bukkit
+        Entity entity = Bukkit.getEntity(uuidHitBoxEntity);
 
-        if (entity instanceof Slime slime){
-            noCollistionTeam.addEntity(slime);
+        if (hitboxEntityClass.isInstance(entity)){
+            noCollistionTeam.addEntity(entity);
 
-            return slime;
+            return entity;
         } else {
-            //try to get a slime stand from the armor stand
-            entity = Bukkit.getEntity(uuid_armorstand);
+            //try to get a hitBoxEntity stand from the armor stand
+            Entity probablyArmorStand = Bukkit.getEntity(uuidArmorStand);
 
-            if (entity instanceof ArmorStand armorStand){
+            if (probablyArmorStand instanceof ArmorStand armorStand){
                 String gameName = armorStand.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
                 if (gameName != null){
-                    return summonSlime(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
+                    return summonHitBoxEntity(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
                 }
             }
         }
@@ -228,8 +229,8 @@ public class Hideaway implements ConfigurationSerializable {
         return null;
     }
 
-    public @NotNull UUID getUUIDSlime(){
-        return uuid_slime;
+    public @NotNull UUID getUUIDHitBox(){
+        return uuidHitBoxEntity;
     }
 
     public boolean isCooldownOver(long millis) {
@@ -248,15 +249,19 @@ public class Hideaway implements ConfigurationSerializable {
         this.hasHead = hasHead;
     }
 
-    public boolean isSlimeUpdated() {
-        return slimeUpdated;
+    public boolean isHitBoxUpdated() {
+        return hitBoxUpdated;
     }
 
     /**
-     * gives feedback that the uuid change of the slime was reflected in the tracking map
+     * gives feedback that the uuid change of the hitBoxEntity was reflected in the tracking map
      * it's serves no functional purpose but helps to detect and correct errors.
      */
-    protected void gotSlimeUpdate() {
-        slimeUpdated = false;
+    protected void gotHitboxUpdate() {
+        hitBoxUpdated = false;
+    }
+
+    public static Class<? extends Entity> getHitboxEntityClass(){
+        return hitboxEntityClass;
     }
 }

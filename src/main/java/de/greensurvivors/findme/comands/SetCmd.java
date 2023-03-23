@@ -69,7 +69,7 @@ public class SetCmd {
                                 }
 
                                 game.setGameTimeLength(ticks);
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, GAME_LENGTH).replace(Lang.TYPE, String.valueOf(ticks))));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, GAME_LENGTH).replace(Lang.VALUE, String.valueOf(ticks))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -288,10 +288,9 @@ public class SetCmd {
             }
             case 3 -> {
                 //heads
-                if (args[1].equalsIgnoreCase(HEADS)) {
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS)){
-                        return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
-                    }
+                if (args[1].equalsIgnoreCase(HEADS) &&
+                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS)){
+                    return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
                 //late join
                 } else if ((args[1].equalsIgnoreCase(LATE_JOIN_LONG) || args[1].equalsIgnoreCase(LATE_JOIN_SHORT)) &&
                         PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
@@ -303,6 +302,10 @@ public class SetCmd {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET_LOCATIONS)){
                         return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
                     }
+                    //game length
+                } else if (args[1].equalsIgnoreCase(GAME_LENGTH) &&
+                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)) {
+                    return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
                 }
             }
         }

@@ -3,10 +3,10 @@ package de.greensurvivors.findme;
 import de.greensurvivors.findme.comands.FindMeCommands;
 import de.greensurvivors.findme.config.MainConfig;
 import de.greensurvivors.findme.dataObjects.GameManager;
+import de.greensurvivors.findme.listener.HideawayListener;
 import de.greensurvivors.findme.listener.InventoryListener;
 import de.greensurvivors.findme.listener.QuitListener;
 import de.greensurvivors.findme.listener.SignListener;
-import de.greensurvivors.findme.listener.SlimeListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,7 +34,7 @@ public final class FindMe extends JavaPlugin {
 
         // listener
         PluginManager pm = Bukkit.getPluginManager();
-        pm.registerEvents(SlimeListener.inst(), this);
+        pm.registerEvents(HideawayListener.inst(), this);
         pm.registerEvents(InventoryListener.inst(), this);
         pm.registerEvents(SignListener.inst(), this);
         pm.registerEvents(QuitListener.inst(), this);
