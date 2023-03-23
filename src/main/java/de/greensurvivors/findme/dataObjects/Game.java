@@ -214,6 +214,15 @@ public class Game implements ConfigurationSerializable {
 
         Object temp;
 
+        temp = data.get(NAME_KEY);
+        String name;
+        if (temp instanceof String tempName){
+            name = tempName;
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize name: " + ". Reason: is not a string.");
+            return null;
+        }
+
         temp = data.get(STARTING_HIDDEN_PERCENT_KEY);
         double starting_hidden_percent;
         if (temp instanceof Double tempDouble){
@@ -226,11 +235,11 @@ public class Game implements ConfigurationSerializable {
             } else if (Utils.isInt(str)){
                 starting_hidden_percent = Integer.parseInt(str);
             } else {
-                GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp);
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
                 return null;
             }
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
             return null;
         }
 
@@ -241,7 +250,7 @@ public class Game implements ConfigurationSerializable {
         } else if (temp instanceof String str && Utils.isInt(str)){
             hideCooldown_millis = Integer.parseInt(str);
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize hideCooldown_millis: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize hideCooldown_millis: " + temp + " of game " + name);
             return null;
         }
 
@@ -252,7 +261,7 @@ public class Game implements ConfigurationSerializable {
         } else if (temp instanceof String str && Utils.isInt(str)){
             average_hide_ticks = Integer.parseInt(str);
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize average_hide_ticks: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize average_hide_ticks: " + temp + " of game " + name);
             return null;
         }
 
@@ -269,7 +278,7 @@ public class Game implements ConfigurationSerializable {
                         if (obj2 instanceof String str){
                             hideawaysMap.put(str, map.get(obj2));
                         } else {
-                            GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand property: " + obj2 + ", skipping. Reason: not a string.");
+                            GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand property: " + obj2 + " of game " + name + ", skipping. Reason: not a string.");
                         }
                     }
                     Hideaway hideaway = Hideaway.deserialize(hideawaysMap, noCollisionTeam_);
@@ -287,11 +296,11 @@ public class Game implements ConfigurationSerializable {
                     hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
                     hideaway.gotHitboxUpdate();
                 } else {
-                    GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand: " + obj + ", skipping. Reason: unknown type.");
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand: " + obj + " of game " + name + ", skipping. Reason: unknown type.");
                 }
             }
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize uuid list: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize uuid list: " + temp + " of game " + name);
             return null;
         }
 
@@ -307,25 +316,16 @@ public class Game implements ConfigurationSerializable {
                         if (obj2 instanceof String str){
                             itemStackMap.put(str, map.get(obj2));
                         } else {
-                            GreenLogger.log(Level.WARNING, "couldn't deserialize head item property: " + obj2 + ", skipping. Reason: not a string.");
+                            GreenLogger.log(Level.WARNING, "couldn't deserialize head item property: " + obj2 + " of game " + name + ", skipping. Reason: not a string.");
                         }
                     }
                     heads.add(ItemStack.deserialize(itemStackMap));
                 } else {
-                    GreenLogger.log(Level.WARNING, "couldn't deserialize head item: " + obj + ", skipping. Reason: not a item stack nor map.");
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize head item: " + obj + " of game " + name + ", skipping. Reason: not a item stack nor map.");
                 }
             }
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize head list: " + temp);
-            return null;
-        }
-
-        temp = data.get(NAME_KEY);
-        String name;
-        if (temp instanceof String tempName){
-            name = tempName;
-        } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize name: " + ". Reason: is not a string.");
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize head list: " + temp + " of game " + name);
             return null;
         }
 
@@ -337,11 +337,11 @@ public class Game implements ConfigurationSerializable {
             allowLateJoin = BooleanUtils.toBooleanObject(str);
 
             if (allowLateJoin == null){
-                GreenLogger.log(Level.SEVERE, "couldn't deserialize allowLateJoin: " + str + ". Reason: string is not a bool.");
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize allowLateJoin: " + str + " of game " + name + ". Reason: string is not a bool.");
                 return null;
             }
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize allowLateJoin bool: " + temp);
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize allowLateJoin bool: " + temp + " of game " + name);
             return null;
         }
 
@@ -354,14 +354,14 @@ public class Game implements ConfigurationSerializable {
                 if (obj instanceof String str){
                     stringObjectMap.put(str, map.get(obj));
                 } else {
-                    GreenLogger.log(Level.WARNING, "couldn't deserialize lobby location property: " + obj + ", skipping. Reason: not a string.");
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize lobby location property: " + obj + " of game " + name + ", skipping. Reason: not a string.");
                 }
             }
             lobbyLoc = Location.deserialize(stringObjectMap);
         } else if (temp instanceof MemorySection memorySection) {
             lobbyLoc = Location.deserialize(memorySection.getValues(false));
         } else {
-            GreenLogger.log(Level.WARNING, "couldn't deserialize lobby location: " + temp);
+            GreenLogger.log(Level.WARNING, "couldn't deserialize lobby location: " + temp + " of game " + name);
         }
 
         temp = data.get(START_LOC_KEY);
@@ -373,14 +373,14 @@ public class Game implements ConfigurationSerializable {
                 if (obj instanceof String str){
                     stringObjectMap.put(str, map2.get(obj));
                 } else {
-                    GreenLogger.log(Level.WARNING, "couldn't deserialize start location property: " + obj + ", skipping. Reason: not a string.");
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize start location property: " + obj + " of game " + name + ", skipping. Reason: not a string.");
                 }
             }
             startLoc = Location.deserialize(stringObjectMap);
         } else if (temp instanceof MemorySection memorySection) {
             startLoc = Location.deserialize(memorySection.getValues(false));
         } else {
-            GreenLogger.log(Level.WARNING, "couldn't deserialize start location: " + temp);
+            GreenLogger.log(Level.WARNING, "couldn't deserialize start location: " + temp + " of game " + name);
         }
 
         temp = data.get(QUIT_LOC_KEY);
@@ -392,14 +392,14 @@ public class Game implements ConfigurationSerializable {
                 if (obj instanceof String str){
                     stringObjectMap.put(str, map3.get(obj));
                 } else {
-                    GreenLogger.log(Level.WARNING, "couldn't deserialize quit property: " + obj + ", skipping. Reason: not a string.");
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize quit property: " + obj + " of game " + name + ", skipping. Reason: not a string.");
                 }
             }
             quitLoc = Location.deserialize(stringObjectMap);
         } else if (temp instanceof MemorySection memorySection) {
             quitLoc = Location.deserialize(memorySection.getValues(false));
         } else {
-            GreenLogger.log(Level.WARNING, "couldn't deserialize quit location: " + temp);
+            GreenLogger.log(Level.WARNING, "couldn't deserialize quit location: " + temp + " of game " + name);
         }
 
         temp = data.get(GAME_TIME_LENGTH_KEY);
@@ -410,13 +410,13 @@ public class Game implements ConfigurationSerializable {
             if (Utils.islong(str)){
                 game_time_length = Long.parseLong(str);
             } else {
-                GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + str + " not a long! (1)");
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + str + " of game " + name + " not a long! (1)");
                 return null;
             }
         } else if (temp instanceof Integer tempLong){
             game_time_length = tempLong;
         } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + temp + " not a long! (2)");
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + temp + " of game " + name + " not a long! (2)");
             return null;
         }
 
@@ -427,6 +427,20 @@ public class Game implements ConfigurationSerializable {
                 allowLateJoin,
                 lobbyLoc, startLoc, quitLoc,
                 game_time_length);
+
+    }
+
+    private void updateHitBoxUUIDs(Set<Hideaway> updatedHideaways){
+        //update the uuids
+        for (Hideaway hideaway : updatedHideaways){
+            hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
+            hideaways.put(hideaway.getUUIDHitBox(), hideaway);
+
+            hideaway.gotHitboxUpdate();
+        }
+        if (updatedHideaways.size() > 0){
+            MainConfig.inst().saveGame(this);
+        }
 
     }
 
@@ -476,15 +490,7 @@ public class Game implements ConfigurationSerializable {
         }
 
         //update the uuids
-        for (Hideaway hideaway : updatedHideaways){
-            hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
-            hideaways.put(hideaway.getUUIDHitBox(), hideaway);
-
-            hideaway.gotHitboxUpdate();
-        }
-        if (updatedHideaways.size() > 0){
-            MainConfig.inst().saveGame(this);
-        }
+        updateHitBoxUUIDs(updatedHideaways);
     }
 
     /**
@@ -521,15 +527,7 @@ public class Game implements ConfigurationSerializable {
         }
 
         //update the uuids
-        for (Hideaway hideaway : updatedHideaways){
-            hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
-            hideaways.put(hideaway.getUUIDHitBox(), hideaway);
-
-            hideaway.gotHitboxUpdate();
-        }
-        if (updatedHideaways.size() > 0){
-            MainConfig.inst().saveGame(this);
-        }
+        updateHitBoxUUIDs(updatedHideaways);
 
         return result;
     }
@@ -737,15 +735,7 @@ public class Game implements ConfigurationSerializable {
             }
 
             //update the uuids
-            for (Hideaway hideaway : updatedHideaways){
-                hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
-                hideaways.put(hideaway.getUUIDHitBox(), hideaway);
-
-                hideaway.gotHitboxUpdate();
-            }
-            if (updatedHideaways.size() > 0){
-                MainConfig.inst().saveGame(this);
-            }
+            updateHitBoxUUIDs(updatedHideaways);
         }
 
         //next game tick or end of game
@@ -791,15 +781,7 @@ public class Game implements ConfigurationSerializable {
             }
 
             //update the uuids
-            for (Hideaway hideaway : updatedHideaways){
-                hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
-                hideaways.put(hideaway.getUUIDHitBox(), hideaway);
-
-                hideaway.gotHitboxUpdate();
-            }
-            if (updatedHideaways.size() > 0){
-                MainConfig.inst().saveGame(this);
-            }
+            updateHitBoxUUIDs(updatedHideaways);
         }
 
         if(startLoc != null && !startLoc.getChunk().isLoaded()){

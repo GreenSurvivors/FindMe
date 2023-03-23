@@ -9,7 +9,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Slime;
+import org.bukkit.entity.Frog;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.loot.LootTables;
 import org.bukkit.persistence.PersistentDataType;
@@ -44,31 +44,31 @@ public class Hideaway implements ConfigurationSerializable {
     private long cooldown = 0;
 
     private boolean hitBoxUpdated = false;
-    private final static Class<? extends Entity> hitboxEntityClass = Slime.class;
+    private final static Class<? extends Entity> hitboxEntityClass = Frog.class;
 
     private Entity summonHitBoxEntity(@NotNull Location location, @NotNull String gameName){
         hitBoxUpdated = true;
         //get uuid and set all necessary properties of a freshly spawned hitBoxEntity
         //in other news: the settings are set with a lambda function, so no hitBoxEntity should ever flash for a moment.
-        return location.getWorld().spawn(location, Slime.class, newSlime-> {
-            newSlime.setInvisible(true);
-            newSlime.setSize(1);
-            newSlime.setAI(false);
-            newSlime.customName(Lang.build("findMe"));
-            newSlime.setCustomNameVisible(false);
-            newSlime.setCollidable(false);
-            newSlime.setGravity(false);
-            newSlime.setInvulnerable(true);
-            //don't despawn this hitBoxEntity
-            newSlime.setPersistent(true);
+        return location.getWorld().spawn(location, Frog.class, newFrog-> {
+            newFrog.setInvisible(true);
+            newFrog.setAI(false);
+            newFrog.customName(Lang.build("findMe"));
+            newFrog.setCustomNameVisible(false);
+            newFrog.setCollidable(false);
+            newFrog.setGravity(false);
+            newFrog.setInvulnerable(true);
+            //don't let this hitBoxEntity despawn.
+            newFrog.setPersistent(true);
+            newFrog.setSilent(true);
 
             //don't drop anything on death
-            newSlime.setLootTable(LootTables.EMPTY.getLootTable());
+            newFrog.setLootTable(LootTables.EMPTY.getLootTable());
 
-            newSlime.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
+            newFrog.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
 
-            noCollistionTeam.addEntity(newSlime);
-            uuidHitBoxEntity = newSlime.getUniqueId();
+            noCollistionTeam.addEntity(newFrog);
+            uuidHitBoxEntity = newFrog.getUniqueId();
         });
     }
 
