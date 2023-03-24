@@ -72,7 +72,6 @@ public class Hideaway implements ConfigurationSerializable {
             newInteraction.setInteractionHeight(CUBE_SIZE);
             newInteraction.setResponsive(true);
 
-            GreenLogger.log(Level.INFO, "interaction");
             setEntityInvisible(newInteraction, true);
 
             //I have no idea why every other entity rotates with its spawn location but Interaction and display entities are not.
@@ -108,7 +107,6 @@ public class Hideaway implements ConfigurationSerializable {
             newDisplay.setRotation((location.getYaw() + 180) % 360, 0);
 
             //turn line of sight off
-            GreenLogger.log(Level.INFO, "display");
             setEntityInvisible(newDisplay, true);
 
             newDisplay.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, this.gameName);
@@ -277,12 +275,11 @@ public class Hideaway implements ConfigurationSerializable {
     protected void gotHitboxUpdate() {
         hitBoxUpdated = false;
     }
-
+    
     public void setHitBoxInvisible(boolean invisible){
         Entity hitBoxEntity = getHitBoxEntity();
 
         if(hitBoxEntity != null){
-            GreenLogger.log(Level.INFO, "set hitbox");
             setEntityInvisible(hitBoxEntity, invisible);
         }
     }
