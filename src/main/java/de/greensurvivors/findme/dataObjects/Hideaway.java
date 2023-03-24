@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftEntity;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Interaction;
@@ -49,8 +48,14 @@ public class Hideaway implements ConfigurationSerializable {
      * @param entity the entity that should get invisible
      */
     private void setEntityInvisible(@NotNull Entity entity, boolean invisible){
-        ((CraftEntity)entity).getHandle().persistentInvisibility = invisible;
-        ((CraftEntity)entity).getHandle().setSharedFlag(5, invisible);
+        net.minecraft.world.entity.Entity handle = (net.minecraft.world.entity.Entity)Reflection.getHandle(entity);
+
+        if (handle != null){
+            //skip CraftEntity and use the mns entity directly via reflection.
+            //this makes the permanent entity (in)visible
+            handle.persistentInvisibility = invisible;
+            handle.setSharedFlag(5, invisible);
+        }
     }
 
 
@@ -67,6 +72,7 @@ public class Hideaway implements ConfigurationSerializable {
             newInteraction.setInteractionHeight(CUBE_SIZE);
             newInteraction.setResponsive(true);
 
+            GreenLogger.log(Level.INFO, "interaction");
             setEntityInvisible(newInteraction, true);
 
             //I have no idea why every other entity rotates with its spawn location but Interaction and display entities are not.
@@ -102,6 +108,7 @@ public class Hideaway implements ConfigurationSerializable {
             newDisplay.setRotation((location.getYaw() + 180) % 360, 0);
 
             //turn line of sight off
+            GreenLogger.log(Level.INFO, "display");
             setEntityInvisible(newDisplay, true);
 
             newDisplay.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, this.gameName);
@@ -275,6 +282,7 @@ public class Hideaway implements ConfigurationSerializable {
         Entity hitBoxEntity = getHitBoxEntity();
 
         if(hitBoxEntity != null){
+            GreenLogger.log(Level.INFO, "set hitbox");
             setEntityInvisible(hitBoxEntity, invisible);
         }
     }
