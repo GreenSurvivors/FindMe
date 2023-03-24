@@ -7,13 +7,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.entity.ArmorStand;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftEntity;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Frog;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.loot.LootTables;
+import org.bukkit.entity.Interaction;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,106 +28,121 @@ public class Hideaway implements ConfigurationSerializable {
 
     private final static String
             UUID_HITBOX_ENTITY_KEY = "uuid_hitbox",
-            UUID_ARMORSTAND_KEY = "uuid_armorstand";
-
-    //this number comes purely from testing with a small armor stand. Maybe one day a smart guy can add a fancy calculation why it is roughly this number.
-    private final static double ARMORSTAND_OFFSET = 0.719;
+            UUID_ITEM_DISPLAY_KEY = "uuid_display";
 
     public static final NamespacedKey HIDDEN_KEY = new NamespacedKey(FindMe.inst(), "findMeGame");
 
-    private final Team noCollistionTeam;
+    private static final Float CUBE_SIZE = 0.5f;
 
-    private UUID uuidArmorStand;
+    private UUID uuidDisplay;
     private UUID uuidHitBoxEntity;
     private boolean hasHead = false;
     private long cooldown = 0;
 
     private boolean hitBoxUpdated = false;
-    private final static Class<? extends Entity> hitboxEntityClass = Frog.class;
+    private String gameName;
 
-    private Entity summonHitBoxEntity(@NotNull Location location, @NotNull String gameName){
+    /**
+     * The new entities don't have a way to make them permanent invisible since they aren't living entities.
+     * without it, players can find the hideaways easy with their hit boxes
+     * So we have to set it via reflection our own.
+     * @param entity the entity that should get invisible
+     */
+    private void setEntityInvisible(@NotNull Entity entity, boolean invisible){
+        ((CraftEntity)entity).getHandle().persistentInvisibility = invisible;
+        ((CraftEntity)entity).getHandle().setSharedFlag(5, invisible);
+    }
+
+
+    private Entity summonInteractionEntity(@NotNull Location location){
         hitBoxUpdated = true;
         //get uuid and set all necessary properties of a freshly spawned hitBoxEntity
         //in other news: the settings are set with a lambda function, so no hitBoxEntity should ever flash for a moment.
-        return location.getWorld().spawn(location, Frog.class, newFrog-> {
-            newFrog.setInvisible(true);
-            newFrog.setAI(false);
-            newFrog.customName(Lang.build("findMe"));
-            newFrog.setCustomNameVisible(false);
-            newFrog.setCollidable(false);
-            newFrog.setGravity(false);
-            newFrog.setInvulnerable(true);
+        return location.getWorld().spawn(location, Interaction.class, newInteraction-> {
+            newInteraction.customName(Lang.build("findMe"));
+            newInteraction.setCustomNameVisible(false);
             //don't let this hitBoxEntity despawn.
-            newFrog.setPersistent(true);
-            newFrog.setSilent(true);
+            newInteraction.setPersistent(true);
+            newInteraction.setInteractionWidth(CUBE_SIZE);
+            newInteraction.setInteractionHeight(CUBE_SIZE);
+            newInteraction.setResponsive(true);
 
-            //don't drop anything on death
-            newFrog.setLootTable(LootTables.EMPTY.getLootTable());
+            setEntityInvisible(newInteraction, true);
 
-            newFrog.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
+            //I have no idea why every other entity rotates with its spawn location but Interaction and display entities are not.
+            newInteraction.setRotation(location.getYaw(), 0);
 
-            noCollistionTeam.addEntity(newFrog);
-            uuidHitBoxEntity = newFrog.getUniqueId();
+            newInteraction.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, this.gameName);
+
+            uuidHitBoxEntity = newInteraction.getUniqueId();
         });
     }
 
-    private ArmorStand summonArmorStand(@NotNull Location location, @NotNull String gameName){
-        //get uuid and set all necessary properties of a freshly spawned armor stand
-        //in other news: the settings are set with a lambda function, so no armor-stand should ever flash for a moment.
-        return location.getWorld().spawn(location.clone().subtract(0, ARMORSTAND_OFFSET, 0), ArmorStand.class, newArmorStand -> {
-            newArmorStand.setVisible(false);
-            newArmorStand.setSmall(true);
-            newArmorStand.setDisabledSlots(EquipmentSlot.CHEST, EquipmentSlot.HAND, EquipmentSlot.OFF_HAND, EquipmentSlot.LEGS, EquipmentSlot.FEET);
-            newArmorStand.setCanMove(false);
-            newArmorStand.setCanTick(false);
-            newArmorStand.customName(Lang.build("findMe"));
-            newArmorStand.setCustomNameVisible(false);
-            newArmorStand.setCustomNameVisible(false);
-            newArmorStand.setMarker(true);
+    private ItemDisplay summonDisplay(@NotNull Location location){
+        //get uuid and set all necessary properties of a freshly spawned display entity
+        //in other news: the settings are set with a lambda function, so no entity should ever flash for a moment.
+        //for reasons unknown to man, the location of this entity is not at its feed, but directly at its middle point.
+        //so we have to summon it half its height up.
+        return location.getWorld().spawn(location.clone().add(0, CUBE_SIZE / 2, 0), ItemDisplay.class, newDisplay -> {
+            newDisplay.customName(Lang.build("findMe"));
+            newDisplay.setCustomNameVisible(false);
+            newDisplay.setCustomNameVisible(false);
+            newDisplay.setInvulnerable(true);
+            newDisplay.setPersistent(true);
 
-            newArmorStand.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, gameName);
+            //turn shadow off
+            newDisplay.setShadowRadius(0f);
+            //display all blocks round about head (block entity) size
+            newDisplay.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+            //set if the displayed item should rotate when the player moves
+            newDisplay.setBillboard(Display.Billboard.FIXED);
 
-            noCollistionTeam.addEntity(newArmorStand);
-            uuidArmorStand = newArmorStand.getUniqueId();
+            //I have no idea why every other entity rotates with its spawn location but Interaction and display entities are not.
+            //only god knows why the shown item is displayed backwards
+            newDisplay.setRotation((location.getYaw() + 180) % 360, 0);
+
+            //turn line of sight off
+            setEntityInvisible(newDisplay, true);
+
+            newDisplay.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, this.gameName);
+
+            uuidDisplay = newDisplay.getUniqueId();
         });
     }
 
-    public Hideaway(@NotNull Location location, @NotNull String gameName, @NotNull Team noCollistionTeam){
-        this.noCollistionTeam = noCollistionTeam;
-        summonHitBoxEntity(location, gameName);
-        summonArmorStand(location, gameName);
+    public Hideaway(@NotNull Location location, @NotNull String gameName){
+        this.gameName = gameName;
+        summonInteractionEntity(location);
+        summonDisplay(location);
     }
 
-    private Hideaway(@NotNull UUID uuidArmorStand, @NotNull UUID uuidHitBoxEntity, @NotNull Team noCollistionTeam){
-        this.noCollistionTeam = noCollistionTeam;
-        this.uuidArmorStand = uuidArmorStand;
+    private Hideaway(@NotNull UUID uuidDisplay, @NotNull UUID uuidHitBoxEntity){
+        this.uuidDisplay = uuidDisplay;
         this.uuidHitBoxEntity = uuidHitBoxEntity;
-        Entity entity = Bukkit.getEntity(uuidArmorStand);
+        Entity entity = Bukkit.getEntity(uuidDisplay);
 
-        ArmorStand armorStand = null;
-        if (entity instanceof ArmorStand armorStand2){
-            armorStand = armorStand2;
-            noCollistionTeam.addEntity(armorStand2);
+        ItemDisplay itemDisplay = null;
+        if (entity instanceof ItemDisplay itemDisplay2){
+            itemDisplay = itemDisplay2;
         }
 
         entity = Bukkit.getEntity(uuidHitBoxEntity);
         Entity hitBoxEntity = null;
-        if (hitboxEntityClass.isInstance(entity)){
+        if (entity instanceof Interaction){
             hitBoxEntity = entity;
-            noCollistionTeam.addEntity(entity);
         }
 
-        // the armor stand and hitBoxEntity should never be separated. If they are we properly lost track of one of them.
+        // the interaction entity and hitBoxEntity should never be separated. If they are we properly lost track of one of them.
         // so if one was loaded while the other wasn't, try to generate a new one of the other one
-        if (armorStand == null && hitBoxEntity != null){
+        if (itemDisplay == null && hitBoxEntity != null){
             String gameName = hitBoxEntity.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
             if (gameName != null){
-                summonArmorStand(hitBoxEntity.getLocation(), gameName);
+                summonDisplay(hitBoxEntity.getLocation());
             }
-        } else if (armorStand != null && hitBoxEntity == null){
-            String gameName = armorStand.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
+        } else if (itemDisplay != null && hitBoxEntity == null){
+            String gameName = itemDisplay.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
             if (gameName != null){
-                summonHitBoxEntity(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
+                summonInteractionEntity(itemDisplay.getLocation());
             }
         }
     }
@@ -142,7 +156,7 @@ public class Hideaway implements ConfigurationSerializable {
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put(UUID_HITBOX_ENTITY_KEY, uuidHitBoxEntity.toString());
-        resultMap.put(UUID_ARMORSTAND_KEY, uuidArmorStand.toString());
+        resultMap.put(UUID_ITEM_DISPLAY_KEY, uuidDisplay.toString());
         return resultMap;
     }
 
@@ -151,12 +165,12 @@ public class Hideaway implements ConfigurationSerializable {
      *
      * @return a new instance
      */
-    public static @Nullable Hideaway deserialize(@NotNull Map<String, Object> data, Team noCollistionTeam) {
-        Object obj = data.get(UUID_ARMORSTAND_KEY);
-        UUID armorStandUUID;
+    public static @Nullable Hideaway deserialize(@NotNull Map<String, Object> data) {
+        Object obj = data.get(UUID_ITEM_DISPLAY_KEY);
+        UUID displayUUID;
         if (obj instanceof String str){
             if(UUID_PATTERN.matcher(str).find()){
-                armorStandUUID = UUID.fromString(str);
+                displayUUID = UUID.fromString(str);
             } else {
                 GreenLogger.log(Level.WARNING, "couldn't deserialize uuid: " + str + ", skipping. Reason: not a valid uuid.");
                 return null;
@@ -180,25 +194,23 @@ public class Hideaway implements ConfigurationSerializable {
             return null;
         }
 
-        return new Hideaway(armorStandUUID, hitBoxEntityUUID, noCollistionTeam);
+        return new Hideaway(displayUUID, hitBoxEntityUUID);
     }
 
-    public @Nullable ArmorStand getArmorStand() {
-        //try to fetch the armor stand from bukkit
-        Entity entity = Bukkit.getEntity(uuidArmorStand);
+    public @Nullable ItemDisplay getItemDisplay() {
+        //try to fetch display entity from bukkit
+        Entity entity = Bukkit.getEntity(uuidDisplay);
 
-        if (entity instanceof ArmorStand armorStand){
-            noCollistionTeam.addEntity(armorStand);
-
-            return armorStand;
+        if (entity instanceof ItemDisplay itemDisplay){
+            return itemDisplay;
         } else {
-            //try to get a new armor stand from the hitBoxEntity
+            //try to get a new interaction entity from the hitBoxEntity
             entity = Bukkit.getEntity(uuidHitBoxEntity);
 
-            if (hitboxEntityClass.isInstance(entity)){
+            if (entity instanceof Interaction){
                 String gameName = entity.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
                 if (gameName != null){
-                    return summonArmorStand(entity.getLocation(), gameName);
+                    return summonDisplay(entity.getLocation());
                 }
             }
         }
@@ -210,18 +222,16 @@ public class Hideaway implements ConfigurationSerializable {
         //try to fetch the hitBoxEntity from bukkit
         Entity entity = Bukkit.getEntity(uuidHitBoxEntity);
 
-        if (hitboxEntityClass.isInstance(entity)){
-            noCollistionTeam.addEntity(entity);
-
+        if (entity instanceof Interaction){
             return entity;
         } else {
-            //try to get a hitBoxEntity stand from the armor stand
-            Entity probablyArmorStand = Bukkit.getEntity(uuidArmorStand);
+            //try to get a hitBoxEntity from the interaction entity
+            Entity probablyDisplay = Bukkit.getEntity(uuidDisplay);
 
-            if (probablyArmorStand instanceof ArmorStand armorStand){
-                String gameName = armorStand.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
+            if (probablyDisplay instanceof ItemDisplay itemDisplay){
+                String gameName = itemDisplay.getPersistentDataContainer().get(HIDDEN_KEY, PersistentDataType.STRING);
                 if (gameName != null){
-                    return summonHitBoxEntity(armorStand.getLocation().clone().add(0, ARMORSTAND_OFFSET, 0), gameName);
+                    return summonInteractionEntity(itemDisplay.getLocation());
                 }
             }
         }
@@ -261,7 +271,11 @@ public class Hideaway implements ConfigurationSerializable {
         hitBoxUpdated = false;
     }
 
-    public static Class<? extends Entity> getHitboxEntityClass(){
-        return hitboxEntityClass;
+    public void setHitBoxInvisible(boolean invisible){
+        Entity hitBoxEntity = getHitBoxEntity();
+
+        if(hitBoxEntity != null){
+            setEntityInvisible(hitBoxEntity, invisible);
+        }
     }
 }

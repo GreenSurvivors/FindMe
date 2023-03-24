@@ -42,7 +42,7 @@ public enum Lang implements Cons {
 
 	NO_PLAYER("&cYou have to be a player."),
 	NO_NUMBER(String.format("&6'&e%s&6' &cis not a valid number.", VALUE)),
-	NO_NEARBY_STAND("&cNo nearby hiding places where found. Try &e/fm show <game>&c."),
+	NO_NEARBY_HIDEAWAY("&cNo nearby hiding places where found. Try &e/fm show <game>&c."),
 	NOT_IN_GAME("&cYou are not in a game."),
 	NO_BOOL(String.format("&6'&e%s&6' &cis not a valid boolean.", VALUE)),
 	NO_PERMISSION_COMMAND("&cYou have no permission to perform this command."),
