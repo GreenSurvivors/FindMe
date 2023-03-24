@@ -14,11 +14,11 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.bukkit.*;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.*;
 import org.bukkit.util.NumberConversions;
@@ -51,9 +51,8 @@ public class Game implements ConfigurationSerializable {
     }
 
     //shown scoreboard
-    private final Scoreboard scoreboard;
+    private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
     private final Objective objective;
-    private final Team noCollisionTeam;
 
     //set of all known uuids of the hitBoxEntity part of all hideaways.
     //the Class tracks the cooldown for hiding
@@ -112,13 +111,8 @@ public class Game implements ConfigurationSerializable {
      * @param name of the game
      */
     public Game(@NotNull String name){
-        this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, PlainTextComponentSerializer.plainText().deserialize(name).color(NamedTextColor.GOLD));
         this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        this.noCollisionTeam = scoreboard.registerNewTeam("noCollision");
-        this.noCollisionTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-        this.noCollisionTeam.setCanSeeFriendlyInvisibles(false);
 
         this.name = name;
 
@@ -127,8 +121,6 @@ public class Game implements ConfigurationSerializable {
 
     /**
      * deserialization constructor. only for internal use.
-     * @param scoreboard
-     * @param noCollisionTeam
      * @param startingHiddenPercent
      * @param averageHideTicks
      * @param HideCooldownMillis
@@ -141,16 +133,12 @@ public class Game implements ConfigurationSerializable {
      * @param quitLoc
      * @param gameTimeLength
      */
-    private Game(Scoreboard scoreboard, Team noCollisionTeam,
-                 double startingHiddenPercent, int averageHideTicks, int HideCooldownMillis,
+    private Game(double startingHiddenPercent, int averageHideTicks, int HideCooldownMillis,
                  @NotNull HashMap<UUID, Hideaway> hideaways, @NotNull LinkedHashSet<ItemStack> heads,
                  @NotNull String name,
                  boolean allowLateJoin,
                  @Nullable Location lobbyLoc, @Nullable Location startLoc, @Nullable Location quitLoc,
                  long gameTimeLength){
-
-        this.scoreboard = scoreboard;
-        this.noCollisionTeam = noCollisionTeam;
 
         this.hideaways.putAll(hideaways);
         this.heads.addAll(heads);
@@ -171,8 +159,6 @@ public class Game implements ConfigurationSerializable {
 
         this.objective = scoreboard.registerNewObjective(name, Criteria.DUMMY, Lang.build(name));
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        noCollisionTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
 
         //save a potential new entity of the hideaway list or a new version of serialization of future updates
         MainConfig.inst().saveGame(this);
@@ -209,10 +195,6 @@ public class Game implements ConfigurationSerializable {
      * @return
      */
     public static Game deserialize(@NotNull Map<String, Object> data) {
-        Scoreboard scoreboard_ = Bukkit.getScoreboardManager().getNewScoreboard();
-        Team noCollisionTeam_ = scoreboard_.registerNewTeam("noCollision");
-        noCollisionTeam_.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-        noCollisionTeam_.setCanSeeFriendlyInvisibles(false);
         Object temp;
 
         // <editor-fold defaultstate="collapsed" desc="deserialize">
@@ -280,10 +262,10 @@ public class Game implements ConfigurationSerializable {
                         if (obj2 instanceof String str){
                             hideawaysMap.put(str, map.get(obj2));
                         } else {
-                            GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand property: " + obj2 + " of game " + name + ", skipping. Reason: not a string.");
+                            GreenLogger.log(Level.WARNING, "couldn't deserialize hideaway property: " + obj2 + " of game " + name + ", skipping. Reason: not a string.");
                         }
                     }
-                    Hideaway hideaway = Hideaway.deserialize(hideawaysMap, noCollisionTeam_);
+                    Hideaway hideaway = Hideaway.deserialize(hideawaysMap);
                     if (hideaway == null){
                         break;
                     }
@@ -291,14 +273,14 @@ public class Game implements ConfigurationSerializable {
                     hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
                     hideaway.gotHitboxUpdate();
                 } else if (obj instanceof MemorySection memorySection){
-                    Hideaway hideaway = Hideaway.deserialize(memorySection.getValues(false), noCollisionTeam_);
+                    Hideaway hideaway = Hideaway.deserialize(memorySection.getValues(false));
                     if (hideaway == null){
                         break;
                     }
                     hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
                     hideaway.gotHitboxUpdate();
                 } else {
-                    GreenLogger.log(Level.WARNING, "couldn't deserialize hidden stand: " + obj + " of game " + name + ", skipping. Reason: unknown type.");
+                    GreenLogger.log(Level.WARNING, "couldn't deserialize hideaway: " + obj + " of game " + name + ", skipping. Reason: unknown type.");
                 }
             }
         } else {
@@ -423,7 +405,7 @@ public class Game implements ConfigurationSerializable {
         }
         // </editor-fold>
 
-        return new Game(scoreboard_, noCollisionTeam_, starting_hidden_percent,
+        return new Game(starting_hidden_percent,
                 average_hide_ticks, hideCooldown_millis,
                 hideaways_, heads,
                 name,
@@ -433,26 +415,12 @@ public class Game implements ConfigurationSerializable {
 
     }
 
-    private void updateHitBoxUUIDs(Set<Hideaway> updatedHideaways){
-        //update the uuids
-        for (Hideaway hideaway : updatedHideaways){
-            hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
-            hideaways.put(hideaway.getUUIDHitBox(), hideaway);
-
-            hideaway.gotHitboxUpdate();
-        }
-        if (updatedHideaways.size() > 0){
-            MainConfig.inst().saveGame(this);
-        }
-
-    }
-
     /**
      * creates a new hide away at the given location and keeps track of it (saves the game)
      * @param location
      */
     public void addHideaway(@NotNull Location location){
-        Hideaway hideaway = new Hideaway(location, name, noCollisionTeam);
+        Hideaway hideaway = new Hideaway(location, name);
         hideaways.put(hideaway.getUUIDHitBox(), hideaway);
         hideaway.gotHitboxUpdate();
 
@@ -466,16 +434,11 @@ public class Game implements ConfigurationSerializable {
      */
     public void showAroundLocation(@NotNull Location location, int range){
         World world = location.getWorld();
-        Set<Hideaway> updatedHideaways = new HashSet<>();
 
         for (Hideaway hideaway : hideaways.values()){
             Entity hitboxEntity = hideaway.getHitBoxEntity();
 
             if (hitboxEntity != null){
-                if (hideaway.isHitBoxUpdated()){
-                    updatedHideaways.add(hideaway);
-                }
-
                 Location hidingLoc = hitboxEntity.getLocation();
 
                 if (world != hidingLoc.getWorld())
@@ -484,35 +447,30 @@ public class Game implements ConfigurationSerializable {
                 if (NumberConversions.square(range) >= (NumberConversions.square(location.getX() - hidingLoc.getX()) +
                         NumberConversions.square(location.getY() - hidingLoc.getY()) +
                         NumberConversions.square(location.getZ() - hidingLoc.getZ()))){
-                    hideaway.getHitBoxEntity().setGlowing(true);
+                    hideaway.setHitBoxInvisible(false);
 
                     Bukkit.getScheduler().runTaskLater(FindMe.inst(), () ->
-                            hitboxEntity.setGlowing(false), 400);
+                            hideaway.setHitBoxInvisible(true), 400);
                 }
             }
         }
-
-        //update the uuids
-        updateHitBoxUUIDs(updatedHideaways);
     }
 
     /**
-     * get the nearest hidden armor stand in a range of 5 blocks
-     * @param startingPos location around the nearest stand will be searched
-     * @return nearest hidden armor stand or null if no where found
+     * get the nearest hideaway in a range of 5 blocks
+     * @param startingPos location around the nearest hideing place will be searched
+     * @return nearest hideaway or null if no where found
      */
     public @Nullable Hideaway getNearestHideaway(@NotNull Location startingPos){
         Hideaway result = null;
         double lastDistance = Double.MAX_VALUE;
 
-        Collection<Entity> nearbyHitBoxEntities = startingPos.getNearbyEntitiesByType(Hideaway.getHitboxEntityClass(), 5);
+        Collection<Interaction> nearbyHitBoxEntities = startingPos.getNearbyEntitiesByType(Interaction.class, 5);
 
         Set<Hideaway> nearbyHidingPlaces = nearbyHitBoxEntities.stream().
                 //get all tracked hit box entities that are in radius
                 map(s -> hideaways.get(s.getUniqueId())).filter(Objects::nonNull).
                 collect(Collectors.toSet());
-
-        HashSet<Hideaway> updatedHideaways = new HashSet<>();
 
         for(Hideaway hideaway : nearbyHidingPlaces) {
             //we don't need the root, if we only want to know what entity is further
@@ -523,21 +481,14 @@ public class Game implements ConfigurationSerializable {
                 lastDistance = distance;
                 result = hideaway;
             }
-
-            if (hideaway.isHitBoxUpdated()){
-                updatedHideaways.add(hideaway);
-            }
         }
-
-        //update the uuids
-        updateHitBoxUUIDs(updatedHideaways);
 
         return result;
     }
 
     /**
-     * removes a hidden armor stand + hitBoxEntity pair and no longer keeps track of it (saves the game)
-     * @param uuid of a hitBoxEntity the armor stand belongs to
+     * removes a hidden interaction + hitBoxEntity pair and no longer keeps track of it (saves the game)
+     * @param uuid of a hitBoxEntity the interaction entity belongs to
      */
     public void removeHideaway(@NotNull UUID uuid){
         Hideaway hideaway =  hideaways.get(uuid);
@@ -548,9 +499,9 @@ public class Game implements ConfigurationSerializable {
                 hitBoxEntity.remove();;
             }
 
-            ArmorStand armorStand = hideaway.getArmorStand();
-            if (armorStand != null){
-                armorStand.remove();;
+            Display displayEntity = hideaway.getItemDisplay();
+            if (displayEntity != null){
+                displayEntity.remove();
             }
         }
 
@@ -568,9 +519,9 @@ public class Game implements ConfigurationSerializable {
                     hitBoxEntity.remove();
                 }
 
-                ArmorStand armorStand = hideaway.getArmorStand();
-                if (armorStand != null) {
-                    armorStand.remove();
+                Display displayEntity = hideaway.getItemDisplay();
+                if (displayEntity != null) {
+                    displayEntity.remove();
                 }
             }
         }
@@ -603,7 +554,6 @@ public class Game implements ConfigurationSerializable {
 
         if (gameState.equals(GameStates.ACTIVE)){
             player.setScoreboard(scoreboard);
-            noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
                 GameManager.inst().addTeleportingPlayer(player);
@@ -637,7 +587,6 @@ public class Game implements ConfigurationSerializable {
     protected void playerQuit(@NotNull Player player){
         players.remove(player);
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-        noCollisionTeam.removePlayer(player);
 
         if (quitLoc != null){
             GameManager.inst().addTeleportingPlayer(player);
@@ -706,9 +655,7 @@ public class Game implements ConfigurationSerializable {
             }
         }
 
-        HashSet<Hideaway> updatedHideaways = new HashSet<>();
-
-        //hide new stuff in hidden stands, if they are not in cooldown
+        //hide new stuff in hideaways, if they are not in cooldown
         //only try to hide if we have heads to begin with
         final int numOfHeads = heads.size();
         if (numOfHeads > 0){
@@ -717,28 +664,13 @@ public class Game implements ConfigurationSerializable {
             ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
             for (Hideaway hideaway : hideaways.values()){
-                if (hideaway.getArmorStand() != null) {
-                    if (hideaway.hasHead()){
-                        //make sure the hitBoxEntity didn't despawn and is still nice and updated
-                        hideaway.getHitBoxEntity();
-                        if (hideaway.isHitBoxUpdated()){
-                            updatedHideaways.add(hideaway);
-                        }
-                    } else if (hideaway.isCooldownOver(HideCooldownMillis) && random.nextLong(averageHideTicks) == 1){
+                if (hideaway.getItemDisplay() != null) {
+                    if (hideaway.isCooldownOver(HideCooldownMillis) && random.nextLong(averageHideTicks) == 1){
                         hideaway.setHasHead(true);
-                        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(numOfHeads)]);
-
-                        //make sure the hitBoxEntity didn't despawn and is still nice and updated
-                        hideaway.getHitBoxEntity();
-                        if (hideaway.isHitBoxUpdated()){
-                            updatedHideaways.add(hideaway);
-                        }
+                        hideaway.getItemDisplay().setItemStack(headArray[random.nextInt(numOfHeads)]);
                     }
                 }
             }
-
-            //update the uuids
-            updateHitBoxUUIDs(updatedHideaways);
         }
 
         //next game tick or end of game
@@ -797,12 +729,12 @@ public class Game implements ConfigurationSerializable {
                     updatedHideaways.add(hideaway);
                 }
 
-                if (hideaway.getArmorStand() != null){
+                if (hideaway.getItemDisplay() != null){
                     if (random.nextInt(100) <= startingHiddenPercent) {
-                        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, headArray[random.nextInt(max)]);
+                        hideaway.getItemDisplay().setItemStack(headArray[random.nextInt(max)]);
                         hideaway.setHasHead(true);
                     } else {
-                        hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
+                        hideaway.getItemDisplay().setItemStack(new ItemStack(Material.AIR, 1));
                         hideaway.setHasHead(false);
                     }
                 }
@@ -811,7 +743,15 @@ public class Game implements ConfigurationSerializable {
             }
 
             //update the uuids
-            updateHitBoxUUIDs(updatedHideaways);
+            for (Hideaway hideaway : updatedHideaways){
+                hideaways.entrySet().removeIf(entry -> entry.getValue() == hideaway);
+                hideaways.put(hideaway.getUUIDHitBox(), hideaway);
+
+                hideaway.gotHitboxUpdate();
+            }
+            if (updatedHideaways.size() > 0){
+                MainConfig.inst().saveGame(this);
+            }
         }
 
         if(startLoc != null && !startLoc.getChunk().isLoaded()){
@@ -820,7 +760,6 @@ public class Game implements ConfigurationSerializable {
 
         for (Player player : players){
             player.setScoreboard(scoreboard);
-            noCollisionTeam.addPlayer(player);
 
             if (startLoc != null){
                 GameManager.inst().addTeleportingPlayer(player);
@@ -848,7 +787,7 @@ public class Game implements ConfigurationSerializable {
     public void findHideaway(@NotNull Player player, @NotNull UUID uuid){
         Hideaway hideaway = hideaways.get(uuid);
 
-        if (hideaway == null || hideaway.getArmorStand() == null){
+        if (hideaway == null || hideaway.getItemDisplay() == null){
             return;
         }
 
@@ -858,8 +797,8 @@ public class Game implements ConfigurationSerializable {
             hideaway.setCooldownNow();
 
             //remove head & play sound
-            hideaway.getArmorStand().setItem(EquipmentSlot.HEAD, new ItemStack(Material.AIR, 1));
-            hideaway.getArmorStand().getLocation().getWorld().playSound(hideaway.getArmorStand(), Sound.ENTITY_ITEM_PICKUP,0.9f, 0.9f);
+            hideaway.getItemDisplay().setItemStack(new ItemStack(Material.AIR, 1));
+            hideaway.getItemDisplay().getLocation().getWorld().playSound(hideaway.getItemDisplay(), Sound.ENTITY_ITEM_PICKUP,0.9f, 0.9f);
 
             addScore(player, 1);
         }
@@ -892,7 +831,6 @@ public class Game implements ConfigurationSerializable {
             objective.getScore(player);
 
             scoreboard.resetScores(player);
-            noCollisionTeam.removePlayer(player);
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
             if (quitLoc != null){

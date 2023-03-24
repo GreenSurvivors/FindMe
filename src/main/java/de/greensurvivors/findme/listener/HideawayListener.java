@@ -6,6 +6,7 @@ import de.greensurvivors.findme.dataObjects.GameManager;
 import de.greensurvivors.findme.dataObjects.Hideaway;
 import de.greensurvivors.findme.language.Lang;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,11 +28,11 @@ public class HideawayListener implements Listener {
      * if a hitBoxEntity gets right-clicked, of a player in a game, the hideaway will get found
      */
     @EventHandler(ignoreCancelled = true)
-    private void onSlimeClicked(PlayerInteractEntityEvent event){
+    private void onHitBoxClicked(PlayerInteractEntityEvent event){
         if (event.getHand() == EquipmentSlot.HAND){
             Entity rightClicked = event.getRightClicked();
 
-            if (Hideaway.getHitboxEntityClass().isInstance(rightClicked)){
+            if (rightClicked instanceof Interaction){
                 if (rightClicked.getPersistentDataContainer().get(Hideaway.HIDDEN_KEY, PersistentDataType.STRING) != null){
                     event.setCancelled(true);
 
