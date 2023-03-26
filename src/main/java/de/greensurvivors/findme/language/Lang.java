@@ -19,6 +19,9 @@ public enum Lang implements Cons {
 	STARTING_FAIL_PLAYERS(String.format("&cCouldn't start game &e'&e%s&6'&c, because no one joined. use &e/fm join %s&c", VALUE, VALUE)),
 	ENDING_GAME(String.format("&2Ending game %s.", VALUE)),
 
+	GAME_END_SCORE_HEADER("&2-<(&6FindMe &e- &6Player scores&2)>-"),
+	GAME_END_SCORE_PLAYER(String.format("&2%s &f: &6%s", TYPE, VALUE)),
+
 	SIGN_JOIN("&2[join fm]"),
 	SIGN_QUIT("&2[quit fm]"),
 
@@ -32,7 +35,7 @@ public enum Lang implements Cons {
 	MESSAGE_OBJECTIVE("&2Objective: find as many hidden things as fast as possible!"),
 
 	QUIT_OTHER(String.format("&2Player &6'%s&6'&8 quit the game", VALUE)),
-	QUIT_SELF("&aSuccessfully quit the game."),
+	QUIT_SELF("&2Successfully quit the game."),
 
 	PLAYER_NOT_ONLINE(String.format("&6'&e%s&6'&c is not a player or not online.", VALUE)),
 	PLAYER_NOT_INGAME(String.format("&cPlayer &6'&e%s&6'&c is in a game.", VALUE)),
@@ -53,13 +56,13 @@ public enum Lang implements Cons {
 
 	FORMAT_LOCATION(String.format("&f%s&6, &f%s&e, &f%s&e, &f%s", WORLD, X, Y, Z)),
 
-	HELP_HEADER			("&a-<(&FindMe &e- &6Help&a)>-"),
+	HELP_HEADER			("&2-<(&6FindMe &e- &6Help&2)>-"),
 	HELP_WIKI("&7See more detailed information on the wiki page."),
 
-	PLUGIN_HEADER("&a-<(&6GreenTreasure&a)>-"),
-	PLUGIN_VERSION(String.format("&aVersion&6: &e%s", VALUE)),
+	PLUGIN_HEADER("&2-<(&6FindMe&2)>-"),
+	PLUGIN_VERSION(String.format("&2Version&6: &e%s", VALUE)),
 
-	RELOAD("&aReloaded.");
+	RELOAD("&2Reloaded.");
 
 
 	private String value;

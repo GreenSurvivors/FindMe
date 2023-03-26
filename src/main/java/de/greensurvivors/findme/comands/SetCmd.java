@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SetCmd {
@@ -91,7 +90,7 @@ public class SetCmd {
                                 if (lateJoinAllowed != null){
                                     game.setAllowLateJoin(lateJoinAllowed);
 
-                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LATE_JOIN_LONG).replace(Lang.TYPE, args[3])));
+                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LATE_JOIN_LONG).replace(Lang.VALUE, args[3])));
                                 } else {
                                     cs.sendMessage(Lang.build(Lang.NO_BOOL.get().replace(Lang.VALUE, args[3])));
                                 }
@@ -115,7 +114,7 @@ public class SetCmd {
                                 Location loc = livingEntity.getLocation();
                                 game.setStartLoc(loc);
 
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc)).replace(Lang.VALUE, Lang.locationToString(loc))));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTPOINT_LONG).replace(Lang.VALUE, Lang.locationToString(loc)).replace(Lang.VALUE, Lang.locationToString(loc))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -135,7 +134,7 @@ public class SetCmd {
                             if (game != null){
                                 Location loc = livingEntity.getLocation();
                                 game.setLobbyLoc (loc);
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LOBBY).replace(Lang.TYPE, Lang.locationToString(loc)).replace(Lang.VALUE, Lang.locationToString(loc))));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, LOBBY).replace(Lang.VALUE, Lang.locationToString(loc)).replace(Lang.VALUE, Lang.locationToString(loc))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -155,7 +154,7 @@ public class SetCmd {
                             if (game != null){
                                 Location loc = livingEntity.getLocation();
                                 game.setQuitLoc(loc);
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, ENDPOINT_LONG).replace(Lang.TYPE, Lang.locationToString(loc)).replace(Lang.VALUE, Lang.locationToString(loc))));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, ENDPOINT_LONG).replace(Lang.VALUE, Lang.locationToString(loc)).replace(Lang.VALUE, Lang.locationToString(loc))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -179,7 +178,7 @@ public class SetCmd {
                                 }
 
                                 game.setAverageHideTicks(ticks);
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, AVERAGE_HIDE_TICKS_LONG).replace(Lang.TYPE, String.valueOf(ticks))));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, AVERAGE_HIDE_TICKS_LONG).replace(Lang.VALUE, String.valueOf(ticks))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -202,7 +201,7 @@ public class SetCmd {
                                     double percent = Double.parseDouble(args[3]);
 
                                     game.setStartingHiddenPercent(percent);
-                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTING_PERCENT_LONG).replace(Lang.TYPE, String.valueOf(percent))));
+                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, STARTING_PERCENT_LONG).replace(Lang.VALUE, String.valueOf(percent))));
                                 } else {
                                     cs.sendMessage(Lang.build(Lang.NO_NUMBER.get().replace(Lang.VALUE, args[3])));
                                 }
@@ -230,7 +229,7 @@ public class SetCmd {
                                 }
 
                                 game.setHideCooldown(millis);
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, HIDE_COOLDOWN_LONG).replace(Lang.TYPE, String.valueOf(millis))));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, HIDE_COOLDOWN_LONG).replace(Lang.VALUE, String.valueOf(millis))));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -284,28 +283,32 @@ public class SetCmd {
                     result.add(HIDE_COOLDOWN_SHORT);
                 }
 
-                return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
+                return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).toList();
             }
             case 3 -> {
-                //heads
-                if (args[1].equalsIgnoreCase(HEADS) &&
-                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS)){
-                    return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
-                //late join
-                } else if ((args[1].equalsIgnoreCase(LATE_JOIN_LONG) || args[1].equalsIgnoreCase(LATE_JOIN_SHORT)) &&
-                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
-                    return Stream.of(String.valueOf(true), String.valueOf(false)).filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+                //heads or late join
+                if ((args[1].equalsIgnoreCase(HEADS) || args[1].equalsIgnoreCase(LATE_JOIN_LONG) || args[1].equalsIgnoreCase(LATE_JOIN_SHORT))  &&
+                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS, PermissionUtils.FINDME_SET_LATEJOIN)){
+                    return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
                 //locations
                 } else if (args[1].equalsIgnoreCase(LOBBY) ||
                         args[1].equalsIgnoreCase(STARTPOINT_LONG) ||
                         args[1].equalsIgnoreCase(STARTPOINT_SHORT) || args[1].equalsIgnoreCase(ENDPOINT_LONG) || args[1].equalsIgnoreCase(ENDPOINT_SHORT) || args[1].equalsIgnoreCase(ENDPOINT_ALT)){
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET_LOCATIONS)){
-                        return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+                        return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
                     }
                     //game length
                 } else if (args[1].equalsIgnoreCase(GAME_LENGTH) &&
                         PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)) {
-                    return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).collect(Collectors.toList());
+                    return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
+                }
+            }
+            case 4 -> {
+                //late join
+                if ((args[1].equalsIgnoreCase(LATE_JOIN_LONG) || args[1].equalsIgnoreCase(LATE_JOIN_SHORT)) &&
+                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
+                    return Stream.of(String.valueOf(true), String.valueOf(false)).filter(s -> s.toLowerCase().startsWith(args[3])).toList();
+
                 }
             }
         }

@@ -5,6 +5,8 @@ import de.greensurvivors.findme.GreenLogger;
 import de.greensurvivors.findme.Utils;
 import de.greensurvivors.findme.config.MainConfig;
 import de.greensurvivors.findme.language.Lang;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
@@ -742,6 +744,33 @@ public class Game implements ConfigurationSerializable {
         if (remainingGameTime >= 0){
             Bukkit.getScheduler().runTaskLater(FindMe.inst(), this::GameTimer, 1);
         } else {
+            //---- broadcast the game results ----
+
+            //create body of players and their scores
+            LinkedHashSet<Component> lines =
+                    //sort the players by their score (Playerscore is just a record, that implements the comparable interface for the score value aka Int)
+                    players.stream().map(player -> new PlayerScore(player.getName(), objective.getScore(player).getScore())).sorted().
+                    //map players and their scores into a component
+                            map(playerScore -> Lang.build(Lang.GAME_END_SCORE_PLAYER.get().replace(Lang.TYPE, playerScore.name()).replace(Lang.VALUE, String.valueOf(playerScore.score()))))
+                    //collect the stream into a set, so it can get joined together into one component
+                    //LinkedHashSet, so it is guarantied to stay sorted
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
+
+            //broadcast the scoreboard objective
+            Bukkit.broadcast(
+                    //join header with body
+                    Component.join(
+                            JoinConfiguration.separator(Component.newline()),
+                            //header
+                            Lang.build(Lang.GAME_END_SCORE_HEADER.get()),
+                            //body
+                            //make a big component from a collection of components of the player scores
+                            Component.join(JoinConfiguration.separator(Lang.build(", ")), lines)));
+
+            // ---- end of broadcast ----
+
+            //end the game
             end();
         }
     }
@@ -857,7 +886,10 @@ public class Game implements ConfigurationSerializable {
      * ends the game, removes scoreboard, trys to teleport all players to the quit location, sets the game state to ended
      */
     public void end(){
+
         for (Player player : players){
+            objective.getScore(player);
+
             scoreboard.resetScores(player);
             noCollisionTeam.removePlayer(player);
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
