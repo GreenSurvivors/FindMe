@@ -31,8 +31,8 @@ public enum Lang implements Cons {
 	ALREADY_IN_GAME_SELF(String.format("&cYou are already in game &6'%s&6'&c. Use &e/fm quit", VALUE)),
 	ALREADY_IN_GAME_OTHER(String.format("&6'&e%s&6'&c is already in game &6'%s&6'&c. Use &e/fm quit", VALUE, TYPE)),
 
-	MESSAGE_JOIN("&2Welcome in a game of 'find me!'. use &e/fm quit&2 to exit the game."),
-	MESSAGE_OBJECTIVE("&2Objective: find as many hidden things as fast as possible!"),
+	MESSAGE_JOIN("&2Welcome in a game of &6Find me!&2. Use &e/fm quit&2 to exit the game."),
+	MESSAGE_OBJECTIVE("&eObjective&6:&2 Find as many hidden things as fast as possible!"),
 
 	QUIT_OTHER(String.format("&2Player &6'%s&6'&8 quit the game", VALUE)),
 	QUIT_SELF("&2Successfully quit the game."),
