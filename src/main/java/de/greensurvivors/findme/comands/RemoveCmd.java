@@ -78,7 +78,7 @@ public class RemoveCmd {
         }
     }
 
-    public static java.util.List<String> handleTap(CommandSender cs, String[] args) {
+    public static java.util.List<String> handleTab(CommandSender cs, String[] args) {
         switch (args.length){
             case 2 -> {
                 List<String> result = new ArrayList<>();

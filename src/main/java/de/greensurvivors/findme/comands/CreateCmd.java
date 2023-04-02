@@ -130,7 +130,7 @@ public class CreateCmd {
         }
     }
 
-    public static List<String> handleTap(CommandSender cs, String[] args) {
+    public static List<String> handleTab(CommandSender cs, String[] args) {
         switch (args.length){
             case 2 -> {
                 //test for permission before adding suggestions

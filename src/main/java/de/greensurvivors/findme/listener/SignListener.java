@@ -27,7 +27,8 @@ public class SignListener implements Listener {
     }
 
     /**
-     * join a findMe! game, if the 2nd line is [gf join] and 3rd line is the name of a game
+     * join a findMe! game, if the 2nd line is [fm join] and 3rd line is the name of a game or
+     * quit a findMe! game if the 2nd line is [fm quit]
      * @param event
      */
     @EventHandler

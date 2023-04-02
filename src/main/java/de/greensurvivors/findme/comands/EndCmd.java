@@ -35,7 +35,7 @@ public class EndCmd {
         }
     }
 
-    public static List<String> handleTap(CommandSender cs, String[] args) {
+    public static List<String> handleTab(CommandSender cs, String[] args) {
         if (args.length == 2 && PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_END)){
             return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());
         }

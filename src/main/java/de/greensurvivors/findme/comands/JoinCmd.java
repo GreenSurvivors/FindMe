@@ -71,7 +71,7 @@ public class JoinCmd {
     }
 // fm join <game name>
 // fm join <game name> <player> to force somebody to join a game
-    public static List<String> handleTap(CommandSender cs, String[] args) {
+    public static List<String> handleTab(CommandSender cs, String[] args) {
         if (args.length == 2) {
             if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_PLAYER)){
                 return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());

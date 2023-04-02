@@ -247,7 +247,7 @@ public class SetCmd {
         }
     }
 
-    public static List<String> handleTap(CommandSender cs, String[] args) {
+    public static List<String> handleTab(CommandSender cs, String[] args) {
         switch (args.length){
             case 2 -> {
                 List<String> result = new ArrayList<>();

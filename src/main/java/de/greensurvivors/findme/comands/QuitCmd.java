@@ -53,7 +53,7 @@ public class QuitCmd {
         }
     }
 
-    public static List<String> handleTap(CommandSender cs, String[] args) {
+    public static List<String> handleTab(CommandSender cs, String[] args) {
         if (args.length == 2){
             if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_OTHER_PLAYERS)){
                 return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(args[1])).collect(Collectors.toList());

@@ -147,28 +147,28 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 		} else {
 			switch (args[0]){
 				case CREATE_SHORT, CREATE_LONG -> {
-					return CreateCmd.handleTap(cs, args);
+					return CreateCmd.handleTab(cs, args);
 				}
 				case REMOVE_SHORT, REMOVE_LONG -> {
-					return RemoveCmd.handleTap(cs, args);
+					return RemoveCmd.handleTab(cs, args);
 				}
 				case START -> {
-					return StartCmd.handleTap(cs, args);
+					return StartCmd.handleTab(cs, args);
 				}
 				case END -> {
-					return EndCmd.handleTap(cs, args);
+					return EndCmd.handleTab(cs, args);
 				}
 				case JOIN -> {
-					return JoinCmd.handleTap(cs, args);
+					return JoinCmd.handleTab(cs, args);
 				}
 				case QUIT -> {
-					return QuitCmd.handleTap(cs, args);
+					return QuitCmd.handleTab(cs, args);
 				}
 				case SHOW -> {
-					return ShowCmd.handleTap(cs, args);
+					return ShowCmd.handleTab(cs, args);
 				}
 				case SET -> {
-					return SetCmd.handleTap(cs, args);
+					return SetCmd.handleTab(cs, args);
 				}
 			}
 		}

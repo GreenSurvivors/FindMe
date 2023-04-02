@@ -213,9 +213,9 @@ public class Game implements ConfigurationSerializable {
         Team noCollisionTeam_ = scoreboard_.registerNewTeam("noCollision");
         noCollisionTeam_.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
         noCollisionTeam_.setCanSeeFriendlyInvisibles(false);
-
         Object temp;
 
+        // <editor-fold defaultstate="collapsed" desc="deserialize">
         temp = data.get(NAME_KEY);
         String name;
         if (temp instanceof String tempName){
@@ -421,6 +421,7 @@ public class Game implements ConfigurationSerializable {
             GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + temp + " of game " + name + " not a long! (2)");
             return null;
         }
+        // </editor-fold>
 
         return new Game(scoreboard_, noCollisionTeam_, starting_hidden_percent,
                 average_hide_ticks, hideCooldown_millis,
