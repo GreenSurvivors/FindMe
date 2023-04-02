@@ -277,12 +277,11 @@ public class Hideaway implements ConfigurationSerializable {
     protected void gotHitboxUpdate() {
         hitBoxUpdated = false;
     }
-    
+
     public void setHitBoxInvisible(boolean invisible){
         Entity hitBoxEntity = getHitBoxEntity();
 
         if(hitBoxEntity != null){
-            GreenLogger.log(Level.INFO, "set hitbox");
             setEntityInvisible(hitBoxEntity, invisible);
         }
     }
