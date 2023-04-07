@@ -7,9 +7,6 @@ public interface Cons {
             Z = "-z-",
             TYPE = "-type-",
             VALUE = "-value-",
-            UUID = "-uuid-",
-            WORLD = "-world-",
-            LOCATION = "-location-",
-            UNLIMITED = "-unlimited-",
-            GLOBAL = "-GLOBAL-";
+            VALUE2 = "-value2-",
+            WORLD = "-world-";
 }

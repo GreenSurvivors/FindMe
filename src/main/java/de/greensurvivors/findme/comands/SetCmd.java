@@ -55,7 +55,7 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
-                //fm set gamelength <time in ticks, seconds or minutes>
+                //fm set gamelength game <time in ticks, seconds or minutes>
                 case GAME_LENGTH -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
                         if (args.length >= 4){
@@ -68,7 +68,7 @@ public class SetCmd {
                                 }
 
                                 game.setGameTimeLength(ticks);
-                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, GAME_LENGTH).replace(Lang.VALUE, String.valueOf(ticks))));
+                                cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, GAME_LENGTH).replace(Lang.VALUE, ticks + "t")));
                             } else {
                                 cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
                             }
@@ -252,6 +252,7 @@ public class SetCmd {
             case 2 -> {
                 List<String> result = new ArrayList<>();
 
+                //go through every set - subcommand and add it to the list, if the sender has permission to use it
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS)){
                     result.add(HEADS);
                 }
@@ -286,32 +287,47 @@ public class SetCmd {
                 return result.stream().filter(s -> s.toLowerCase().startsWith(args[1])).toList();
             }
             case 3 -> {
-                //heads or late join
-                if ((args[1].equalsIgnoreCase(HEADS) || args[1].equalsIgnoreCase(LATE_JOIN_LONG) || args[1].equalsIgnoreCase(LATE_JOIN_SHORT))  &&
-                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS, PermissionUtils.FINDME_SET_LATEJOIN)){
-                    return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
-                //locations
-                } else if (args[1].equalsIgnoreCase(LOBBY) ||
-                        args[1].equalsIgnoreCase(STARTPOINT_LONG) ||
-                        args[1].equalsIgnoreCase(STARTPOINT_SHORT) || args[1].equalsIgnoreCase(ENDPOINT_LONG) || args[1].equalsIgnoreCase(ENDPOINT_SHORT) || args[1].equalsIgnoreCase(ENDPOINT_ALT)){
-                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET_LOCATIONS)){
-                        return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
+                switch (args[1].toLowerCase()){
+                    //heads or late join
+                    case HEADS, LATE_JOIN_LONG, LATE_JOIN_SHORT -> {
+                        if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HEADS, PermissionUtils.FINDME_SET_LATEJOIN)){
+                            return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
+                        }
+                    }
+                    //locations
+                    case LOBBY, STARTPOINT_LONG, STARTPOINT_SHORT, ENDPOINT_LONG, ENDPOINT_SHORT, ENDPOINT_ALT ->{
+                        if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET_LOCATIONS)){
+                            return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
+                        }
                     }
                     //game length
-                } else if (args[1].equalsIgnoreCase(GAME_LENGTH) &&
-                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)) {
-                    return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
+                    case GAME_LENGTH -> {
+                        if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)) {
+                            return GameManager.inst().getGameNames().stream().filter(s -> s.toLowerCase().startsWith(args[2])).toList();
+                        }
+                    }
                 }
             }
             case 4 -> {
-                //late join
-                if ((args[1].equalsIgnoreCase(LATE_JOIN_LONG) || args[1].equalsIgnoreCase(LATE_JOIN_SHORT)) &&
-                        PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
-                    return Stream.of(String.valueOf(true), String.valueOf(false)).filter(s -> s.toLowerCase().startsWith(args[3])).toList();
-
+                switch (args[1].toLowerCase()){
+                    //late join
+                    case LATE_JOIN_LONG, LATE_JOIN_SHORT -> {
+                        if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_LATEJOIN)){
+                            return Stream.of(String.valueOf(true), String.valueOf(false)).filter(s -> s.toLowerCase().startsWith(args[3])).toList();
+                        }
+                    }
                 }
             }
         }
+        //add tailing time indicator for game length
+        if (args.length >= 4 && args[1].equalsIgnoreCase(GAME_LENGTH)){
+            if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
+                if (Utils.islong(args[args.length -1])){
+                    return TimeHelper.getSupportetTimeTailings().stream().map(tail -> args[args.length -1] + tail).toList();
+                }
+            }
+        }
+
         return List.of();
     }
 }
