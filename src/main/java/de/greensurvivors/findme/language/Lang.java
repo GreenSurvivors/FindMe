@@ -58,14 +58,19 @@ public enum Lang implements Cons {
 
 	FORMAT_LOCATION(String.format("&f%s&6, &f%s&e, &f%s&e, &f%s", WORLD, X, Y, Z)),
 
-	LIST_HEADER(String.format("&2-<(&6List &e- &6%s&e/&6%s &2)>-", VALUE, VALUE2)),
+	LIST_HEADER(String.format("&2-------<(&6List &e- &6%s&e/&6%s &2)>-------", VALUE, VALUE2)),
 	LIST_ENTRY(String.format(" &6- &e%s&6, state: &e%s", TYPE, VALUE)),
+	LIST_FOOTER_OUTER("&2--"),
+	LIST_FOOTER_INNER("&2---<*>---"),
+	LIST_FOOTER_BACK(String.format("&6<<( &e%s&6 ) ", VALUE)),
+	LIST_FOOTER_NEXT(String.format("&6 ( &e%s&6 )>>", VALUE)),
+	LIST_FOOTER_NONE("-------"),
 	LIST_EMPTY("&cNo game was created, yet. Try to create a new one with &e/" + FindMeCommands.CMD + " " + FindMeCommands.CREATE_LONG + " " + CreateCmd.GAME),
 
 	HELP_HEADER("&2-<(&6FindMe &e- &6Help&2)>-"),
-	HELP_WIKI("&7See more detailed information on the wiki page."),
+	HELP_WIKI("&7Find more detailed information on the wiki page."),
 
-	PLUGIN_HEADER("&2-<(&6FindMe&2)>-"),
+	PLUGIN_HEADER("&2------<(&6FindMe&2)>------"),
 	PLUGIN_VERSION(String.format("&2Version&6: &e%s", VALUE)),
 
 	RELOAD("&2Reloaded.");

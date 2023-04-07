@@ -59,6 +59,26 @@ public class ListCmd { //list all games
                                     replace(Lang.VALUE, GameManager.inst().getGame(gameName).getGameState().getName())));
                 }
 
+                Component footer = Lang.build(Lang.LIST_FOOTER_OUTER.get());
+
+                if (pageNow > 1){
+                    footer = footer.append(Lang.build(Lang.LIST_FOOTER_BACK.get().replace(Lang.VALUE, String.valueOf(pageNow-1)), null, null, "/" + FindMeCommands.CMD + " " + FindMeCommands.LIST + " " + (pageNow - 1), null));
+                } else {
+                    footer = footer.append(Lang.build(Lang.LIST_FOOTER_NONE.get()));
+                }
+
+                footer = footer.append(Lang.build(Lang.LIST_FOOTER_INNER.get()));
+
+                if (pageNow < numPages){
+                    footer = footer.append(Lang.build(Lang.LIST_FOOTER_NEXT.get().replace(Lang.VALUE, String.valueOf(pageNow+1)), null, null, "/" + FindMeCommands.CMD + " " + FindMeCommands.LIST + " " + (pageNow + 1), null));
+                } else {
+                    footer = footer.append(Lang.build(Lang.LIST_FOOTER_NONE.get()));
+                }
+
+                footer = footer.append(Lang.build(Lang.LIST_FOOTER_OUTER.get()));
+
+                listResult.add(footer);
+
                 cs.sendMessage(Lang.join(listResult));
             } else {
                 cs.sendMessage(Lang.build(Lang.LIST_EMPTY.get()));
