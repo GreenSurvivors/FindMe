@@ -1,5 +1,7 @@
 package de.greensurvivors.findme.language;
 
+import de.greensurvivors.findme.comands.CreateCmd;
+import de.greensurvivors.findme.comands.FindMeCommands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
@@ -56,7 +58,11 @@ public enum Lang implements Cons {
 
 	FORMAT_LOCATION(String.format("&f%s&6, &f%s&e, &f%s&e, &f%s", WORLD, X, Y, Z)),
 
-	HELP_HEADER			("&2-<(&6FindMe &e- &6Help&2)>-"),
+	LIST_HEADER(String.format("&2-<(&6List &e- &6%s&e/&6%s &2)>-", VALUE, VALUE2)),
+	LIST_ENTRY(String.format(" &6- &e%s&6, state: &e%s", TYPE, VALUE)),
+	LIST_EMPTY("&cNo game was created, yet. Try to create a new one with &e/" + FindMeCommands.CMD + " " + FindMeCommands.CREATE_LONG + " " + CreateCmd.GAME),
+
+	HELP_HEADER("&2-<(&6FindMe &e- &6Help&2)>-"),
 	HELP_WIKI("&7See more detailed information on the wiki page."),
 
 	PLUGIN_HEADER("&2-<(&6FindMe&2)>-"),

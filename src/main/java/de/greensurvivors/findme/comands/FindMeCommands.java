@@ -161,6 +161,9 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 				case JOIN -> {
 					return JoinCmd.handleTab(cs, args);
 				}
+				case LIST -> {
+					return ListCmd.handleTab(cs, args);
+				}
 				case QUIT -> {
 					return QuitCmd.handleTab(cs, args);
 				}

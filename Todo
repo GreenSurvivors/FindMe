@@ -1,10 +1,7 @@
 todo
     commands
-        set
-            tap complete for the time args of the
-            tap compleate for game length (name of game)
         list
-            all
+            clickable buttons to allow easy navigation
         help
             where the commands are explained
         info
