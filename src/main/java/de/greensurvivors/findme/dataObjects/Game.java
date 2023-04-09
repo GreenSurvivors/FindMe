@@ -690,7 +690,7 @@ public class Game implements ConfigurationSerializable {
      * shows the remaining time and handles hiding new stuff in the hideaways
      * after the time runs out it will end the game.
      */
-    private void GameTimer(){
+    private void GameTimer(){ //todo don't send actionbar every tick and instead just every second
         remainingGameTime--;
 
         TimeHelper timeHelper = new TimeHelper(remainingGameTime);
@@ -782,6 +782,9 @@ public class Game implements ConfigurationSerializable {
      * teleport all players to starting location if possible, and start main loop
      */
     private void startMain (){
+        //be sure to reset every score
+        scoreboard.getEntries().forEach(scoreboard::resetScores);
+
         gameState = GameStates.ACTIVE;
         final int max = heads.size();
         //only set heads if the set isn't empty
@@ -887,11 +890,11 @@ public class Game implements ConfigurationSerializable {
      * ends the game, removes scoreboard, trys to teleport all players to the quit location, sets the game state to ended
      */
     public void end(){
+        //reset score of everyone even if they already leaved the game
+        scoreboard.getEntries().forEach(scoreboard::resetScores);
 
         for (Player player : players){
-            objective.getScore(player);
 
-            scoreboard.resetScores(player);
             noCollisionTeam.removePlayer(player);
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
