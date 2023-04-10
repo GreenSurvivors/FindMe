@@ -690,19 +690,21 @@ public class Game implements ConfigurationSerializable {
      * shows the remaining time and handles hiding new stuff in the hideaways
      * after the time runs out it will end the game.
      */
-    private void GameTimer(){ //todo don't send actionbar every tick and instead just every second
+    private void GameTimer(){
         remainingGameTime--;
 
-        TimeHelper timeHelper = new TimeHelper(remainingGameTime);
-        boolean shouldMakeCountdownNoise = (remainingGameTime <= TimeHelper.TICKS_PER_SECOND * 10) && (remainingGameTime % 20 == 0);
+        if (remainingGameTime % 20 == 0){
+            TimeHelper timeHelper = new TimeHelper(remainingGameTime);
+            boolean shouldMakeCountdownNoise = (remainingGameTime <= TimeHelper.TICKS_PER_SECOND * 10);
 
-        for (Player player : players){
-            //show remaining game time
-            player.sendActionBar(Lang.build(timeHelper.getMinutes() + " : " + timeHelper.getSeconds()));
+            for (Player player : players){
+                //show remaining game time
+                player.sendActionBar(Lang.build(timeHelper.getMinutes() + " : " + timeHelper.getSeconds()));
 
-            //end countdown
-            if (shouldMakeCountdownNoise){
-                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.8f, 1.0f);
+                //end countdown
+                if (shouldMakeCountdownNoise){
+                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.8f, 1.0f);
+                }
             }
         }
 
