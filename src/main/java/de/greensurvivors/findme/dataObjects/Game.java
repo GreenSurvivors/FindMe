@@ -642,16 +642,18 @@ public class Game implements ConfigurationSerializable {
     private void GameTimer(){
         remainingGameTime--;
 
-        TimeHelper timeHelper = new TimeHelper(remainingGameTime);
-        boolean shouldMakeCountdownNoise = (remainingGameTime <= TimeHelper.TICKS_PER_SECOND * 10) && (remainingGameTime % 20 == 0);
+        if (remainingGameTime % 20 == 0){
+            TimeHelper timeHelper = new TimeHelper(remainingGameTime);
+            boolean shouldMakeCountdownNoise = (remainingGameTime <= TimeHelper.TICKS_PER_SECOND * 10);
 
-        for (Player player : players){
-            //show remaining game time
-            player.sendActionBar(Lang.build(timeHelper.getMinutes() + " : " + timeHelper.getSeconds()));
+            for (Player player : players){
+                //show remaining game time
+                player.sendActionBar(Lang.build(timeHelper.getMinutes() + " : " + timeHelper.getSeconds()));
 
-            //end countdown
-            if (shouldMakeCountdownNoise){
-                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.8f, 1.0f);
+                //end countdown
+                if (shouldMakeCountdownNoise){
+                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.8f, 1.0f);
+                }
             }
         }
 
@@ -714,6 +716,9 @@ public class Game implements ConfigurationSerializable {
      * teleport all players to starting location if possible, and start main loop
      */
     private void startMain (){
+        //be sure to reset every score
+        scoreboard.getEntries().forEach(scoreboard::resetScores);
+
         gameState = GameStates.ACTIVE;
         final int max = heads.size();
         //only set heads if the set isn't empty
@@ -826,11 +831,10 @@ public class Game implements ConfigurationSerializable {
      * ends the game, removes scoreboard, trys to teleport all players to the quit location, sets the game state to ended
      */
     public void end(){
+        //reset score of everyone even if they already leaved the game
+        scoreboard.getEntries().forEach(scoreboard::resetScores);
 
         for (Player player : players){
-            objective.getScore(player);
-
-            scoreboard.resetScores(player);
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
             if (quitLoc != null){
