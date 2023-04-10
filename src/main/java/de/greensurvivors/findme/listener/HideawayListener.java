@@ -16,6 +16,8 @@ import org.bukkit.persistence.PersistentDataType;
 public class HideawayListener implements Listener {
     private static HideawayListener instance;
 
+    private HideawayListener () {}
+
     public static HideawayListener inst() {
         if (instance == null) {
             instance = new HideawayListener();

@@ -19,6 +19,8 @@ import org.bukkit.inventory.EquipmentSlot;
 public class SignListener implements Listener {
     private static SignListener instance;
 
+    private SignListener () {}
+
     public static SignListener inst() {
         if (instance == null) {
             instance = new SignListener();
