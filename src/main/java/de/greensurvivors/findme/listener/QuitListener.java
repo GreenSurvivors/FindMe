@@ -9,6 +9,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class QuitListener  implements Listener {
     private static QuitListener instance;
 
+    private QuitListener () {}
+
     public static QuitListener inst() {
         if (instance == null) {
             instance = new QuitListener();

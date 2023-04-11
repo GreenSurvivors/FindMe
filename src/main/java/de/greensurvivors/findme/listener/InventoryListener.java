@@ -22,6 +22,8 @@ import java.util.Objects;
 public class InventoryListener  implements Listener {
     private static InventoryListener instance;
 
+    private InventoryListener () {}
+
     public static InventoryListener inst() {
         if (instance == null) {
             instance = new InventoryListener();
