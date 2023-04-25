@@ -34,7 +34,9 @@ public enum PermissionUtils {
 	FINDME_PLAYER("findme.player"),
 
 	FINDME_PLUGIN("findme.plugin"),
-	FINDME_RELOAD("findme.reload");
+	FINDME_RELOAD("findme.reload"),
+
+	FINDME_HELP("findme.help");
 
 	private final String value;
 
@@ -58,19 +60,6 @@ public enum PermissionUtils {
 				return true;
 		}
 
-		return false;
-	}
-
-	/**
-	 * Check if CommandSender has any permission from this plugin.
-	 * @param cs CommandSender to check for
-	 * @return true if cs has at least one permission from this plugin.
-	 */
-	public static boolean hasAnyPermission(CommandSender cs) {
-		for (PermissionUtils p : values()) {
-			if (cs.hasPermission(p.get()))
-				return true;
-		}
 		return false;
 	}
 }

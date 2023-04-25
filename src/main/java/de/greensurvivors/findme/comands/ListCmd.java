@@ -1,6 +1,5 @@
 package de.greensurvivors.findme.comands;
 
-import de.greensurvivors.findme.GreenLogger;
 import de.greensurvivors.findme.PermissionUtils;
 import de.greensurvivors.findme.Utils;
 import de.greensurvivors.findme.dataObjects.GameManager;
@@ -10,7 +9,6 @@ import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public class ListCmd { //list all games
     private static final byte GAMES_PER_PAGE = 10;
@@ -35,8 +33,6 @@ public class ListCmd { //list all games
                     if (Utils.isInt(args[1])){
                         //limit page to how many exits
                         pageNow = Math.max(1, Math.min(numPages, Integer.parseInt(args[1])));
-
-                        GreenLogger.log(Level.INFO, String.valueOf(pageNow));
                     } else {
                         cs.sendMessage(Lang.build(Lang.NO_NUMBER.get().replace(Lang.VALUE, args[1])));
                         return;

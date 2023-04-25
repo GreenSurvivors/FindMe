@@ -29,7 +29,7 @@ public final class FindMe extends JavaPlugin {
         // configuration
         MainConfig.inst().reloadAll();
 
-        // command
+        // commands
         getCommand(FindMeCommands.CMD).setExecutor(FindMeCommands.inst());
 
         // listener

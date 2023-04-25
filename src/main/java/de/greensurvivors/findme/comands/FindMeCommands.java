@@ -78,25 +78,20 @@ public class FindMeCommands implements CommandExecutor, TabCompleter {
 	 * @param args arguments
 	 */
 	private void handle(CommandSender cs, String[] args) {
-		if (PermissionUtils.hasAnyPermission(cs)) {
-			if (args.length > 0) {
-				switch (args[0].toLowerCase()) {
-					case SHOW -> ShowCmd.handleCmd(cs, args);
-					case SET -> SetCmd.handleCmd(cs, args);
-					case CREATE_SHORT, CREATE_LONG -> CreateCmd.handleCmd(cs, args);
-					case LIST -> ListCmd.handleCmd(cs, args);
-					case START -> StartCmd.handleCmd(cs, args);
-					case END -> EndCmd.handleCmd(cs, args);
-					case JOIN -> JoinCmd.handleCmd(cs, args);
-					case QUIT -> QuitCmd.handleCmd(cs, args);
-					case REMOVE_SHORT, REMOVE_LONG -> RemoveCmd.handleCmd(cs, args);
-					case PLUGIN_SHORT, PLUGIN_LONG -> PluginCmd.handleCmd(cs);
-					case RELOAD_SHORT, RELOAD_LONG -> ReloadCmd.handleCmd(cs, args);
-					default -> HelpCmd.handleCmd(cs);
-				}
-			} else {
-				// help
-				HelpCmd.handleCmd(cs);
+		if (args.length > 0) {
+			switch (args[0].toLowerCase()) {
+				case SHOW -> ShowCmd.handleCmd(cs, args);
+				case SET -> SetCmd.handleCmd(cs, args);
+				case CREATE_SHORT, CREATE_LONG -> CreateCmd.handleCmd(cs, args);
+				case LIST -> ListCmd.handleCmd(cs, args);
+				case START -> StartCmd.handleCmd(cs, args);
+				case END -> EndCmd.handleCmd(cs, args);
+				case JOIN -> JoinCmd.handleCmd(cs, args);
+				case QUIT -> QuitCmd.handleCmd(cs, args);
+				case REMOVE_SHORT, REMOVE_LONG -> RemoveCmd.handleCmd(cs, args);
+				case PLUGIN_SHORT, PLUGIN_LONG -> PluginCmd.handleCmd(cs);
+				case RELOAD_SHORT, RELOAD_LONG -> ReloadCmd.handleCmd(cs, args);
+				default -> HelpCmd.handleCmd(cs);
 			}
 		} else {
 			// help
