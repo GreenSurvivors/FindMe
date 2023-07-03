@@ -19,8 +19,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CreateCmd {
+    public static final String
+            GAME = "game";
     private static final String
-            GAME = "game",
             HIDEAWAY_LONG = "hideaway", HIDEAWAY_SHORT = "hide",
             SIGN = "sign",
                 JOIN = "join", QUIT = "quit";

@@ -1,5 +1,7 @@
 package de.greensurvivors.findme.language;
 
+import de.greensurvivors.findme.comands.CreateCmd;
+import de.greensurvivors.findme.comands.FindMeCommands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
@@ -42,7 +44,7 @@ public enum Lang implements Cons {
 
 	NO_PLAYER("&cYou have to be a player."),
 	NO_NUMBER(String.format("&6'&e%s&6' &cis not a valid number.", VALUE)),
-	NO_NEARBY_STAND("&cNo nearby hiding places where found. Try &e/fm show <game>&c."),
+	NO_NEARBY_HIDEAWAY("&cNo nearby hiding places where found. Try &e/fm show <game>&c."),
 	NOT_IN_GAME("&cYou are not in a game."),
 	NO_BOOL(String.format("&6'&e%s&6' &cis not a valid boolean.", VALUE)),
 	NO_PERMISSION_COMMAND("&cYou have no permission to perform this command."),
@@ -56,10 +58,19 @@ public enum Lang implements Cons {
 
 	FORMAT_LOCATION(String.format("&f%s&6, &f%s&e, &f%s&e, &f%s", WORLD, X, Y, Z)),
 
-	HELP_HEADER			("&2-<(&6FindMe &e- &6Help&2)>-"),
-	HELP_WIKI("&7See more detailed information on the wiki page."),
+	LIST_HEADER(String.format("&2-------<(&6List &e- &6%s&e/&6%s &2)>-------", VALUE, VALUE2)),
+	LIST_ENTRY(String.format(" &6- &e%s&6, state: &e%s", TYPE, VALUE)),
+	LIST_FOOTER_OUTER("&2--"),
+	LIST_FOOTER_INNER("&2---<*>---"),
+	LIST_FOOTER_BACK(String.format("&6<<( &e%s&6 ) ", VALUE)),
+	LIST_FOOTER_NEXT(String.format("&6 ( &e%s&6 )>>", VALUE)),
+	LIST_FOOTER_NONE("-------"),
+	LIST_EMPTY("&cNo game was created, yet. Try to create a new one with &e/" + FindMeCommands.CMD + " " + FindMeCommands.CREATE_LONG + " " + CreateCmd.GAME),
 
-	PLUGIN_HEADER("&2-<(&6FindMe&2)>-"),
+	HELP_HEADER("&2-<(&6FindMe &e- &6Help&2)>-"),
+	HELP_WIKI("&7Find more detailed information on the wiki page."),
+
+	PLUGIN_HEADER("&2------<(&6FindMe&2)>------"),
 	PLUGIN_VERSION(String.format("&2Version&6: &e%s", VALUE)),
 
 	RELOAD("&2Reloaded.");

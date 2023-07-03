@@ -20,7 +20,7 @@ public class RemoveCmd {
     /**
      * delete a game or a hiding place
      * /fm rem game <game name>
-     * /fm rem stand <game name> - removes the nearest hideaway
+     * /fm rem hide <game name> - removes the nearest hideaway
      * @param cs
      * @param args
      */
@@ -55,7 +55,7 @@ public class RemoveCmd {
                                     cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_REMOVED.get().replace(Lang.VALUE, HIDEAWAY_LONG)));
                                 } else {
                                     //no hideaways where found
-                                    cs.sendMessage(Lang.build(Lang.NO_NEARBY_STAND.get()));
+                                    cs.sendMessage(Lang.build(Lang.NO_NEARBY_HIDEAWAY.get()));
                                 }
                             } else {
                                 //no game by this name exits

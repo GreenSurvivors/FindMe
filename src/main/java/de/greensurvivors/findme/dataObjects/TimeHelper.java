@@ -1,5 +1,6 @@
 package de.greensurvivors.findme.dataObjects;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -7,14 +8,16 @@ import java.util.regex.Pattern;
 public class TimeHelper {
     public static final byte TICKS_PER_SECOND = 20;
 
-    private final Pattern
+    private static final Pattern
             PATTERN_TICK = Pattern.compile("(\\d+)t"),
             PATTERN_SECOND = Pattern.compile("(\\d+)s"),
             PATTERN_MINUTE = Pattern.compile("(\\d+)m");
 
+    private static final Set<Character> supportetTimeTailings = Set.of('t', 's', 'm');
+
     private final long ticks;
     private final long minutes;
-    private final long seconds;
+    private final byte seconds; //there can't be more than 60 seconds, else they will be converted into minutes
 
     private long convertToTicks_Implement(long minutes, long seconds){
         return (TimeUnit.MINUTES.toSeconds(minutes) + seconds) * TICKS_PER_SECOND;
@@ -34,10 +37,10 @@ public class TimeHelper {
         long[] temp = convertFromTicks_Implement(ticks);
         this.ticks = ticks;
         this.minutes = temp[0];
-        this.seconds = temp[1];
+        this.seconds = (byte) temp[1];
     }
 
-    public TimeHelper(long minutes, long seconds){
+    public TimeHelper(long minutes, byte seconds){
         this.minutes = minutes;
         this.seconds = seconds;
         this.ticks = convertToTicks_Implement(minutes, seconds);
@@ -48,7 +51,7 @@ public class TimeHelper {
 
         long[] temp = convertFromTicks_Implement(this.ticks);
         this.minutes = temp[0];
-        this.seconds = temp[1];
+        this.seconds = (byte) temp[1];
     }
 
     public TimeHelper(String string) {
@@ -58,21 +61,21 @@ public class TimeHelper {
         long tempMinutes;
 
         if (matcher.find()){
-            tempTicks = Integer.parseInt(matcher.group(1));
+            tempTicks = Long.parseLong(matcher.group(1));
         } else {
             tempTicks = 0;
         }
 
         matcher = PATTERN_SECOND.matcher(string);
         if (matcher.find()){
-            tempSeconds = Integer.parseInt(matcher.group(1));
+            tempSeconds = Long.parseLong(matcher.group(1));
         } else {
             tempSeconds = 0;
         }
 
         matcher = PATTERN_MINUTE.matcher(string);
         if (matcher.find()){
-            tempMinutes = Integer.parseInt(matcher.group(1));
+            tempMinutes = Long.parseLong(matcher.group(1));
         } else {
             tempMinutes = 0;
         }
@@ -81,7 +84,7 @@ public class TimeHelper {
 
         long[] temp = convertFromTicks_Implement(this.ticks);
         this.minutes = temp[0];
-        this.seconds = temp[1];
+        this.seconds = (byte) temp[1];
     }
 
     public long getTicks() {
@@ -94,5 +97,9 @@ public class TimeHelper {
 
     public long getSeconds() {
         return seconds;
+    }
+
+    public static Set<Character> getSupportetTimeTailings() {
+        return supportetTimeTailings;
     }
 }

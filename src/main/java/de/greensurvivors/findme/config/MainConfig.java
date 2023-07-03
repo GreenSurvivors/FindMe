@@ -22,6 +22,8 @@ public class MainConfig {
 
     private final static String GAME_KEY = "game";
 
+    private MainConfig () {}
+
     public static MainConfig inst() {
         if (instance == null) {
             instance = new MainConfig();

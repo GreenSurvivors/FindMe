@@ -11,6 +11,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -18,6 +19,8 @@ import org.bukkit.inventory.EquipmentSlot;
 
 public class SignListener implements Listener {
     private static SignListener instance;
+
+    private SignListener () {}
 
     public static SignListener inst() {
         if (instance == null) {
@@ -31,7 +34,7 @@ public class SignListener implements Listener {
      * quit a findMe! game if the 2nd line is [fm quit]
      * @param event
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onSignRightClick(PlayerInteractEvent event){
         if (event.useInteractedBlock() == Event.Result.DENY){
             return;
