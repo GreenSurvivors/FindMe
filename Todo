@@ -4,7 +4,7 @@ todo
             where the commands are explained
         info
             (about) a game like Lobby/Start/quit pos; state; etc
-            get what game a stand belongs to
+            get what game a hideaway belongs to
     2.0.0
         automode -> min/maxplayers; waiting time for players to join
-        use the new entity in 1.19.4+ instead
+        make a better show - reintroduce slimes? or sending packages?
