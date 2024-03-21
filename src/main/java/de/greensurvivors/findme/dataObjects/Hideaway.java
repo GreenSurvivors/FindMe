@@ -58,13 +58,11 @@ public class Hideaway implements ConfigurationSerializable {
         }
     }
 
-
     private Entity summonInteractionEntity(@NotNull Location location){
         hitBoxUpdated = true;
         //get uuid and set all necessary properties of a freshly spawned hitBoxEntity
         //in other news: the settings are set with a lambda function, so no hitBoxEntity should ever flash for a moment.
         return location.getWorld().spawn(location, Interaction.class, newInteraction-> {
-            newInteraction.customName(Lang.build("findMe"));
             newInteraction.setCustomNameVisible(false);
             //don't let this hitBoxEntity despawn.
             newInteraction.setPersistent(true);
