@@ -41,23 +41,6 @@ public class Hideaway implements ConfigurationSerializable {
     private boolean hitBoxUpdated = false;
     private String gameName;
 
-    /**
-     * The new entities don't have a way to make them permanent invisible since they aren't living entities.
-     * without it, players can find the hideaways easy with their hit boxes
-     * So we have to set it via reflection our own.
-     * @param entity the entity that should get invisible
-     */
-    private void setEntityInvisible(@NotNull Entity entity, boolean invisible){
-        net.minecraft.world.entity.Entity handle = (net.minecraft.world.entity.Entity)Reflection.getHandle(entity);
-
-        if (handle != null){
-            //skip CraftEntity and use the mns entity directly via reflection.
-            //this makes the permanent entity (in)visible
-            handle.persistentInvisibility = invisible;
-            handle.setSharedFlag(5, invisible);
-        }
-    }
-
     private Entity summonInteractionEntity(@NotNull Location location){
         hitBoxUpdated = true;
         //get uuid and set all necessary properties of a freshly spawned hitBoxEntity
@@ -70,7 +53,8 @@ public class Hideaway implements ConfigurationSerializable {
             newInteraction.setInteractionHeight(CUBE_SIZE);
             newInteraction.setResponsive(true);
 
-            setEntityInvisible(newInteraction, true);
+            // turn line of sight and hitbox off
+            newInteraction.setInvisible(true);
 
             //I have no idea why every other entity rotates with its spawn location but Interaction and display entities are not.
             newInteraction.setRotation(location.getYaw(), 0);
@@ -105,7 +89,7 @@ public class Hideaway implements ConfigurationSerializable {
             newDisplay.setRotation((location.getYaw() + 180) % 360, 0);
 
             //turn line of sight off
-            setEntityInvisible(newDisplay, true);
+            newDisplay.setInvisible(true);
 
             newDisplay.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.STRING, this.gameName);
 
@@ -278,7 +262,7 @@ public class Hideaway implements ConfigurationSerializable {
         Entity hitBoxEntity = getHitBoxEntity();
 
         if(hitBoxEntity != null){
-            setEntityInvisible(hitBoxEntity, invisible);
+            hitBoxEntity.setInvisible(invisible);
         }
     }
 }
