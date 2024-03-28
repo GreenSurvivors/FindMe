@@ -8,6 +8,8 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
+import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -47,15 +49,17 @@ public class SignListener implements Listener {
 
             if (block.getState() instanceof Sign sign){
                 boolean foundGame = false;
+                SignSide frontSide = sign.getSide(Side.FRONT);
 
-                if (Lang.SIGN_JOIN.get().equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(1)))){
+                if (Lang.SIGN_JOIN.get().equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(frontSide.line(1)))){
+                    sign.setWaxed(true);
                     Game gameOfPlayer = GameManager.inst().getGameOfPlayer(ePlayer);
                     if (gameOfPlayer != null){
                         ePlayer.sendMessage(Lang.build(Lang.ALREADY_IN_GAME_SELF.get().replace(Lang.VALUE, gameOfPlayer.getName())));
                         return;
                     }
 
-                    String line3 = PlainTextComponentSerializer.plainText().serialize(sign.line(2));
+                    String line3 = PlainTextComponentSerializer.plainText().serialize(frontSide.line(2));
                     for (String gameName : GameManager.inst().getGameNames()){
                         if (gameName.equalsIgnoreCase(line3)){
                             foundGame = true;
@@ -80,7 +84,8 @@ public class SignListener implements Listener {
                         ePlayer.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, line3)));
                     }
 
-                } else if (Lang.SIGN_QUIT.get().equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(sign.line(1)))){
+                } else if (Lang.SIGN_QUIT.get().equalsIgnoreCase(LegacyComponentSerializer.legacyAmpersand().serialize(frontSide.line(1)))){
+                    sign.setWaxed(true);
                     Game gameOfPlayer = GameManager.inst().getGameOfPlayer(ePlayer);
                     if (gameOfPlayer != null){
                         GameManager.inst().playerQuitGame(ePlayer, gameOfPlayer);

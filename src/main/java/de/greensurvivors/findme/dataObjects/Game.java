@@ -25,6 +25,7 @@ import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -91,6 +92,8 @@ public class Game implements ConfigurationSerializable {
     private byte remainingCountdownSeconds = 0;
     //how long the game will last, will be set to gameTimeLength at the start of the game
     private long remainingGameTime = 0;
+    private final static DecimalFormat timeSecondsFormat = new DecimalFormat("");
+
 
     /**(de)serialisation keys **/
     private final static String STARTING_HIDDEN_PERCENT_KEY = "starting_hidden_percent";
@@ -435,7 +438,7 @@ public class Game implements ConfigurationSerializable {
     public void showAroundLocation(@NotNull Location location, int range){
         World world = location.getWorld();
 
-        for (Hideaway hideaway : hideaways.values()){
+        for (final Hideaway hideaway : hideaways.values()){
             Entity hitboxEntity = hideaway.getHitBoxEntity();
 
             if (hitboxEntity != null){
@@ -648,7 +651,7 @@ public class Game implements ConfigurationSerializable {
 
             for (Player player : players){
                 //show remaining game time
-                player.sendActionBar(Lang.build(timeHelper.getMinutes() + " : " + timeHelper.getSeconds()));
+                player.sendActionBar(Lang.build(timeHelper.getMinutes() + " : " + timeSecondsFormat.format(timeHelper.getSeconds())));
 
                 //end countdown
                 if (shouldMakeCountdownNoise){
@@ -724,7 +727,7 @@ public class Game implements ConfigurationSerializable {
         //only set heads if the set isn't empty
         if (max > 0){
             Random random = new Random();
-            ItemStack[] headArray = heads.toArray(new ItemStack[0]);
+            ItemStack[] headArray = heads.toArray(new ItemStack[max]);
 
             Set<Hideaway> updatedHideaways = new HashSet<>();
 
@@ -1035,5 +1038,4 @@ public class Game implements ConfigurationSerializable {
     public int getNumOfHeads(){
         return heads.size();
     }
-
 }

@@ -10,6 +10,8 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
+import org.bukkit.block.sign.SignSide;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 
@@ -77,17 +79,18 @@ public class CreateCmd {
                             //set the sign text
                             if (block != null){
                                 Sign sign = (Sign)block.getState();
+                                SignSide frontSide = sign.getSide(Side.FRONT);
 
                                 if (args[2].equalsIgnoreCase(JOIN)){
                                     if (args.length >= 4) {
                                         Game game = GameManager.inst().getGame(args[3]);
 
                                         if (game != null) {
-                                            sign.line(1, Lang.build(Lang.SIGN_JOIN.get()));
+                                            frontSide.line(1, Lang.build(Lang.SIGN_JOIN.get()));
 
                                             Component component = PlainTextComponentSerializer.plainText().deserialize(game.getName());
                                             component = component.color(NamedTextColor.GOLD);
-                                            sign.line(2, component);
+                                            frontSide.line(2, component);
                                         } else {
                                             //no game by this name exits
                                             cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
@@ -99,7 +102,7 @@ public class CreateCmd {
                                         return;
                                     }
                                 } else if (args[2].equalsIgnoreCase(QUIT)){
-                                    sign.line(1, Lang.build(Lang.SIGN_QUIT.get()));
+                                    frontSide.line(1, Lang.build(Lang.SIGN_QUIT.get()));
 
                                 } else {
                                     //no known signType
@@ -108,6 +111,7 @@ public class CreateCmd {
                                 }
 
                                 //update sign (else the text won't be shown) & send success message
+                                sign.setWaxed(true);
                                 sign.update();
                                 cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_CREATED.get().replace(Lang.VALUE, SIGN)));
                             } else {

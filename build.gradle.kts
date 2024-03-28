@@ -1,12 +1,12 @@
 plugins {
     `java-library`
     //java
-    id("io.papermc.paperweight.userdev") version "1.5.11"
+    id("io.papermc.paperweight.userdev") version "1.5.12"
 	id("xyz.jpenilla.run-paper") version "2.2.3" // Adds runServer and runMojangMappedServer tasks for testing
 }
 
 group = "de.greensurvivors"
-version = "2.1.1-SNAPSHOT"
+version = "2.1.3-SNAPSHOT"
 description = "lets you find ... things."
 
 java {
