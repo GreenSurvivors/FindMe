@@ -669,7 +669,7 @@ public class Game implements ConfigurationSerializable {
             ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
             for (Hideaway hideaway : hideaways.values()){
-                if (hideaway.getItemDisplay() != null) {
+                if (hideaway.getItemDisplay() != null && ! hideaway.hasHead()) {
                     if (hideaway.isCooldownOver(HideCooldownMillis) && random.nextLong(averageHideTicks) == 1){
                         hideaway.setHasHead(true);
                         hideaway.getItemDisplay().setItemStack(headArray[random.nextInt(numOfHeads)]);
@@ -684,28 +684,28 @@ public class Game implements ConfigurationSerializable {
         } else {
             //---- broadcast the game results ----
 
-            //create body of players and their scores
-            LinkedHashSet<Component> lines =
-                    //sort the players by their score (Playerscore is just a record, that implements the comparable interface for the score value aka Int)
-                    players.stream().map(player -> new PlayerScore(player.getName(), objective.getScore(player).getScore())).sorted().
-                    //map players and their scores into a component
-                            map(playerScore -> Lang.build(Lang.GAME_END_SCORE_PLAYER.get().replace(Lang.TYPE, playerScore.name()).replace(Lang.VALUE, String.valueOf(playerScore.score()))))
-                    //collect the stream into a set, so it can get joined together into one component
-                    //LinkedHashSet, so it is guarantied to stay sorted
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            if (!players.isEmpty()) {
+                //create body of players and their scores
+                LinkedHashSet<Component> lines =
+                        //sort the players by their score (Playerscore is just a record, that implements the comparable interface for the score value aka Int)
+                        players.stream().map(player -> new PlayerScore(player.getName(), objective.getScore(player).getScore())).sorted().
+                        //map players and their scores into a component
+                                map(playerScore -> Lang.build(Lang.GAME_END_SCORE_PLAYER.get().replace(Lang.TYPE, playerScore.name()).replace(Lang.VALUE, String.valueOf(playerScore.score()))))
+                        //collect the stream into a set, so it can get joined together into one component
+                        //LinkedHashSet, so it is guarantied to stay sorted
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
 
-
-            //broadcast the scoreboard objective
-            Bukkit.broadcast(
-                    //join header with body
-                    Component.join(
-                            JoinConfiguration.separator(Component.newline()),
-                            //header
-                            Lang.build(Lang.GAME_END_SCORE_HEADER.get()),
-                            //body
-                            //make a big component from a collection of components of the player scores
-                            Component.join(JoinConfiguration.separator(Lang.build(", ")), lines)));
-
+                //broadcast the scoreboard objective
+                Bukkit.broadcast(
+                        //join header with body
+                        Component.join(
+                                JoinConfiguration.separator(Component.newline()),
+                                //header
+                                Lang.build(Lang.GAME_END_SCORE_HEADER.get()),
+                                //body
+                                //make a big component from a collection of components of the player scores
+                                Component.join(JoinConfiguration.separator(Lang.build(", ")), lines)));
+            }
             // ---- end of broadcast ----
 
             //end the game
