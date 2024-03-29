@@ -58,6 +58,7 @@ public class Game implements ConfigurationSerializable {
     //set of all known uuids of the hitBoxEntity part of all hideaways.
     //the Class tracks the cooldown for hiding
     private final HashMap<UUID, Hideaway> hideaways = new HashMap<>();
+    private int hideawaysWithHeadNum = 0;
     //set of all items that can get hidden away
     private final LinkedHashSet<ItemStack> heads = new LinkedHashSet<>();
 
@@ -80,6 +81,8 @@ public class Game implements ConfigurationSerializable {
 
     //how many percent of all hideaways get a head at game start
     private Double startingHiddenPercent = 75.0;
+    //how many percent of all hideaways can get a head while the game is currently running
+    private Double maximumThresholdPercent = 100.0;
     //how many ticks on average will pass until a hideaways gets a new head
     private long averageHideTicks = 1200;
     //how long the cooldown is, while a hideaway cant get a new head
@@ -97,6 +100,7 @@ public class Game implements ConfigurationSerializable {
 
     /**(de)serialisation keys **/
     private final static String STARTING_HIDDEN_PERCENT_KEY = "starting_hidden_percent";
+    private final static String MAXIMUM_THRESHOLD_PERCENT_KEY = "maximum_threshold_percent";
     private final static String AVERAGE_HIDE_TICKS_KEY = "average_hide_ticks";
     private final static String HIDE_COOLDOWN_Millis_KEY = "hide_cooldown_millis";
     private final static String HEADS_KEY = "heads";
@@ -136,7 +140,8 @@ public class Game implements ConfigurationSerializable {
      * @param quitLoc
      * @param gameTimeLength
      */
-    private Game(double startingHiddenPercent, int averageHideTicks, int HideCooldownMillis,
+    private Game(double startingHiddenPercent, double maximum_threshold_percent,
+                 int averageHideTicks, int HideCooldownMillis,
                  @NotNull HashMap<UUID, Hideaway> hideaways, @NotNull LinkedHashSet<ItemStack> heads,
                  @NotNull String name,
                  boolean allowLateJoin,
@@ -155,6 +160,7 @@ public class Game implements ConfigurationSerializable {
         this.quitLoc = quitLoc;
 
         this.startingHiddenPercent = startingHiddenPercent;
+        this.maximumThresholdPercent = maximum_threshold_percent;
         this.averageHideTicks = averageHideTicks;
         this.HideCooldownMillis = HideCooldownMillis;
 
@@ -175,6 +181,7 @@ public class Game implements ConfigurationSerializable {
     public @NotNull Map<String, Object> serialize() {
         HashMap<String, Object> result = new HashMap<>();
         result.put(STARTING_HIDDEN_PERCENT_KEY, String.valueOf(startingHiddenPercent));
+        result.put(MAXIMUM_THRESHOLD_PERCENT_KEY, maximumThresholdPercent);
         result.put(AVERAGE_HIDE_TICKS_KEY, averageHideTicks);
         result.put(HIDE_COOLDOWN_Millis_KEY, HideCooldownMillis);
         result.put(HIDEAWAY_KEY, hideaways.values().stream().map(Hideaway::serialize).collect(Collectors.toList()));
@@ -223,6 +230,28 @@ public class Game implements ConfigurationSerializable {
                 starting_hidden_percent = Integer.parseInt(str);
             } else {
                 GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
+                return null;
+            }
+        } else {
+            GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
+            return null;
+        }
+
+        temp = data.get(MAXIMUM_THRESHOLD_PERCENT_KEY);
+        double maximum_threshold_percent;
+        if (temp == null) { // this was later introduced and needs a default for old games.
+            maximum_threshold_percent = 100;
+        } else if (temp instanceof Double tempDouble){
+            maximum_threshold_percent = tempDouble;
+        } else if (temp instanceof Integer tempInt){
+            maximum_threshold_percent = tempInt;
+        } else if (temp instanceof String str){
+            if (Utils.isDouble(str)) {
+                maximum_threshold_percent = Double.parseDouble(str);
+            } else if (Utils.isInt(str)){
+                maximum_threshold_percent = Integer.parseInt(str);
+            } else {
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize maximum_threshold_percent: " + temp + " of game " + name);
                 return null;
             }
         } else {
@@ -409,6 +438,7 @@ public class Game implements ConfigurationSerializable {
         // </editor-fold>
 
         return new Game(starting_hidden_percent,
+                maximum_threshold_percent,
                 average_hide_ticks, hideCooldown_millis,
                 hideaways_, heads,
                 name,
@@ -668,9 +698,16 @@ public class Game implements ConfigurationSerializable {
             Random random = new Random();
             ItemStack[] headArray = heads.toArray(new ItemStack[0]);
 
+            double cachedNumberOfHideaways = hideaways.size();
             for (Hideaway hideaway : hideaways.values()){
+                // skip adding more if we already reached the threshold
+                if (cachedNumberOfHideaways / hideawaysWithHeadNum * 100.0D > maximumThresholdPercent) {
+                    break;
+                }
+
                 if (hideaway.getItemDisplay() != null && ! hideaway.hasHead()) {
                     if (hideaway.isCooldownOver(HideCooldownMillis) && random.nextLong(averageHideTicks) == 1){
+                        hideawaysWithHeadNum++;
                         hideaway.setHasHead(true);
                         hideaway.getItemDisplay().setItemStack(headArray[random.nextInt(numOfHeads)]);
                     }
@@ -728,6 +765,7 @@ public class Game implements ConfigurationSerializable {
         if (max > 0){
             Random random = new Random();
             ItemStack[] headArray = heads.toArray(new ItemStack[max]);
+            hideawaysWithHeadNum = 0;
 
             Set<Hideaway> updatedHideaways = new HashSet<>();
 
@@ -740,6 +778,7 @@ public class Game implements ConfigurationSerializable {
                 if (hideaway.getItemDisplay() != null){
                     if (random.nextInt(100) <= startingHiddenPercent) {
                         hideaway.getItemDisplay().setItemStack(headArray[random.nextInt(max)]);
+                        hideawaysWithHeadNum++;
                         hideaway.setHasHead(true);
                     } else {
                         hideaway.getItemDisplay().setItemStack(new ItemStack(Material.AIR, 1));
@@ -801,6 +840,7 @@ public class Game implements ConfigurationSerializable {
 
         //don't react to empty hideaways
         if (hideaway.hasHead()){
+            hideawaysWithHeadNum--;
             hideaway.setHasHead(false);
             hideaway.setCooldownNow();
 
@@ -993,7 +1033,7 @@ public class Game implements ConfigurationSerializable {
 
     /**
      * set how much percent of all hideaways will have a head when the game starts
-     * @param percent 0 - 100, all values above 100 will act the same as 100 and all values under 0 will be the same as o
+     * @param percent 0 - 100, all values above 100 will act the same as 100 and all values under 0 will be the same as 0
      */
     public void setStartingHiddenPercent(double percent) {
         this.startingHiddenPercent = percent;
@@ -1005,6 +1045,22 @@ public class Game implements ConfigurationSerializable {
      */
     public double getStartingHiddenPercent(){
         return this.startingHiddenPercent;
+    }
+
+    /**
+     * set how much percent of all hideaways will get a head resupplied while the game is running at max
+     * @param percent 0 - 100, all values above 100 will act the same as 100 and all values under 0 will be the same as 0
+     */
+    public void setMaximumThresholdPercent(double percent) {
+        this.maximumThresholdPercent = percent;
+    }
+
+    /**
+     * gets how much percent of all hideaways will get a head resupplied at max while the game is running
+     * @return
+     */
+    public Double getMaximumThresholdPercent() {
+        return maximumThresholdPercent;
     }
 
     /**

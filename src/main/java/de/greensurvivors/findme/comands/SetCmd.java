@@ -27,6 +27,7 @@ public class SetCmd {
             LOBBY = "lobby",
             ENDPOINT_LONG = "endpoint", ENDPOINT_SHORT = "end", ENDPOINT_ALT = "quit",
             STARTING_PERCENT_LONG = "starting_hidden_percent", STARTING_PERCENT_SHORT = "shp",
+            MAX_THRESHOLD_PERCENT_LONG = "maximum_threshold_percent", MAX_THRESHOLD_PERCENT_SHORT = "mtp",
             AVERAGE_HIDE_TICKS_LONG = "average_hide_ticks", AVERAGE_HIDE_TICKS_SHORT = "aht",
             HIDE_COOLDOWN_LONG = "hide_cooldown", HIDE_COOLDOWN_SHORT = "cooldown";
 
@@ -215,6 +216,31 @@ public class SetCmd {
                         cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
                     }
                 }
+                //fm set shp <percent double>
+                case MAX_THRESHOLD_PERCENT_LONG, MAX_THRESHOLD_PERCENT_SHORT -> {
+                    if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_MAX_THRESHOLD_PERCENT)){
+                        if (args.length >= 4){
+                            Game game = GameManager.inst().getGame(args[2]);
+
+                            if (game != null){
+                                if (Utils.isDouble(args[3])){
+                                    double percent = Double.parseDouble(args[3]);
+
+                                    game.setMaximumThresholdPercent(percent);
+                                    cs.sendMessage(Lang.build(Lang.SUCCESSFULLY_SET.get().replace(Lang.TYPE, MAX_THRESHOLD_PERCENT_LONG).replace(Lang.VALUE, String.valueOf(percent))));
+                                } else {
+                                    cs.sendMessage(Lang.build(Lang.NO_NUMBER.get().replace(Lang.VALUE, args[3])));
+                                }
+                            } else {
+                                cs.sendMessage(Lang.build(Lang.UNKNOWN_GAME.get().replace(Lang.VALUE, args[2])));
+                            }
+                        } else {
+                            cs.sendMessage(Lang.build(Lang.NOT_ENOUGH_ARGS.get()));
+                        }
+                    } else {
+                        cs.sendMessage(Lang.build(Lang.NO_PERMISSION_COMMAND.get()));
+                    }
+                }
                 //fm set cooldown <game name> <time in ticks, seconds, minutes>
                 case HIDE_COOLDOWN_LONG, HIDE_COOLDOWN_SHORT -> {
                     if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_GAMELENGTH)){
@@ -279,6 +305,10 @@ public class SetCmd {
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_STARTING_PERCENT)){
                     result.add(STARTING_PERCENT_LONG);
                     result.add(STARTING_PERCENT_SHORT);
+                }
+                if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_MAX_THRESHOLD_PERCENT)){
+                    result.add(MAX_THRESHOLD_PERCENT_LONG);
+                    result.add(MAX_THRESHOLD_PERCENT_SHORT);
                 }
                 if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_SET, PermissionUtils.FINDME_SET_HIDING_COOLDOWN)){
                     result.add(HIDE_COOLDOWN_LONG);
