@@ -321,7 +321,7 @@ public class Game implements ConfigurationSerializable {
         }
 
         temp = data.get(HEADS_KEY);
-        LinkedHashSet<ItemStack> heads = new LinkedHashSet<ItemStack>();
+        LinkedHashSet<ItemStack> heads = new LinkedHashSet<>();
         if (temp instanceof List<?> objList2){
             for (Object obj: objList2){
                 if (obj instanceof ItemStack itemStack) {
@@ -529,7 +529,7 @@ public class Game implements ConfigurationSerializable {
         if (hideaway != null){
             Entity hitBoxEntity = hideaway.getHitBoxEntity();
             if (hitBoxEntity != null){
-                hitBoxEntity.remove();;
+                hitBoxEntity.remove();
             }
 
             Display displayEntity = hideaway.getItemDisplay();
@@ -796,7 +796,7 @@ public class Game implements ConfigurationSerializable {
 
                 hideaway.gotHitboxUpdate();
             }
-            if (updatedHideaways.size() > 0){
+            if (!updatedHideaways.isEmpty()){
                 MainConfig.inst().saveGame(this);
             }
         }
