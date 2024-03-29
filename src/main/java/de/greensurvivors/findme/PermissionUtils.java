@@ -19,6 +19,7 @@ public enum PermissionUtils {
 	FINDME_SET_LOCATIONS("findme.set.locations"),
 	FINDME_SET_AVERAGE_TICKS_UNTIL_HIDE("findme.set.hide_ticks"),
 	FINDME_SET_STARTING_PERCENT("findme.set.stating_percent"),
+	FINDME_SET_MAX_THRESHOLD_PERCENT("findme.set.max_threshold_percent"),
 	FINDME_SET_HIDING_COOLDOWN("findme.set.cooldown"),
 
 	FINDME_START("findme.start"),
