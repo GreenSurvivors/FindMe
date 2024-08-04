@@ -16,14 +16,15 @@ public class PluginCmd {
 	 * /fm plugin
 	 * @param cs CommandSender
 	 */
-	public static void handleCmd(CommandSender cs) {
+	@SuppressWarnings("UnstableApiUsage") // plugin meta
+    public static void handleCmd(CommandSender cs) {
 		if (PermissionUtils.hasPermission(cs, PermissionUtils.FINDME_ADMIN, PermissionUtils.FINDME_PLUGIN)) {
 			// collect all messages to send at once
 			List<Component> components = new ArrayList<>();
 			// header
 			components.add(Lang.build(Lang.PLUGIN_HEADER.get()));
 			// version (update ?)
-			components.add(Lang.build(Lang.PLUGIN_VERSION.get().replace(Lang.VALUE, FindMe.inst().getDescription().getVersion())));
+			components.add(Lang.build(Lang.PLUGIN_VERSION.get().replace(Lang.VALUE, FindMe.inst().getPluginMeta().getVersion())));
 
 			// send components
 			cs.sendMessage(Lang.join(components));

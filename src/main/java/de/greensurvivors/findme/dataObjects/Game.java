@@ -219,44 +219,46 @@ public class Game implements ConfigurationSerializable {
 
         temp = data.get(STARTING_HIDDEN_PERCENT_KEY);
         double starting_hidden_percent;
-        if (temp instanceof Double tempDouble){
-            starting_hidden_percent = tempDouble;
-        } else if (temp instanceof Integer tempInt){
-            starting_hidden_percent = tempInt;
-        } else if (temp instanceof String str){
-            if (Utils.isDouble(str)) {
-                starting_hidden_percent = Double.parseDouble(str);
-            } else if (Utils.isInt(str)){
-                starting_hidden_percent = Integer.parseInt(str);
-            } else {
+        switch (temp) {
+            case Double tempDouble -> starting_hidden_percent = tempDouble;
+            case Integer tempInt -> starting_hidden_percent = tempInt;
+            case String str -> {
+                if (Utils.isDouble(str)) {
+                    starting_hidden_percent = Double.parseDouble(str);
+                } else if (Utils.isInt(str)) {
+                    starting_hidden_percent = Integer.parseInt(str);
+                } else {
+                    GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
+                    return null;
+                }
+            }
+            case null, default -> {
                 GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
                 return null;
             }
-        } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
-            return null;
         }
 
         temp = data.get(MAXIMUM_THRESHOLD_PERCENT_KEY);
         double maximum_threshold_percent;
-        if (temp == null) { // this was later introduced and needs a default for old games.
-            maximum_threshold_percent = 100;
-        } else if (temp instanceof Double tempDouble){
-            maximum_threshold_percent = tempDouble;
-        } else if (temp instanceof Integer tempInt){
-            maximum_threshold_percent = tempInt;
-        } else if (temp instanceof String str){
-            if (Utils.isDouble(str)) {
-                maximum_threshold_percent = Double.parseDouble(str);
-            } else if (Utils.isInt(str)){
-                maximum_threshold_percent = Integer.parseInt(str);
-            } else {
-                GreenLogger.log(Level.SEVERE, "couldn't deserialize maximum_threshold_percent: " + temp + " of game " + name);
+        switch (temp) {
+            case null -> // this was later introduced and needs a default for old games.
+                    maximum_threshold_percent = 100;
+            case Double tempDouble -> maximum_threshold_percent = tempDouble;
+            case Integer tempInt -> maximum_threshold_percent = tempInt;
+            case String str -> {
+                if (Utils.isDouble(str)) {
+                    maximum_threshold_percent = Double.parseDouble(str);
+                } else if (Utils.isInt(str)) {
+                    maximum_threshold_percent = Integer.parseInt(str);
+                } else {
+                    GreenLogger.log(Level.SEVERE, "couldn't deserialize maximum_threshold_percent: " + temp + " of game " + name);
+                    return null;
+                }
+            }
+            default -> {
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
                 return null;
             }
-        } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize starting_hidden_percent: " + temp + " of game " + name);
-            return null;
         }
 
         temp = data.get(HIDE_COOLDOWN_Millis_KEY);
@@ -284,35 +286,38 @@ public class Game implements ConfigurationSerializable {
         temp = data.get(HIDEAWAY_KEY);
         HashMap<UUID, Hideaway> hideaways_ = new HashMap<>();
         if (temp instanceof List<?> objList){
+            loop:
             for (Object obj: objList){
 
-                if (obj instanceof Hideaway hideaway) {
-                    hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
-                } else if (obj instanceof Map<?, ?> map){
-                    Map<String, Object> hideawaysMap = new HashMap<>();
-                    for (Object obj2: map.keySet()){
-                        if (obj2 instanceof String str){
-                            hideawaysMap.put(str, map.get(obj2));
-                        } else {
-                            GreenLogger.log(Level.WARNING, "couldn't deserialize hideaway property: " + obj2 + " of game " + name + ", skipping. Reason: not a string.");
+                switch (obj) {
+                    case Hideaway hideaway -> hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
+                    case Map<?, ?> map -> {
+                        Map<String, Object> hideawaysMap = new HashMap<>();
+                        for (Object obj2 : map.keySet()) {
+                            if (obj2 instanceof String str) {
+                                hideawaysMap.put(str, map.get(obj2));
+                            } else {
+                                GreenLogger.log(Level.WARNING, "couldn't deserialize hideaway property: " + obj2 + " of game " + name + ", skipping. Reason: not a string.");
+                            }
                         }
-                    }
-                    Hideaway hideaway = Hideaway.deserialize(hideawaysMap);
-                    if (hideaway == null){
-                        break;
-                    }
+                        Hideaway hideaway = Hideaway.deserialize(hideawaysMap);
+                        if (hideaway == null) {
+                            break loop;
+                        }
 
-                    hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
-                    hideaway.gotHitboxUpdate();
-                } else if (obj instanceof MemorySection memorySection){
-                    Hideaway hideaway = Hideaway.deserialize(memorySection.getValues(false));
-                    if (hideaway == null){
-                        break;
+                        hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
+                        hideaway.gotHitboxUpdate();
                     }
-                    hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
-                    hideaway.gotHitboxUpdate();
-                } else {
-                    GreenLogger.log(Level.WARNING, "couldn't deserialize hideaway: " + obj + " of game " + name + ", skipping. Reason: unknown type.");
+                    case MemorySection memorySection -> {
+                        Hideaway hideaway = Hideaway.deserialize(memorySection.getValues(false));
+                        if (hideaway == null) {
+                            break loop;
+                        }
+                        hideaways_.put(hideaway.getUUIDHitBox(), hideaway);
+                        hideaway.gotHitboxUpdate();
+                    }
+                    case null, default ->
+                            GreenLogger.log(Level.WARNING, "couldn't deserialize hideaway: " + obj + " of game " + name + ", skipping. Reason: unknown type.");
                 }
             }
         } else {
@@ -420,20 +425,21 @@ public class Game implements ConfigurationSerializable {
 
         temp = data.get(GAME_TIME_LENGTH_KEY);
         long game_time_length;
-        if (temp instanceof Long tempLong){
-            game_time_length = tempLong;
-        } else if(temp instanceof String str){
-            if (Utils.islong(str)){
-                game_time_length = Long.parseLong(str);
-            } else {
-                GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + str + " of game " + name + " not a long! (1)");
+        switch (temp) {
+            case Long tempLong -> game_time_length = tempLong;
+            case String str -> {
+                if (Utils.islong(str)) {
+                    game_time_length = Long.parseLong(str);
+                } else {
+                    GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + str + " of game " + name + " not a long! (1)");
+                    return null;
+                }
+            }
+            case Integer tempLong -> game_time_length = tempLong;
+            case null, default -> {
+                GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + temp + " of game " + name + " not a long! (2)");
                 return null;
             }
-        } else if (temp instanceof Integer tempLong){
-            game_time_length = tempLong;
-        } else {
-            GreenLogger.log(Level.SEVERE, "couldn't deserialize game time length long: " + temp + " of game " + name + " not a long! (2)");
-            return null;
         }
         // </editor-fold>
 
