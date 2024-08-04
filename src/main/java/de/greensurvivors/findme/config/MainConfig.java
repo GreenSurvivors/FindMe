@@ -56,6 +56,7 @@ public class MainConfig {
     /**
      * Load language configuration.
      */
+    @SuppressWarnings("UnstableApiUsage") // plugin meta
     private void loadLanguage() {
         File file = new File(FindMe.inst().getDataFolder(), "language.yml");
         FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
@@ -73,7 +74,7 @@ public class MainConfig {
         cfg.options().setHeader(Collections.singletonList(String.format(
                 "Language configuration for %s (%s)",
                 FindMe.inst().getName(),
-                FindMe.inst().getDescription().getVersion())));
+                FindMe.inst().getPluginMeta().getVersion())));
         cfg.options().parseComments(true);
         try {
             cfg.save(file);

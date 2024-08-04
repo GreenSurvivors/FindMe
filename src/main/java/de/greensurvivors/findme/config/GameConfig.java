@@ -34,6 +34,7 @@ public class GameConfig {
     /**
      * Save configuration to file.
      */
+    @SuppressWarnings("UnstableApiUsage") // plugin meta
     public void saveCfg() {
         File file = new File(FindMe.inst().getDataFolder(), path + fileName);
 
@@ -46,7 +47,7 @@ public class GameConfig {
         cfg.options().setHeader(Collections.singletonList(String.format(
                 fileName.replace(" .yml", "").replace("_", " ") + " game file for %s (%s)",
                 FindMe.inst().getName(),
-                FindMe.inst().getDescription().getVersion())));
+                FindMe.inst().getPluginMeta().getVersion())));
         cfg.options().parseComments(true);
         try {
             cfg.save(file);
