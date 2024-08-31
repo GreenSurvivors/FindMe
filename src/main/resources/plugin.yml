@@ -1,7 +1,7 @@
 name: FindMe
-version: 2.1.2-SNAPSHOT
+version: $version
 main: de.greensurvivors.findme.FindMe
-api-version: 1.21
+api-version: '$mcVersion'
 authors: [ Feuerreiter ]
 website: greensurvivors.de
 

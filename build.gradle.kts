@@ -1,12 +1,13 @@
 plugins {
     `java-library`
     //java
-    id("io.papermc.paperweight.userdev") version "1.7.1"
-	id("xyz.jpenilla.run-paper") version "2.3.0" // Adds runServer and runMojangMappedServer tasks for testing
+    id("io.papermc.paperweight.userdev") version "1.7.2"
+	id("xyz.jpenilla.run-paper") version "2.3.1" // Adds runServer and runMojangMappedServer tasks for testing
 }
 
+val mcVersion by extra("1.21.1")
 group = "de.greensurvivors"
-version = "2.2.1-SNAPSHOT"
+version = "2.2.2-SNAPSHOT"
 description = "lets you find ... things."
 paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION
 
@@ -25,15 +26,11 @@ repositories {
 }
 
 dependencies {
-    paperweight.paperDevBundle("1.21-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("$mcVersion-R0.1-SNAPSHOT")
 }
 
 tasks {
   // Configure reobfJar to run when invoking the build task
-  assemble {
-    dependsOn(reobfJar)
-  }
-
   compileJava {
     options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything
 
@@ -43,6 +40,8 @@ tasks {
   }
   
   processResources {
-    filteringCharset = Charsets.UTF_8.name() // We want UTF-8 for everything
+      filteringCharset = Charsets.UTF_8.name() // We want UTF-8 for everything
+
+      expand(project.properties)
   }
 }
